@@ -1,0 +1,2051 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HTML工具库</title>
+    <style>
+        /* ===== 全局重置 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', Roboto, 'Helvetica Neue', sans-serif;
+            /* 深蓝科技感渐变 + 微噪点 */
+            background:
+                radial-gradient(ellipse at top left, #1b2745 0%, transparent 60%),
+                radial-gradient(ellipse at bottom right, #15202e 0%, transparent 70%),
+                linear-gradient(135deg, #121a2b 0%, #1a2332 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 2rem 1.5rem;
+            overflow-x: hidden;
+            color: #e8edf7;
+        }
+
+        /* 噪点纹理（非常克制，只加质感） */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1360px;
+            width: 100%;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== 头部 ===== */
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem 1.5rem;
+            margin-bottom: 2.4rem;
+            padding: 1.4rem 1.8rem;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            backdrop-filter: blur(14px);
+        }
+
+        .header h1 {
+            font-size: 1.9rem;
+            font-weight: 700;
+            color: #e8edf7;
+            letter-spacing: -0.5px;
+            white-space: nowrap;
+        }
+
+        .header h1 span {
+            color: #6c8cff;
+        }
+
+        .header h1::before {
+            content: "";
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #6c8cff;
+            margin-right: 10px;
+            vertical-align: middle;
+            box-shadow: 0 0 10px #6c8cff88;
+        }
+
+        .search-wrapper {
+            position: relative;
+            flex: 1;
+            min-width: 220px;
+            max-width: 420px;
+        }
+
+        .search-wrapper input {
+            width: 100%;
+            padding: 0.8rem 1rem 0.8rem 3rem;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 14px;
+            font-size: 1rem;
+            background: rgba(255, 255, 255, 0.08);
+            color: #e8edf7;
+            outline: none;
+            transition: all 0.25s ease;
+        }
+
+        .search-wrapper input::placeholder {
+            color: #8896b3;
+        }
+
+        .search-wrapper input:focus {
+            border-color: #6c8cff;
+            box-shadow: 0 0 0 4px rgba(108, 140, 255, 0.18);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .search-wrapper .icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8896b3;
+            font-size: 1.1rem;
+            pointer-events: none;
+        }
+
+        .stats {
+            font-size: 0.95rem;
+            color: #a0acc9;
+            background: rgba(255, 255, 255, 0.06);
+            padding: 0.5rem 1.2rem;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .stats strong {
+            color: #e8edf7;
+            font-weight: 600;
+        }
+
+        .stats .tag-count {
+            font-size: 0.75rem;
+            color: #a0acc9;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.15rem 0.7rem;
+            border-radius: 999px;
+            margin-left: 0.4rem;
+        }
+
+        /* ===== 网格 ===== */
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        /* ===== 卡片 ===== */
+        .file-card {
+            background: rgba(255, 255, 255, 0.07);
+            border-radius: 16px;
+            padding: 1rem 1.1rem;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+            transition: transform 0.2s ease, box-shadow 0.25s ease,
+                border-color 0.25s ease, background 0.25s ease;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            min-height: 52px;
+        }
+
+        .file-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(108, 140, 255, 0.18);
+            border-color: rgba(108, 140, 255, 0.35);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .file-card a {
+            text-decoration: none;
+            color: #e8edf7;
+            font-weight: 500;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            width: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .file-card a .filename {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+
+        .file-card a .badge {
+            flex-shrink: 0;
+            font-size: 0.55rem;
+            font-weight: 600;
+            color: #a0acc9;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 0.15rem 0.6rem;
+            border-radius: 6px;
+            text-transform: uppercase;
+        }
+
+        /* ===== 空状态 ===== */
+        .empty-state {
+            grid-column: 1 / -1;
+            text-align: center;
+            padding: 5rem 1rem;
+            color: #8896b3;
+            font-size: 1.1rem;
+            background: rgba(255, 255, 255, 0.04);
+            border-radius: 20px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .empty-state .emoji {
+            font-size: 3.2rem;
+            display: block;
+            margin-bottom: 1rem;
+        }
+
+        /* ===== 显隐动画 ===== */
+        .file-card {
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .file-card.hidden {
+            display: none;
+        }
+
+        .file-card.visible {
+            display: flex;
+            animation: fadeIn 0.25s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ===== 覆盖层 ===== */
+        #overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #0f1724;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+        }
+
+        #overlay.active {
+            display: flex;
+        }
+
+        #overlay-nav {
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(12px);
+            padding: 12px 22px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            display: flex;
+            align-items: center;
+            gap: 18px;
+        }
+
+        #overlay-nav .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 16px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 999px;
+            border: none;
+            color: #e8edf7;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        #overlay-nav .back-btn:hover {
+            background: rgba(108, 140, 255, 0.2);
+            transform: translateX(-2px);
+        }
+
+        #overlay-nav .back-btn svg {
+            width: 20px;
+            height: 20px;
+            stroke: currentColor;
+        }
+
+        #overlay-nav .file-title {
+            font-size: 0.9rem;
+            color: #a0acc9;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        #overlay iframe {
+            flex: 1;
+            width: 100%;
+            border: none;
+            background: #0f1724;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 768px) {
+            body {
+                padding: 1.2rem 1rem;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 0.9rem;
+                padding: 1.1rem 1.2rem;
+            }
+
+            .header h1 {
+                text-align: center;
+            }
+
+            .file-grid {
+                grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+                gap: 0.8rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .file-grid {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container" id="mainContainer">
+        <div class="header">
+            <h1>HTML <span>工具库</span></h1>
+            <div class="search-wrapper">
+                <span class="icon">🔍</span>
+                <input type="text" id="searchInput" placeholder="搜索文件名…" autocomplete="off" />
+            </div>
+            <div class="stats" id="stats">
+                共 <strong id="totalCount">0</strong> 个文件
+                <span class="tag-count" id="visibleCount"></span>
+            </div>
+        </div>
+        <div class="file-grid" id="fileGrid">
+            <!-- 由 JS 动态渲染 -->
+        </div>
+    </div>
+
+    <!-- ===== 覆盖层 ===== -->
+    <div id="overlay">
+        <div id="overlay-nav">
+            <button class="back-btn" id="backBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                    stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+                <span>返回主页</span>
+            </button>
+            <span class="file-title" id="overlayTitle">正在加载…</span>
+        </div>
+        <iframe id="contentFrame" src="about:blank"></iframe>
+    </div>
+
+    <script>
+        const FILE_NAMES = [
+            "regex-lab-check-main/正则表达式-index.html",
+            "agentchat-viewer-main/Agent查看-agentchat-viewer.html",
+            "BitMapTool-main/单片机字符-mcu_font_bitmap_tool_v2.2.html",
+            "diff-lab-main/文本对比差异-index.html",
+            "CodeNavigator-master/代码导航-index.html",
+            "Format-master/离线文本排版-index.html",
+            "json-lab-main/JSON离线格式化校验-index.html",
+            "Qrgen-main/二维码生成器-QRGen.html",
+            "QRSync-main/二维码传输-index.html",
+            "QueryMaster-master/SQL工具-index.html",
+            "staff-studio-main/五线谱-staff-studio.html",
+            "timestamp-lab-main/Unix时间戳-index.html",
+            "其他/2025香港跨年烟花-线上电子版-Firework.html",
+            "其他/3D圣诞树-shengdanshu.html",
+            "其他/3D太阳系-极简沉浸版-3Dtaiyangxikepumoniqi.html",
+            "其他/3D模型在线预览(Three.js)-3D-MO.html",
+            "其他/3D模型预览器-3Dmoxingyulanqi.html",
+            "其他/3D词云点名工具-randname.html",
+            "其他/3年职业路径规划工具-3nianzhiyelujingguihua.html",
+            "其他/50个无用但有趣的知识-让你大开眼界的冷门真相-wuyongzhishiku.html",
+            "其他/5级可交互式Excel文件夹生成工具-HTML.html",
+            "其他/AA制费用计算器-aa_caculator.html",
+            "其他/AIToken计算器-支持主流模型-token-calculator.html",
+            "其他/AI书单拆解工具-shudanchaijie.html",
+            "其他/AI头像生成器-NotionStyle-ai-avatar-generator-notion-style.html",
+            "其他/AI工具体验和源码下载_一站式工具平台-AIgongjutiyanheyuanmaxiazai.html",
+            "其他/AI文案仿真器-一键去除AI味-AIwenanfangzhenqi.html",
+            "其他/AI猜物大师-智能20问挑战赛-AIcaiwudashizhineng20wentiaozhansai.html",
+            "其他/AI礼物推荐-智能礼物发现平台-deepseek_html_20250729_d12bae1.html",
+            "其他/Base64_Base58加密解密工具-LockUnLock.html",
+            "其他/Base64编码_解码器-Base64bianmajiemaqi.html",
+            "其他/Base64编码_解码工具-base64bianmajiemagongju.html",
+            "其他/Base64编码_解码工具-Base64Codec(2).html",
+            "其他/Base64编码_解码工具-Base64Codec.html",
+            "其他/Base64编码解码工具-Base64bianmajiemagongju.html",
+            "其他/Base64编解码器-base64.html",
+            "其他/Base64转换工具-deepseek_html_25727_Base64.html",
+            "其他/Beyond歌曲歌词大全-beyondgeci.html",
+            "其他/BMI健康计算器-BMI.html",
+            "其他/BMI计算器-BMI.html",
+            "其他/BMI计算器-BMIjisuanqi.html",
+            "其他/BMI计算器-bmi_calculator.html",
+            "其他/BMI计算工具(中国标准)-deepseek_html_20250713_4707a2.html",
+            "其他/Cache·全景梳理-cache_overview.html",
+            "其他/Claude对话记录解析器-claude_parse.html",
+            "其他/Clock网页版-Clockwangyeban.html",
+            "其他/CodeTerm-编程术语词典-DictionaryOfProgrammingTerms.html",
+            "其他/ContractScope_合同条款智能分析工具-deepseek_html_20250728_507b3e.html",
+            "其他/CSS3D校徽展示平台-3DSchoolEmblemDisplay.html",
+            "其他/CSSFlexbox_Grid视觉布局演练场-layout-playground.html",
+            "其他/CSS动画生成器-CSSdonghuashengchengqi.html",
+            "其他/CSS压缩_解压工具-CSSCompressor(2).html",
+            "其他/CSS压缩_解压工具-CSSCompressor.html",
+            "其他/CSS渐变色生成器-CSSjianbianseshengchengqi.html",
+            "其他/CSS盒子模型可视化-CSShezimoxingkeshihua.html",
+            "其他/CSS盒子模型可视化工具-css-box-model-visualizer.html",
+            "其他/CSV转换工具-多格式数据转换器-CSVzhuanhuangongju.html",
+            "其他/DevToolsHub-编程工具市场-bianchenggongjuHTMLcunfangzhan.html",
+            "其他/DKFileLogo生成器-deepseek_html_20250711_6664c7.html",
+            "其他/DKFileLogo生成器-免费在线设计工具-DKfileLogo.html",
+            "其他/DKFile在线HTML编辑器-202508030145063.html",
+            "其他/DKFile在线HTML编辑器-dkfile01.html",
+            "其他/DKFile在线HTML编辑器-dkfile02.html",
+            "其他/DKFile在线HTML编辑器-dkfile03.html",
+            "其他/DKFile在线HTML编辑器-online-html-1766560892912.html",
+            "其他/Emoji表情大全-emoji-gallery.html",
+            "其他/Emoji表情拼字器-emoji-spell.html",
+            "其他/EnglishQuizGenerator-MVP-englishQuizGenerator.html",
+            "其他/Facebowl脸盆网-爱情公寓版-html-preview1.html",
+            "其他/FC小蜜蜂现代版-little-bee.html",
+            "其他/FreshKitchen-智能冰箱食材管理-FreshKeep.html",
+            "其他/GBN与SR滑动窗口机制对比-gbn_sr_sliding_window.html",
+            "其他/Git命令助手-Gitminglingzhushou.html",
+            "其他/Gobang-MinimalistEdition-wuziqi-jinengban.html",
+            "其他/HEX转CMYK工具-HEX2CMYK.html",
+            "其他/HEX转HSV工具-HEX2HSV.html",
+            "其他/HTMLDiffComparisonTool-html_compare.html",
+            "其他/HTML_CSS_JS在线预览工具-HTML_CSS_JSzaixianyulangongju.html",
+            "其他/HTML压缩_解压工具-HTMLCompressor.html",
+            "其他/HTML压缩_解压工具-HTMLCompressor2.0.html",
+            "其他/HTML合成音频-点击朗读功能-HTML-TexttoSpeechClicktoReadTutorial.html",
+            "其他/HTML编码_解码工具-HTMLEncode(2).html",
+            "其他/HTML编码_解码工具-HTMLEncode.html",
+            "其他/HTML表格生成器-HTMLTableGen.html",
+            "其他/HTML表格生成器-HTMLTableGen2.0.html",
+            "其他/HTML课程之embed-HTML-embed.html",
+            "其他/HTML课程之iframe-HTML-iframe.html",
+            "其他/HTML转JavaScript工具-HTML2JS.html",
+            "其他/HTML转JavaScript工具-HTML2JS2.html",
+            "其他/HTTP状态码查询工具_HTTPStatusCodeTool-HTTPzhuangtaimachaxun.html",
+            "其他/index.html",
+            "其他/InspireCopy-文案灵感生成器MVP-copywritingInspirationGenerator.html",
+            "其他/IP地址与浏览器信息查询-IPdizhiyuliulanqixinxichaxun.html",
+            "其他/IP地址查询工具-IP.html",
+            "其他/IP地址查询工具-绿色自然版-green-ip-checker.html",
+            "其他/JavaScript混淆_加密工具-JSObfuscator(2).html",
+            "其他/JavaScript混淆_加密工具-JSObfuscator.html",
+            "其他/JPG文件转换工具-AI工具集-converter-from-jpg.html",
+            "其他/JSON_CSV高级转换工具-JSONCSVgaojizhuanhuangongju.html",
+            "其他/JSON压缩_解压工具-JSONCompressor(2).html",
+            "其他/JSON压缩_解压工具-JSONCompressor.html",
+            "其他/JSON处理工具-在线JSON美化、比对、格式化工具_小路工具箱-json-processor.html",
+            "其他/JSON格式化_压缩工具-本地安全处理-JSONgeshihuayasuogongju.html",
+            "其他/JSON格式化与校验工具-JSONgeshihuayujiaoyangongju.html",
+            "其他/JSON格式化工具-jsongeshihua.html",
+            "其他/JSON格式化工具-JSONgeshihuagongju.html",
+            "其他/JSON转换器-CSV_Excel-json-converter.html",
+            "其他/KiroIDE下载-AI智能开发工具_免费下载支持多平台-kiro-ide-downloader.html",
+            "其他/Linux命令助手-Linuxminglingzhushou.html",
+            "其他/LogicTrans灵动翻译-LogicTrans8.html",
+            "其他/Lonely-html-index.html",
+            "其他/LongScreenshotSplittingTool-Long-Screenshot-Splitting-Tool.html",
+            "其他/MAC地址厂商查询工具-mac-vendor-lookup-apple-style.html",
+            "其他/map-map.html",
+            "其他/Markdown到纯文本转换工具-Markdownzhuanchunwenben.html",
+            "其他/Markdown在线编辑器-Markdown-Online.html",
+            "其他/Markdown渲染工具-markdown-renderer.html",
+            "其他/Markdown编辑器-markdown-editor.html",
+            "其他/Markdown转Word工具-markdown-to-word-tool.html",
+            "其他/Markdown转换器-markdown-converter.html",
+            "其他/Markdown转换工具-markdown-converter.html",
+            "其他/Markdown转换工具-专业版-markdown-converter-pro.html",
+            "其他/MBTI93题标准版自测(最接近官方原版)-mbti.html",
+            "其他/MBTI性格测试工具-MBTIceshi.html",
+            "其他/MEMO-RITEDevice-dayinji.html",
+            "其他/NotionPageID提取工具-notion-page-id-extractor-check.html",
+            "其他/OfficeImageKit-OfficeImageExtractor-OfficeImageKit.html",
+            "其他/OH卡抽卡助手-疗愈工作坊-Ohcardschoukazhushou.html",
+            "其他/OpenCode+OhMyOpenCode使用教程(离线单页)-opencode-oh-my-opencode-guide.html",
+            "其他/PhonoGuide-英语发音矫正工具-englishPronunciationCorrectionTool.html",
+            "其他/PNGtoICOConverter-在线PNG转ICO工具-png2ico.html",
+            "其他/Qibla朝向指南-麦加方向指示器-qibla-guide.html",
+            "其他/QRCodeGenerator_二维码生成-erweimashengcheng.html",
+            "其他/RegexIDE-SkyBlueFullEdition-zzbds-ide-html-2583.html",
+            "其他/RetirementCalculator_退休计算器-retirement.html",
+            "其他/RGB_十六进制颜色转换工具-rgb-converter.html",
+            "其他/SBTI人格测试-SBTI.html",
+            "其他/SBTI人格测试·入口封面-deepseek_html_20260410_0b9ab3.html",
+            "其他/SCI作者贡献声明生成器-SCIAuthorContributions.html",
+            "其他/SCL90心理健康测评-SCL90xinlijiankangceping.html",
+            "其他/SHE歌曲歌词大全-SHEgeci.html",
+            "其他/SmashingSimulator-smashingobjects.html",
+            "其他/SPF防晒时间计算器-SPFfangshaishijianjisuanqi.html",
+            "其他/SQL查询格式化工具-SQLFormattingTool.html",
+            "其他/SQL查询格式化工具-sql_formatting.html",
+            "其他/TCP连接管理·三次握手与四次挥手-tcp_connection.html",
+            "其他/TenseMasterGenerator-时态练习生成器-exclusiveTenseExercises.html",
+            "其他/TextalyzerPro-textalyzer-pro.html",
+            "其他/TK达人投放样品跟踪数据分析工具-tk-analysis-11.html",
+            "其他/TrendSpy-时尚搭配挑战-womensFashionTrends.html",
+            "其他/TS视频文件合并转换工具-weimingming5.html",
+            "其他/Unix时间戳转换工具-unix-converter.html",
+            "其他/URL编码_解码工具-url-encoder-decoder.html",
+            "其他/URL编码_解码工具-URLEncode(2).html",
+            "其他/URL编码_解码工具-URLEncode.html",
+            "其他/URL编码_解码工具-URLEncodingDecoding.html",
+            "其他/VerbMatchingGame-VerbMatchingGame-FinalVersionwithEnhancedCelebration1.html",
+            "其他/web-api.html",
+            "其他/WebCraft-在线HTML编辑器-HTMLzaixianbianji.html",
+            "其他/WiFi二维码生成器_扫码一键连接-wifi-qrcode.html",
+            "其他/WNR时间管理工具-timer.html",
+            "其他/word-flow-lac.html",
+            "其他/WORDLE猜词-wordle.html",
+            "其他/Word转HTML工具-word-to-html-converter.html",
+            "其他/XML转换工具-xml-converter.html",
+            "其他/YAML?JSONConverter-YAMLJSONConverter.html",
+            "其他/YAML配置转换工具-yaml-converter.html",
+            "其他/zmgatsz2026的个人主页-zmgatsz2026.html",
+            "其他/《IDO老徐·陪你副业避坑》-副业避坑指南-fuyebikeng.html",
+            "其他/一个都不能少-running.html",
+            "其他/一句话卡片-yiju.html",
+            "其他/一日三餐随机选择器-Tools-04-DailyMeals.html",
+            "其他/一站式快捷键查询工具-kuaijiejiandaquan.html",
+            "其他/一键生成二维码-最终修复版-yijianshengchengerweima_zuizhongxiufuban.html",
+            "其他/三印水印·王者工坊-tupianjiashuiyin.html",
+            "其他/三年级分数动态演示闯关-3fenshu.html",
+            "其他/三星手机使用技巧大全-sanxingshoujishiyong.html",
+            "其他/三角形可视化生成工具-sanjiaoxingshengchenggongju.html",
+            "其他/三角形生成器-sanjiaoxing.html",
+            "其他/上海去哪玩攻略-shanghailvyou.html",
+            "其他/专题3空气、氧气、二氧化碳-83onlineChemistry3.html",
+            "其他/世界时钟-shizhong.html",
+            "其他/世界时钟-wordtime.html",
+            "其他/世界时间-shijieshijian.html",
+            "其他/个人兴趣追踪器-gerenxingquzhuizongqi.html",
+            "其他/个人密码提示系统-personal_password_hint.html",
+            "其他/个人档案博物馆-Personal_Museum.html",
+            "其他/个人账务花销记录-gerenzhangwujilu.html",
+            "其他/个性化健康饮食计划生成器-weightLossPlan.html",
+            "其他/个性化减肥运动推荐工具-Weight-loss_exercises_recommendations.html",
+            "其他/个性化语录生成器-index-fixed.html",
+            "其他/个性化调色板生成器-_E8_B0_83_E8_89_B2_E6_9D_BF.html",
+            "其他/中国亲戚关系计算器-zhongguoqinqiguanxijisuanqi.html",
+            "其他/中国传统节日-传承千年文化_春节、中秋、端午、清明等七大节日介绍-chinese-festivals.html",
+            "其他/中国传统节日万年历-wannianlidaojishihtml_.html",
+            "其他/中国古典配色查询工具-gudiancolor.html",
+            "其他/中国各民族查询工具-56个民族的文化与历史-zhongguogeminzuchaxungongju.html",
+            "其他/中国法定退休年龄计算器-精准计算您的退休时间_遇见yh-zhongguofadingtuixiunianlingjisuanqi.html",
+            "其他/中国省市信息查询工具-全面了解中国各省市数据-zhongguoshengshixinxichaxungongju.html",
+            "其他/中国象棋·楚汉争雄-ChinaJiaqi.shuci.html",
+            "其他/中宝科技轨道集团-shouye.html",
+            "其他/中文复姓大全查询表_姓氏文化研究-zhongwenfuxingdaquanchaxunbiao.html",
+            "其他/中英文邮件翻译工具-zhongyingwenyoujianfanyi.html",
+            "其他/中英文邮件翻译工具-独立版-standalone-translator.html",
+            "其他/中英符号双向转换工具-cn_en_symbol.html",
+            "其他/中英翻译工具-translator.html",
+            "其他/中英连线消消乐-dancixiaoxiaole1.0.html",
+            "其他/中高强度密码生成器-mimashengchengqi.html",
+            "其他/九九乘法口诀消消乐-chengfakoujuexiaoxiaole.html",
+            "其他/习惯养成打卡_坚持的力量-xiguanyangchengdaka.html",
+            "其他/习惯阻力诊断问卷-046_xiguanzuliwenjuan.html",
+            "其他/书生成语闯关记-chengyuchuangguanyouxi.html",
+            "其他/书签访问检查工具-bookmark_checker.html",
+            "其他/了解小儿-xiaoer.html",
+            "其他/二十四节气历-丙午马年-24-solar-terms-calendar.html",
+            "其他/二年级下册期中练习系统-grade2_practice.html",
+            "其他/二维码打码工具-erweima.html",
+            "其他/二维码检测与模糊处理工具-codeblur.html",
+            "其他/二维码生成器-qr-generator.html",
+            "其他/二维码生成工具-erweimashengchenggongju.html",
+            "其他/二维码美化工具-erweimameihuagongju.html",
+            "其他/二维码覆盖工具-优化版-tihuanerweima.html",
+            "其他/二维码解析器-快速识别任何二维码内容_2025-erweimajiexiqi.html",
+            "其他/二维码解码器-erweimajiema.html",
+            "其他/云南去哪玩攻略-yunnanlvyou1.html",
+            "其他/云朵画板-cloud_painter.html",
+            "其他/五月天歌曲歌词大全-wuyuetiangeci.html",
+            "其他/五险一金科普查询系统-全面了解社保知识-wuxianyijinchaxunxitong.html",
+            "其他/亲戚称呼查询-LYYSJ2022-QQCHCXQ.html",
+            "其他/人情世故翻译器-EasyTools-social_translator.html",
+            "其他/人情往来账本-专业礼金管理工具-renqingwanglaizhangben.html",
+            "其他/人情礼账管理-renqingzhangben.html",
+            "其他/人情账本-renqingzhangbu.html",
+            "其他/人民币大小写转换器-RMBtransfer.html",
+            "其他/人生倒计时-renshengdaojishi.html",
+            "其他/人生倒计时-时间可视化-LifeCountdown.html",
+            "其他/人生复盘系统-每日成长记录与洞察-renshengfupanxitong.html",
+            "其他/人生导航器-战胜拖延，掌控时间-deepseek_html_20250717_1c5c9f.html",
+            "其他/人生小格-时间可视化-LifeProgress.html",
+            "其他/今天外卖吃什么？-eatwhat.html",
+            "其他/任贤齐歌曲歌词大全-renxianqigeci.html",
+            "其他/优化版Markdown编辑器-Markdownbianjiqi.html",
+            "其他/优惠券码批量生成工具-youhuiquanmapiliangshengchenggongju.html",
+            "其他/优质冒险电影大全-youzhimaoxian1.html",
+            "其他/优质动作电影大全-youzhidongzuo1.html",
+            "其他/优质动画电影大全-youzhidonghua1.html",
+            "其他/优质历史电影大全-youzhilishi1.html",
+            "其他/优质喜剧电影大全-youzhixiju1.html",
+            "其他/优质恐怖电影大全-youzhikongbu1.html",
+            "其他/优质悬疑电影大全-youzhixuanyi1.html",
+            "其他/优质武侠电影大全-youzhiwuxia1.html",
+            "其他/优质灾难电影大全-youzhizainan1.html",
+            "其他/优质爱情电影大全-youzhiaiqing1.html",
+            "其他/优质犯罪电影大全-youzhifanzui1.html",
+            "其他/优质科幻电影大全-youzhikehuan1.html",
+            "其他/低音谱表音符演示-diyinpubiaoyinfuyanshi.html",
+            "其他/体脂率计算器与瘦身餐推荐-Loseweightcalculation.html",
+            "其他/促销折扣计算器-cuxiaozhekoujisuanqi.html",
+            "其他/俄罗斯去哪玩攻略-eluosilvyou1.html",
+            "其他/俄罗斯特色美食大全-eluosimeishi.html",
+            "其他/保质期计算工具-baozhiqijisuan.html",
+            "其他/借还记录管理系统-jiehaijilu.html",
+            "其他/健康BMI计算器-BMI.html",
+            "其他/健康BMI计算器-BMIjisuanqi.html",
+            "其他/健康体重管理助手-Weight.Recording.html",
+            "其他/健康咨询助手-jiankangzixunzhushou_2025-09-19T14-19-42.html",
+            "其他/健康提醒工具-保护眼睛·久坐提醒-jiankangtixinggongju.html",
+            "其他/健康血压_高血压患者专用饮食菜谱系统-低盐低脂低油健康食谱-jiankangxueyayinshixitong.html",
+            "其他/像素画生成器-xiangsuhuashengcheng.html",
+            "其他/像素画绘制板-xiangsuhuahuizhiban.html",
+            "其他/僵尸生存-ZombieSurvival-09-zombie-survival_dkfile.html",
+            "其他/儿童任务大转盘-luckyWheel.html",
+            "其他/儿童抽奖转盘-xiaoxueshengjifenchoujianggongju.html",
+            "其他/儿童识字乐园-ertongshizi.html",
+            "其他/儿童语言发育深度评估系统(医疗级)-20260104231237.html",
+            "其他/元旦科技倒计时·自动生肖版-NewYear.html",
+            "其他/元素周期表查询-yuansuzhouqibiaochaxun.html",
+            "其他/元素周期表查询工具-yuansuzhouqibiaochaxungongju.html",
+            "其他/光影绘画工具-Light&ShadowPainter-guangyinghuihua.html",
+            "其他/光遇音乐_15个半音阶-skystudiolite.html",
+            "其他/免费AI音乐创作工具集_一站式发现优质AI音乐工具-mianfeiAIyinyuechuangzuogongjuji.html",
+            "其他/兔子先生的个人主页-Mr.htm",
+            "其他/全屏响应式单位转换器-unitConverter.html",
+            "其他/全格式识别与转换-format_flow.html",
+            "其他/全球国家首都查询工具_195个国家首都信息大全-quanqiuguojiashouduchaxungongju.html",
+            "其他/全球时区转换器-shiquzhuanhuan.html",
+            "其他/全能办公快捷键手册-kuaijiejian.html",
+            "其他/全能单位转换器-优化完整版-index_optimized_complete.html",
+            "其他/八字命盘分析-流年运势建议-传统命理智慧-bazi-calculator.html",
+            "其他/公众号创作技巧大全-gongzhonghaochuanzuojiqiao.html",
+            "其他/公众号封面制作工具-免费在线设计微信公众号封面_小鹿工具箱-wechat-cover-generator.html",
+            "其他/公众号排版助手-V3.9gongzhonghaopaibanzhushou.html",
+            "其他/公众号爆款标题训练工具-gongzhonghaobaokuanbiaotishengchengqi.html",
+            "其他/公历农历日期转换工具-lunar_calendar_converter.html",
+            "其他/公平随机分组工具-gongpingfenzugongju.html",
+            "其他/关系健康评估-你的恋爱值得继续吗？-guanxijiankangzice.html",
+            "其他/养生日历-智能节气养生助手-yangshengrili.html",
+            "其他/冒泡排序可视化-bubbleSort.html",
+            "其他/军考上岸概率自测系统-junkaoshangangailvzicexitongxinban.html",
+            "其他/军考军事科目成绩换算器-junkaojunshikemuchengjihuansuanqi.html",
+            "其他/军考基本信息-junkaojibenxinxitongjixitong.html",
+            "其他/农历转换工具-公历农历互转+节气显示-Lunarcalendarconversiontool.html",
+            "其他/冰雪奇缘·单词彩虹桥-word_rainbow.html",
+            "其他/冲突解决话术工具(增强版)-chongtujiejuehuashu.html",
+            "其他/决策辅助器-抛硬币_随机选择工具-auxiliaryDecisionMaking.html",
+            "其他/冷笑话大全-lengxiaohua1.html",
+            "其他/冷静购-你的智能消费守卫-saveMoneyPro2.2.html",
+            "其他/减脂期今天吃什么-jianzhiqichishenme2.html",
+            "其他/减脂餐老虎机-胖阿姨MAX-Tiger-machine.html",
+            "其他/刀郎歌曲歌词大全-daolanggeci.html",
+            "其他/分手疗愈指南_走出伤痛，重获新生-fenshouliaoyuzhinan.html",
+            "其他/分数探险家-分数可视化工具-fractionExplorer.html",
+            "其他/刘德华歌曲歌词大全-liudehuageci.html",
+            "其他/刘德华高分电影大全-liudehuadianying.html",
+            "其他/前端工具导航站-4.669_tools.html",
+            "其他/副业适配度测试工具-fuyeshipeiduceshi.html",
+            "其他/办公软件快捷键大全-bangongruanjiankuaijiejiandaquanwangye.html",
+            "其他/加密消息编码_解码器-jiamixiaoxibianmajiemaqi.html",
+            "其他/动漫转铅笔线稿工具-LineCraft2.0.html",
+            "其他/动物分类小专家-animalClassificationGame.html",
+            "其他/勾股定理演示器-pythagorean_theorem_demo.html",
+            "其他/北京去哪玩攻略-beijingjingdian.html",
+            "其他/十二星座本月运势解读-shierxingzuoyunshi.html",
+            "其他/华为手机使用技巧大全-huaweishoujishiyong.html",
+            "其他/华夏历史时间线(HarmonyOS风格)-huaxialishishijianxian.html",
+            "其他/华晨宇歌曲歌词大全-huachenyugeci.html",
+            "其他/单位转换器Pro-danweizhuanhuanqi_Pro.html",
+            "其他/单位转换工具-danweizhuanhuangongju.html",
+            "其他/单词卡片-dancikapian.html",
+            "其他/单词背诵工具-dancibeisonggongju.html",
+            "其他/单词记忆卡片工具-dancijiyikapian.html",
+            "其他/单词记忆大师-森系版-deepseek_html_20260206_a8b8a2.html",
+            "其他/南京去哪玩攻略-nanjinglvyou1.html",
+            "其他/卡通万能计时器-完美对齐版-duogezhengdaojishi.html",
+            "其他/历史时间轴工具-deepseek_html_20250728_c6e41c.html",
+            "其他/压力释放方法库-yalishifangfangfaku.html",
+            "其他/厦门去哪玩攻略-xiamenlvyou1.html",
+            "其他/去哪儿滑雪攻略-qunaerhuaxue1.html",
+            "其他/去哪儿爬山攻略-qunapashan1.html",
+            "其他/去除Markdown格式-remove_markdown.html",
+            "其他/友情修复指南-帮助修复友谊的温馨助手-youqingxiufuzhinan.html",
+            "其他/口红色号怎么选-kouhongsehao1.html",
+            "其他/口红试色模拟器-小红书风格-lipstickColorTrialSimulator.html",
+            "其他/古天乐高分电影大全-gutianledianying.html",
+            "其他/可爱贪吃蛇-tanchishe.html",
+            "其他/台湾去哪玩攻略-taiwanlvyou1.html",
+            "其他/叶老板的文件急诊室-file-tool-V4.html",
+            "其他/号码百事通-haomabaishitong.html",
+            "其他/号码百事通-综合信息查询服务-haomabaishitong.html",
+            "其他/吃豆人-Pac-Man-pacman-game.html",
+            "其他/听写对比助手_日_中_英自动标注-dictation.html",
+            "其他/周传雄歌曲歌词大全-zhouchuanxionggeci.html",
+            "其他/周华健歌曲歌词大全-zhouhuajiangeci.html",
+            "其他/周杰伦歌曲歌词大全-zhoujielungeci.html",
+            "其他/周润发高分电影大全-zhourunfadianying.html",
+            "其他/周长计算器_圆形扇形椭圆三角形正方形长方形平行四边形四边形梯形-perimeter-calculator.html",
+            "其他/商务谈判话术库-shangwutanpanhuashuku.html",
+            "其他/商品保质期管理_精美界面-zhizuojingmeijiemianfangfa.html",
+            "其他/嘉宾签到系统-jiabinqiandaoxitong.html",
+            "其他/嘻北旅行门票计算系统-ceshi.html",
+            "其他/四季养生茶饮推荐工具-Smart_tea_recommendations.html",
+            "其他/四象限待办事项_艾森豪威尔矩阵-sixiangxiandaiban.html",
+            "其他/团建活动策划工具-tuanjianhuodongcehua.html",
+            "其他/国家信息查询-guojiaxinxichaxun.html",
+            "其他/国家育儿补贴计算器-ParentSubsidy2.0.html",
+            "其他/国风色卡-guofengseka.html",
+            "其他/圆角可视化工具_BorderRadiusVisualizer-yuanjiaokeshihuagongjuBorderRadiusVisualizer.html",
+            "其他/圣诞大作战-近景特写版-shengdandazuozhan.html",
+            "其他/在场证明生成器-033_check_snapshot.html",
+            "其他/在家动手DIY-zaijiaDIY_2025-09-18T13-20-11.html",
+            "其他/在线Excel转换工具-excel-converter.html",
+            "其他/在线二维码生成器-简单易用的二维码工具-qrcode-enhanced.html",
+            "其他/在线数独练习工具-提升您的逻辑思维能力-shudulianxigongju.html",
+            "其他/在线日程表_备忘录-zaixianrichengbiaobeiwanglu.html",
+            "其他/在线面积计算器-zaixianmianjijisuanqi.html",
+            "其他/地产文案生成器-dichanwenanshengcheng.html",
+            "其他/基础代谢率(BMR)计算器-jichudaixieBMRjisuanqi.html",
+            "其他/声乐气息练习工具-vocal-breathing-trainer.html",
+            "其他/声音可视化灯光矩阵系统-shengkongfenweidengV3.htm",
+            "其他/复利计算器-compound-interest-calculator.html",
+            "其他/复古俄罗斯方块-tetris.html",
+            "其他/大象牙膏实验3D演示-elephant_toothpaste_experiment.html",
+            "其他/天数计算器-days.html",
+            "其他/天选点名系统-至尊版-rollcall.html",
+            "其他/失业计时器-积极面对每一天-shiyejishiqi(2).html",
+            "其他/失业计时器-积极面对每一天-shiyejishiqi.html",
+            "其他/头像生成器-简约版-Avatar-Generator-Minimal.html",
+            "其他/女性月经周期日历跟踪工具-nvxingyuejingzhouqigenzongqi.html",
+            "其他/姓名文化解析系统-nameAnalysis.html",
+            "其他/姨妈日历-yimarili.html",
+            "其他/姨妈日历-经期跟踪管理工具-yimarili.html",
+            "其他/婚姻满意度评估-hunyinmanyidupinggu.html",
+            "其他/子女血型遗传查询-blood-type-inheritance.html",
+            "其他/字体识别工具-zitishibiegongju.html",
+            "其他/字幕格式转换工具-zmzh.html",
+            "其他/存储单位换算工具_DataStorageConverter-cunchudanweihuansuanqiDataStorageConverter.html",
+            "其他/孙燕姿歌曲歌词大全-sunyanzigeci.html",
+            "其他/安全密码生成器-mima.html",
+            "其他/安全密码生成器-suijimimashengchengqi.html",
+            "其他/安全密码生成器-xuankumimashengchengqi.html",
+            "其他/安全密码生成器-创建强密码-mimashengcheng.html",
+            "其他/完整3D元素周期表-3Dperiodictable.html",
+            "其他/宝宝信号解读指南-bbxinhaoyingdui.html",
+            "其他/宝宝取名神器-baobaoquming.html",
+            "其他/宝宝起名神器-专业婴儿起名工具-baobaoqiming.html",
+            "其他/实时天气查询卡片-weather_card.html",
+            "其他/实时标记预览-shishibiaojiyulan.html",
+            "其他/实时汇率转换器-shishihuilvzhuanhuanqi.html",
+            "其他/宠物健康在线-专业宠物问诊平台-chongwujiankangzaixian.html",
+            "其他/宠物健康在线-专业宠物问诊平台-pet-health-consultation.html",
+            "其他/宠物取名神器-chongwuquming.html",
+            "其他/家庭任务轮盘-让家务更轻松-familyTaskRoulette.html",
+            "其他/家庭时间票管理系统-shoujishijianhexiaoxitong.html",
+            "其他/家庭点餐系统-家常菜菜单-jiatingdiancanxitong._html.html",
+            "其他/家庭能耗分析仪-jiatingnenghaofenxigongju.html",
+            "其他/家悦清单-家庭主妇购物挑战-shoppingList.html",
+            "其他/密码生成器-mimashengchengqi.html",
+            "其他/密码生成器-password-generator-tool.html",
+            "其他/密码管理工具-mimaguanligongju.html",
+            "其他/导演级提示词助手-index-2.html",
+            "其他/小公主每日计划表-gongzhujihuabiao.html",
+            "其他/小六壬取卦工具—优化单文件版-xiaoliurenxiuzheng.html",
+            "其他/小星星习惯养成-儿童习惯打卡系统-ChildrensHabitFormation.html",
+            "其他/小米手机使用技巧大全-xiaomishoujishiyongjiqiao.html",
+            "其他/小红书创作技巧大全-xiaohongshuchuangzuojiqiao.html",
+            "其他/小红书封面生成器-xhscovergenerator.html",
+            "其他/小红书封面生成器-zidongshengchengxiaohongshufengmiangongju.html",
+            "其他/小红书违禁敏感词检测-xiaohongshuweijin1.html",
+            "其他/小红书风格电子名片生成器-ElectronicBusinessCardGenerator.html",
+            "其他/小说TXT文件分割工具-txt_splitter_final.html",
+            "其他/小鸟飞行-FlappyBird-03-flappy-bird.html",
+            "其他/屏幕刷新率监测器-refreshrate.html",
+            "其他/屏幕录制工具-pingmuluzhi.html",
+            "其他/屏幕时间统计器-screetimecout.html",
+            "其他/屏幕测试工具-screentest.html",
+            "其他/工具下载站-tools.html",
+            "其他/工具下载站-增强版-gongjuxiazaizhan-zengqiangban.html",
+            "其他/常用灰色色卡_GrayColorPalette-changyonghuisesekaGrayColorPalette.html",
+            "其他/常用货币换算工具-currency_converter.html",
+            "其他/年度进度查询-niandujinduchaxun.html",
+            "其他/幸福指数记录工具-xingfuzhishujilu.html",
+            "其他/幼儿园一级识字-hanziV4.htm",
+            "其他/广州去哪玩攻略-guangzhoulvyou1.html",
+            "其他/庄心妍歌曲歌词大全-zuanxinyangeci.html",
+            "其他/座位安排工具(8×8网格)-SeatPlanner.html",
+            "其他/张信哲歌曲歌词大全-zhangxinzhegeci.html",
+            "其他/张国荣歌曲歌词大全-zhangguoronggeci.html",
+            "其他/张家辉高分电影大全-zhangjiahuidianying.html",
+            "其他/张惠妹歌曲歌词大全-zhanghuimeigeci.html",
+            "其他/张杰歌曲歌词大全-zhangjiegeci.html",
+            "其他/张爱玲书籍大全-zhangailing.html",
+            "其他/张靓颖歌曲歌词大全-zhangliangyinggeci.html",
+            "其他/张韶涵歌曲歌词大全-zhangshaohangeci.html",
+            "其他/归并排序可视化(动态单行演示)-mergeSort.html",
+            "其他/彭于晏高分电影大全-pengyuyandianying.html",
+            "其他/影视资源管理系统-yingshiziyuanguanlixitongV3.html",
+            "其他/径向渐变背景生成器-jianbianbeijing.html",
+            "其他/徐峥高分电影大全-xuzhengdianying.html",
+            "其他/循环视频播放器-xunhuanshipinbofangqi.html",
+            "其他/微信使用技巧大全-weixinshiyongjiqiao.html",
+            "其他/微信公众号排版工具-gongzhonghaopaiban.html",
+            "其他/微信群取名神器-weixinqunquming1.html",
+            "其他/德国去哪玩攻略-deguolvyou1.html",
+            "其他/心形电子相册-50张照片容量-xinxingdianzixiangce.html",
+            "其他/心情调节小助手-badmoodgo.html",
+            "其他/心意匣·家庭礼物智选助手-familyGiftSmartSelectionAssistant.html",
+            "其他/心流专注计时器-xinliuzhuanzhujishiqi.html",
+            "其他/忍者跑酷-NinjaRunner-06-ninja-runner.html",
+            "其他/快捷键速查手册生成工具-kuaijiejiansuchashouce.html",
+            "其他/快递查询-一个单号查所有快递-express-tracker.html",
+            "其他/快递查询-一个单号查所有快递-trackTheExpressDeliveryNumber.html",
+            "其他/快递管理系统v1.2-Express_Management.html",
+            "其他/快餐健康指数评分器-kuaicanjiankangzhishupingfenqi.html",
+            "其他/恐龙跳跃-DKFileyouxi.html",
+            "其他/悦读笔记生成器_创建精美读书笔记-dushubiji.html",
+            "其他/情侣的100种互动体验-058_qinglvde100zhonghudongtiyan2.html",
+            "其他/情侣结婚预测工具-缘分天注定-deepseek_html_20250715_257af4.html",
+            "其他/情感日记_记录情绪变化-qingganriji.html",
+            "其他/情绪与运动关联分析工具-qingxuyuyundongguanlianfenxi.html",
+            "其他/情绪垃圾桶-deepseek_html_20250714_c62c83.html",
+            "其他/情诗表白网站-love_words.html",
+            "其他/想读啥就读啥-文本朗读工具-reads.html",
+            "其他/意大利去哪玩攻略-yidalilvyou1.html",
+            "其他/感谢礼物记录_回礼提醒工具-ganxieliwujilu.html",
+            "其他/感谢话术生成器-ganxiehuashushengchengqi.html",
+            "其他/成语三环桥·idiom-bridge.html",
+            "其他/成语填空·idiom-fill.html",
+            "其他/成语小秀才-科举晋升之路-idiom-scholars.html",
+            "其他/成语拆字重排·idiom-anagram.html",
+            "其他/成语接龙抢答·idiom-chain-quiz.html",
+            "其他/成语逆向接龙·idiom-reverse-quiz.html",
+            "其他/成都去哪玩攻略-chengdulvyou1.html",
+            "其他/成长笔记-记录你的成长之路-chengzhangbiji.html",
+            "其他/成长纪念册-jiniance.html",
+            "其他/成龙高分电影大全-chenglongdianying.html",
+            "其他/我的HelloKitty小朋友圈-morebeuty.html",
+            "其他/我的日记本-2025年-riji3.html",
+            "其他/戒烟助手-健康新生活-quit-smoking-tracker.html",
+            "其他/房贷理财计算器-沙沙龙极客-mortgage-calculator-no-tools.html",
+            "其他/房贷计算器-mortgage-calculator.html",
+            "其他/房贷计算器-mortgage_calculator.html",
+            "其他/手写体OCR转换工具-shouxietiOCRzhuanhuan.html",
+            "其他/手写签名工具-shouxieqianming.html",
+            "其他/手持滚动弹幕工具-速度优化版-danmu.html",
+            "其他/手速测试-shousuceshi.html",
+            "其他/执行力计划-zhixinglijihua.html",
+            "其他/批量文件重命名工具-batch_rename_tool.html",
+            "其他/批量页脚注入工具-footer-injector-social.html",
+            "其他/抑郁自评量表SDS-SDS.html",
+            "其他/投资回报率(ROI)计算器-touzihuibaolvjisuanqi.html",
+            "其他/抖音创作技巧大全-douyinchuangzuojiqiao.html",
+            "其他/抖音违禁敏感词检测-douyinweijinci1.html",
+            "其他/拖延症原因分析工具-procrastination-analyzer.html",
+            "其他/拖延症原因分析工具-tuoyanzhengyuanyinfenxi.html",
+            "其他/按钮CSS样式生成器-anniuCSSyangshishengchengqi.html",
+            "其他/排卵期计算器-pailuanqijisuanqi.html",
+            "其他/接龙助手v4.1Pro(列表版)-weixinjielongshujuchuligongjuv2.5.2.html",
+            "其他/描字贴生成工具-miaozitieshengchenggongju.html",
+            "其他/提效工具库·益智玩乐库_miniapp-toolkits-intro.html",
+            "其他/摩斯密码转换器-mosimimazhuanhuanqi.html",
+            "其他/摩斯密码转换器-增强版-mosimima2.html",
+            "其他/摸鱼绘画-在线绘鱼网站-fish-drawing-standalone.html",
+            "其他/数字大小写转换工具-shuzi.html",
+            "其他/数字大小写转换工具-shuzidaxiaoxie.html",
+            "其他/数字转换-shuzizhuanhuan.html",
+            "其他/数字进制转换器-完整统一版-number-base-converter.html",
+            "其他/数据单位可视化器-data-unit-visualizer.html",
+            "其他/数据可视化快捷生成器-shujukeshihuashengchengqi.html",
+            "其他/数据可视化选择器-data-visualization-selector.html",
+            "其他/数据换算工具·单文件-shujuhuansuangongju.html",
+            "其他/数据脱敏工具-datamask.html",
+            "其他/数据表格生成器-shujubiaogeshengchengqi.html",
+            "其他/数独练习工具-shudu.html",
+            "其他/文字加密解密工具-text-encrypt-decrypt.html",
+            "其他/文字背景工具_自定义文字与背景-text-background-tool.html",
+            "其他/文字转语音工具-wenzizhuanyuyingongju.html",
+            "其他/文章字数与阅读时间估算工具-wenzhangzishuyuyuedushijiangusuangongju.html",
+            "其他/文章字数统计工具-zishutongji.html",
+            "其他/文言文翻译与注解工具-classical_chinese_translator.html",
+            "其他/新加坡去哪玩攻略-xinjiapolvyou1.html",
+            "其他/新疆去哪玩攻略-xinjianglvyou1.html",
+            "其他/旅行打包清单生成器-Intelligent_list_generator.html",
+            "其他/旅行景点收藏器-travel-spot-collector.html",
+            "其他/旅行照片墙-travel-photo-wall.html",
+            "其他/旋转塔系列-游乐园标志性项目-xuanzhuantaxiangmu.html",
+            "其他/日志分析工具-log_analysis.html",
+            "其他/日期计算器-date-calculator.html",
+            "其他/日期计算器-day.html",
+            "其他/日期计算器-lishiriqijisuanqi.html",
+            "其他/日期计算器-riqijisuanqi.html",
+            "其他/日本去哪玩攻略-ribenlvyou1.html",
+            "其他/日用品补货提醒器-daily-supplies-reminder.html",
+            "其他/日语普通形特训-美好人生工具站-jp_plain_form_trainer.html",
+            "其他/早安心灵鸡汤--zaoan.html",
+            "其他/早安打卡工具-每天坚持打卡，遇见更好的自己-zaoandakagongju.html",
+            "其他/时光进度·励志卡片-shiguangjindu.html",
+            "其他/时区转换器-美好人生工具站-timezone_converter.html",
+            "其他/时区转换器_TimeZoneConverter-shiquzhuanhuan.html",
+            "其他/时区转换器_TimeZoneConverter-shiquzhuanhuanqi.html",
+            "其他/时区转换工具-shiquzhuanhuangongju.html",
+            "其他/时尚记忆纸牌娱乐-zpjiyi.html",
+            "其他/时差换算与作息调整工具-shichahuansuanyuzuoxitiaozheng.html",
+            "其他/时薪计算器-hwage.html",
+            "其他/时薪计算器-shixinjisuanqi.html",
+            "其他/时间单位换算工具-shijianhuansuan.html",
+            "其他/时间单位转换器_TimeUnitConverter-deepseek_html_20250713_b6d08e.html",
+            "其他/时间四象限管理工具-shijianguanlisixiangxian.html",
+            "其他/时间工具·单文件版-shijiangongjuxiang.html",
+            "其他/时间成本计算器-Time_cost_caculating.html",
+            "其他/时间戳转换工具-time-tools.html",
+            "其他/时间戳转换工具_TimestampConverter-shijianchuozhuanhuangongjuTimestampConverter.html",
+            "其他/时间换算器-shijianhuansuanqi.html",
+            "其他/时间沙漏_Hourglass-shijianshalouHourglass.html",
+            "其他/时间漏斗-shijian.html",
+            "其他/明哥AI工具站-103个实用在线工具-index.html",
+            "其他/星座查询-HoroscopeFinder-LYYSSJ2022-XZCX.html",
+            "其他/星座运势查询工具-deepseek_html_20250723_xzyscx.html",
+            "其他/星座运势生成器-constellation-fortune.html",
+            "其他/星河星座探索-xinghexingzuokuaisuchaxun.html",
+            "其他/星空画板-night_sky_painter.html",
+            "其他/星空画板-流星轨迹绘画-xingkonghuabang.html",
+            "其他/星链Card-starCard.html",
+            "其他/春意家常菜-智能团队周点餐系统-deepseek_html_20260129_ea8d1d.html",
+            "其他/晋升竞争力评估工具-jinshengjingzhenglipinggu.html",
+            "其他/晨读背诵检查工具-chendu.html",
+            "其他/智能二维码生成器-zhinengerweimashengchengqi.html",
+            "其他/智能任务追踪器_renwuzhuizong.html",
+            "其他/智能信用卡推荐工具-html1.html",
+            "其他/智能农业大棚：会写日记的灌溉系统-zhinengnongyedapenghuixierijideguangaixitong.html",
+            "其他/智能发票信息提取工具-fapiaoxinxitiqu.html",
+            "其他/智能发票信息提取工具-invoice-extractor.html",
+            "其他/智能喝水提醒工具-zhinengheshuitixing16.html",
+            "其他/智能喝水提醒工具-保持健康从喝水开始-zhinengheshuitixinggongju.html",
+            "其他/智能家居安全中心：物联网的连锁反应-zhinengjiajuanquanzhongxinwulianwangdeliansuofanying.html",
+            "其他/智能家居模拟器：会自己开灯的走廊-zhinengjiajumoniqihuizijikaidengdezoulang.html",
+            "其他/智能旅行路线规划助手-travelRoutePlanning.html",
+            "其他/智能日历-事件管理系统-rilishijianjilu.html",
+            "其他/智能汇率转换器-currency-converter-single.html",
+            "其他/智能点名管理系统-wangyedianming.html",
+            "其他/智能物品存放档案管理系统-wupincunfangdanganguanli.html",
+            "其他/智能环境调节器：会“思考”的风扇-zhinenghuanjingtiaojieqihuisikaodefengshan.html",
+            "其他/智能简历优化器_提升您的求职成功率-jianliyouhuaqi.html",
+            "其他/智能简历生成器-专业简历制作工具-smart-resume-builder.html",
+            "其他/智能美食推荐-deepseek_html_20250713_7a37b5.html",
+            "其他/智能表格格式化工具-Intelligent_table_formatting_tool.html",
+            "其他/智能记账工具-_E6_99_BA_E8_83_BD_E8_AE_B0_E8_B4_A6_E5_B7_A5_E5_85_B7.html",
+            "其他/智能贷款计算器-dkjsq.html",
+            "其他/智能转换+公众号排版美化工具-index-3.html",
+            "其他/智能防晒补涂提醒器-fangsaitixing.html",
+            "其他/智能防晒补涂提醒器-fangshaibututixingqi.html",
+            "其他/智能食物热量计算器-shiwureliangjisuanqi.html",
+            "其他/暑假倒计时-三联知千克-jqdjs.html",
+            "其他/月经小助手-女性健康管理-deepseek_html_20250815_30d06c.html",
+            "其他/朋友圈防折叠助手-pengyouquanfangzhediezhushou.html",
+            "其他/木鱼功德-网页版电子木鱼-wooden-fish-merit.html",
+            "其他/未来日期计算器-date-plus-100-days.html",
+            "其他/未来科技倒计时器-LYYSSJ2022-KJFDJS.html",
+            "其他/杂化轨道·三维可视化-zhsyt.html",
+            "其他/李荣浩歌曲歌词大全-lironghaogeci.html",
+            "其他/条形码生成工具-tiaoxingmashengcheng1.html",
+            "其他/来场说走就走的旅行-laichangshuozoujiuzou1.html",
+            "其他/杨千嬅歌曲歌词大全-yangqianhuageci.html",
+            "其他/杭州去哪玩攻略-hangzhoulvyou1.html",
+            "其他/杭州特色美食大全-hangzhoumeishi.html",
+            "其他/极简时钟与计时器-在线多功能番茄钟-minimalist-clock-timer.html",
+            "其他/林俊杰歌曲歌词大全-linjunjiegeci.html",
+            "其他/柜子角钢计算工具-guizijiaogangjisuan.html",
+            "其他/标准体重计算器-LYYSSJ2022-TZJSQ.html",
+            "其他/校园颜值墙-青春评分器-campus-beauty-rating.html",
+            "其他/梁家辉高分电影大全-liangjiahuidianying.html",
+            "其他/梁朝伟高分电影大全-liangchaoweidianying.html",
+            "其他/梁静茹歌曲歌词大全-liangjingrugeci.html",
+            "其他/植物养护日记-plant_care_diary.html",
+            "其他/横屏播报.跑马灯-LandCast.html",
+            "其他/樱花在线画板_SakuraDrawingBoard-yinghuahuaban.html",
+            "其他/欢乐笑话盒子-jokeDisplay.html",
+            "其他/欢迎页生成器Pro(定制版)-Welcome_new_colleagues_danmu_version.html",
+            "其他/正则表达式生成器-regex-generator.html",
+            "其他/武汉去哪玩攻略-wuhanlvyou1.html",
+            "其他/段奕宏高分电影大全-duanyihongdianying.html",
+            "其他/每天认识一个化妆品品牌-meitianhuazhuangpinpai1.html",
+            "其他/每天认识一个珠宝品牌-meitianzhubaopinpai2.html",
+            "其他/每天认识一个茶饮品牌-meitianchayinpinpai1.html",
+            "其他/每天认识一个餐饮品牌-meiricanyinpinpai.html",
+            "其他/每日OH卡-meiriOHka.html",
+            "其他/每日喝水打卡-meiridakaheshui.html",
+            "其他/每日天气-meiritianqi.html",
+            "其他/每日工作提醒-todo_reminder.html",
+            "其他/每日待办清单-meiridaibanqingdan.html",
+            "其他/每日星座运势-horoscope.html",
+            "其他/每日朗读-meirilangdu.html",
+            "其他/每日步数目标追踪工具-bushumubiaozhuizong.html",
+            "其他/每日补水计算器_DailyWaterIntakeCalculator-DailyWaterIntakeCalculatorheshuijisuanqi.html",
+            "其他/每日金句卡片-meirijinju.html",
+            "其他/每月灵活支出计算器-beicaiyuanhouhainenghuoduojiu.html",
+            "其他/水印生成工具-addWatermark.html",
+            "其他/汇率转换器-currency-converter.html",
+            "其他/汉字打字综合练习-完整HSK1-6级-diandahanzilianxi.html",
+            "其他/汉字找不同-增强版-hanzizhaobutong.html",
+            "其他/汉语拼音字母表-完整版-xiaoxuexuepinyin.html",
+            "其他/汪峰歌曲歌词大全-wangfenggeci.html",
+            "其他/沈腾高分电影大全-shentengdianying.html",
+            "其他/法国去哪玩攻略-faguolvyou1.html",
+            "其他/法国特色美食大全-faguomeishi.html",
+            "其他/法定退休年龄计算器-retirement-age-calculator.html",
+            "其他/泡泡消消乐-paopaoxiaochu.html",
+            "其他/泰国去哪玩攻略-taiguolvyou1.html",
+            "其他/活动照片分享平台-huodongzhaopianzhenglifenxiangpingtai.html",
+            "其他/活动预算分摊工具-huodongyusuanfentan.html",
+            "其他/浏览器文件压缩与解压工具-yasuojieya.html",
+            "其他/浏览器文件压缩与解压工具-zip.html",
+            "其他/海南去哪玩攻略-hainanlvyou1.html",
+            "其他/海南特色美食大全-hainanmeishi.html",
+            "其他/海报批量处理工具-haibaopichuli.html",
+            "其他/海报设计工具-financial-poster-designer.html",
+            "其他/海盗船系列-游乐设备-haidaochuanxiliexiangmu.html",
+            "其他/海龟汤-haiguitangxiaoyouxi_2025-09-18T14-03-45.html",
+            "其他/液体物理模拟-yetiwulimoni2.html",
+            "其他/深圳去哪玩攻略-shenzhenjingdian.html",
+            "其他/深度单位换算器-shendudanweihuansuanqi.html",
+            "其他/深度專注-now.html.html",
+            "其他/深海小鱼逃生-deepfish.html",
+            "其他/添加水印-tianjiashuiyin.html",
+            "其他/清爽复制粘贴-文本清理工具-text_cleaner.html",
+            "其他/渐变背景生成器-jianbianbeijingshengchengqi.html",
+            "其他/温度换算工具-wenduhuansuan.html",
+            "其他/温度换算工具-wenduhuansuangongju.html",
+            "其他/温度转换器_TemperatureConverter-wenduzhuanhuanqiTemperatureConverter.html",
+            "其他/漫威高分电影大全-manweidianying.html",
+            "其他/潘玮柏歌曲歌词大全-panweibogeci.html",
+            "其他/澳门去哪玩攻略-aomenlvyou1.html",
+            "其他/激光射击-LaserShooter-05-laser-shooter.html",
+            "其他/烹饪单位换算工具-pengrendanweihuansuangongju.html",
+            "其他/照片转线稿工具-deepseek_html_20250727_d67385.html",
+            "其他/爱心动画-love.html",
+            "其他/牛马时钟-打工人专属效率工具-deepseek_html_20260109_aa8bf02.html",
+            "其他/物品盘点器-wpglq.html",
+            "其他/物联网实践项目合集-InformationTechnologyInternetofThingsProject.html",
+            "其他/特殊符号工具箱-在线复制各种特殊符号和表情符号-coolsymbol.html",
+            "其他/猜数字大挑战-caishuzidatiaozhan.html",
+            "其他/王力宏歌曲歌词大全-wanglihonggeci.html",
+            "其他/王小波书籍大全-wangxiaobo.html",
+            "其他/王杰歌曲歌词大全-wangjiegeci.html",
+            "其他/班导排课助手-MVP版-courseSchedulingAssistant.html",
+            "其他/瑞典去哪玩攻略-ruidianlvyou1.html",
+            "其他/瑞士去哪玩攻略-ruishilvyou1.html",
+            "其他/瑞士特色美食大全-ruishimeishi.html",
+            "其他/生化危机：浣熊市求生-deepseek_html_20250730_eba384.html",
+            "其他/生命冥想-珍惜当下，规划未来-meditation.html",
+            "其他/生命数字解析-shengmingshuzi.html",
+            "其他/生命时光规划师-苹果风格优化版-shengmingshiguangguihuashi.html",
+            "其他/生日备忘录-艾兜兜儿-BirthMemo.html",
+            "其他/生日提醒工具-shengritixing.html",
+            "其他/生日祝福文案生成器-shengrizhufuwenan.html",
+            "其他/生肖星座查询工具-zodiac_horoscope_complete.html",
+            "其他/生肖查询工具_ChineseZodiac-shengxiaochaxungongjuChineseZodatic.html",
+            "其他/电子衣柜管理系统-Smartwardrobe.html",
+            "其他/番茄工作法-PomodoroFocus.html",
+            "其他/番茄时钟_PomodoroTimer-PomodoroTimerfanqieshizhong.html",
+            "其他/疯狂动物城课程表生成器_免费在线课程表制作工具_支持7天课程安排-kkechengbiaoshengchengqi.html",
+            "其他/白鹿&敖瑞鹏-恋爱空间-boaolianaishilu_fuben.html",
+            "其他/百家姓查询工具-hundred-surnames-spec.html",
+            "其他/百家姓查询工具-中国姓氏文化大全_2025年最新数据-baijiaxingchaxungongju.html",
+            "其他/皮肤水分流失计算器-shuifenliushijisuanqi.html",
+            "其他/目标拆解工具-mubiaochaijiegongju.html",
+            "其他/盲打键盘练习工具-jianpanmangdalianxi.html",
+            "其他/直播录制与智能分析平台-zhiboluzhihefenxi-html-1760088415428.html",
+            "其他/睡前话题库-topic_card.html",
+            "其他/睡眠小记-记录您的睡眠习惯，改善生活质量-shuimianxiaojigongju.html",
+            "其他/睡眠记录与分析器-shuimianjilufenxiqi.html",
+            "其他/睡眠质量记录工具-shuimianzhiliangjilu.html",
+            "其他/知千克盲打练习-mangda.html",
+            "其他/知千克自定义选择题-xuanze.html",
+            "其他/知千克英语单词识记-english.html",
+            "其他/短链接生成器-duanlianshengchengqi.html",
+            "其他/短链生成器-zhuanduanlian.html",
+            "其他/碎片化时间利用工具-suipianhuashijianliyong.html",
+            "其他/社交媒体封面设计工具-zimeitifengmiansheji.html",
+            "其他/社交破冰话题生成器-shejiaopobinghuati.html",
+            "其他/神奇的早起-shenqidezaoqi.htm",
+            "其他/禅境·智慧之塔-大师级体验-chanyizhihuita.html",
+            "其他/福州去哪玩攻略-fuzhoulvyou1.html",
+            "其他/离线OCR文字提取工具-offline-ocr-tool.html",
+            "其他/离线背景移除工具-beijingyichu.html",
+            "其他/离线背景移除工具-无需网络连接-offline-version.html",
+            "其他/科技感俄罗斯方块-LYYSSJ2022-ELSFK.html",
+            "其他/移动端扫雷-saolei.html",
+            "其他/程序员技术面试问题库-ProgrammerTechnicalInterviewQuestionBank.html",
+            "其他/空中悬挂式列车系列-kongzhongxuanguashiliechexilie.html",
+            "其他/空中环游列车系列-kongzhonghuanyouliechexiliexiangmu.html",
+            "其他/穿搭色彩搭配助手-chuandasecaidapeiqi.html",
+            "其他/章节内容复盘工具-zhangjieneirongfupan.html",
+            "其他/笔记语音转文字工具-bijiyuyinzhuaiwenzi.html",
+            "其他/符文连线-RuneLink-fuwenlianxian-xiaochu.html",
+            "其他/答案之书-TheBookofAnswer-daanzhishu.html",
+            "其他/答案之书-语音播报版-daanshu.html",
+            "其他/简易文件格式转换器-simpleFileFormatConverter.html",
+            "其他/简易版Postman-在线API接口测试工具_支持GET_POST_HEAD请求和JSON格式化-api-tester.html",
+            "其他/简易笔记板-jianyibijiban.html",
+            "其他/简易阅读器-jianyiePubwenbenyueduqi.html",
+            "其他/简洁倒计时器-daojishi.html",
+            "其他/简约倒计时工具-jianyuedaojishi.html",
+            "其他/简约秒表-jianyuemiaobiao.html",
+            "其他/精美QR码生成器-qr-generator.html",
+            "其他/紫色待办清单-e-calendar.html",
+            "其他/红头文件生成器-wj.html",
+            "其他/约会活动建议工具-yuehuihuodongjianyigongju.html",
+            "其他/纪念日倒计时工具-jinianridaojishi.html",
+            "其他/纯前端文件差异比对工具-index.html",
+            "其他/经期记录提醒工具-dym.html",
+            "其他/绝对色感·色觉挑战-segantiaozhan.html",
+            "其他/绝对色感挑战-LYYSSJ2022-YSZBT.html",
+            "其他/综合练习管理系统-wanlian.html",
+            "其他/绿色姓名记忆工具-online-html-1770365284970.html",
+            "其他/缘分测试-yuanfenceshi.html",
+            "其他/网名昵称生成器-wangmingnicheng.html",
+            "其他/网格布局生成器-wanggebujushengchengqi.html",
+            "其他/网盘分享链接合并工具-lianjie.html",
+            "其他/网盘资料库-wangpanku.html",
+            "其他/网盘资源转JSON工具_实用版_-wpzy_to_josn_tools_ys25929.html",
+            "其他/网盘链接批量整理工具-cloud-link-organizer.html",
+            "其他/网盘链接批量整理工具-CloudLinkParser3.0(2).html",
+            "其他/网盘链接批量整理工具-CloudLinkParser3.0.html",
+            "其他/网盘链接批量整理工具-pan-link-organizer.html",
+            "其他/网盘链接转换工具-netdisk-link-converter.html",
+            "其他/网页版扫雷-saolei.html",
+            "其他/网页连连看-lianliankan.html",
+            "其他/罗马去哪玩攻略-luomalvyou1.html",
+            "其他/罗马数字转换器-luomashuziyualaboshuzihuzhuanNumeralConverter.html",
+            "其他/美发沙龙预约系统-HairAppointmentSystem_AllInOne.html",
+            "其他/美食大冒险：毒药与解药-Tools-05-PosionGame.html.html",
+            "其他/老徐合伙人-一人企业复利商业化-ip8.html",
+            "其他/考试倒计时提醒器-kaoshidaojishitixingqi.html",
+            "其他/职业兴趣测评-zhiyexingquceping.html",
+            "其他/职场人脉管理工具-zhichangrenmauguanli.html",
+            "其他/职场压力源分析工具-zhichangyaliyuanfenxi.html",
+            "其他/联合政府工作系统-UGgongzuo.html",
+            "其他/联系人.vcf文件生成器-lianxiren.vcfwenjianshengchengqi.html",
+            "其他/联系我-吴博的个人网站-lianxiwo.html",
+            "其他/肠道健康管理助手-gut-health-tracker.html",
+            "其他/肢体语言解读工具-zhitiyuyanjiedu.html",
+            "其他/育儿补贴查询与政策解读-yuerbutiechaxun_2022-2024nianchusheng.html",
+            "其他/育儿补贴计算器-yebt.html",
+            "其他/胡happy的单词听写工具-word-dictation-B.html",
+            "其他/脑筋急转弯-naojinjizhuanwan1.html",
+            "其他/自动迷宫挑战系统-mazeDesign.html",
+            "其他/自定义光标预览-zidingyiguangbiaoyulan.html",
+            "其他/自定义视频播放器-zidingyishipinbofangqi.html",
+            "其他/舒尔特方格训练器-shuger.html",
+            "其他/色彩方案生成器-ColorSchemeGenerator-yansedaimazhuanhuanqi.html",
+            "其他/色彩混合大师-color_mixing_game.html",
+            "其他/艾宾浩斯单词记忆卡片-aibinhaosidancijiyikapian.html",
+            "其他/节气养生日历-jieqiyangshengrili.html",
+            "其他/节气日历-农事提醒-solar-terms-calendar.html",
+            "其他/花语大全-用花语传递情感-flower-language-complete.html",
+            "其他/苏州房产成交数据查询系统-SuZhouHousingTransactionData.html",
+            "其他/英国去哪玩攻略-yingguolvyou1.html",
+            "其他/苹果手机使用技巧大全-pingguoshoujishiyong.html",
+            "其他/莫兰迪色卡_MorandiColors-molandisekaMorandiColors.html",
+            "其他/莫言作品大全-moyanshuji.html",
+            "其他/蔡依林歌曲歌词大全-caiyilingeci.html",
+            "其他/薄荷曼波色卡_MintMambo-bohemanbo1.html",
+            "其他/薪资计算工具-税前税后计算器-salary-calculator.html",
+            "其他/虚拟占位假文生成器_PlaceholderTextGenerator-xunijiawenzhanweiqi.html",
+            "其他/虚拟物联网实验室：WiFi控制LED-xuniwulianwangshiyanshiWiFikongzhiLED.html",
+            "其他/蛋白质摄入计算器-protein_calculator.html",
+            "其他/行业趋势关键词追踪工具-hangyequshiguanjiancizhuizong.html",
+            "其他/行动营·上岸光荣榜-success_celebration_poster2.1.html",
+            "其他/行李打包清单·旅行助手-xinglidabaoqingdan.html",
+            "其他/行程时间轴工具-xingchengshijianzhou.html",
+            "其他/衣服尺码对照表工具-clothing-size-chart-tool.html",
+            "其他/表情包制作工具-biaoqingbaozhizuogongju.html",
+            "其他/表情包制作工具-meme-generator.html",
+            "其他/西班牙去哪玩攻略-xibanyalvyou1.html",
+            "其他/西班牙特色美食大全-xibanyameishi.html",
+            "其他/西藏去哪玩攻略-xizanglvyou1.html",
+            "其他/观光齿轨列车系列-guanguangchiguiliechexilie.html",
+            "其他/视频播放速度控制器-shipinbofangsudukongzhiqi.html",
+            "其他/视频音频分离工具-audio-extractor.html",
+            "其他/角的度量-动画演示与闯关练习-duliangjiao.html",
+            "其他/解剖OpenClaw-李宏毅讲稿整理版-openclaw-presentation.html",
+            "其他/解压气泡膜-jieyaqipaomo.html",
+            "其他/解压气泡膜模拟器-jieyaqipaomomoniqi.html",
+            "其他/解压消消乐-释放压力的最佳选择-jieyaxiaoxiaole.html",
+            "其他/计时器与倒计时-jishiqiyudaojishi.html",
+            "其他/计算器-jisuanqi.html",
+            "其他/订阅服务管理器-subscription_manager.html",
+            "其他/记忆快闪盒-jiyikuaishanhe.html",
+            "其他/许嵩歌曲歌词大全-xusonggeci.html",
+            "其他/证件照尺寸调整工具-轻松制作标准证件照-zhengjianzhaochicuntiaozheng.html",
+            "其他/证件照生成工具-single-page_1.4.html",
+            "其他/词频统计工具-cipintongjigongju.html",
+            "其他/语言语法速查工具-yuyanyufasucha.html",
+            "其他/读书笔记时间线-dushubijijilu.html",
+            "其他/读书笔记生成器-dushubijitupianwangye-d45b049f88.html",
+            "其他/谐音梗生成器-轻松创造语言乐趣-HomophonePun.html",
+            "其他/谭咏麟歌曲歌词大全-tanyonglinggeci.html",
+            "其他/购物清单_ShoppingList-deepseek_html_20250722_f6894d.html",
+            "其他/贵州去哪玩攻略-guizhoulvyou1.html",
+            "其他/起名神器-专业婴儿起名网站-qimingshenqi.html",
+            "其他/趣味年龄计算器-nianling.html",
+            "其他/趣味英语单词卡片_FunEnglishCards-flashcards.html",
+            "其他/跨书观点对比工具-kuashuguandianduibi.html",
+            "其他/跨文化沟通禁忌查询工具-cross-cultural-taboos.html",
+            "其他/跨文化沟通禁忌查询工具-kuawenhuagoutongjinji.html",
+            "其他/跳槽决策评分工具-tiaocaojuecepingfen.html",
+            "其他/跳转中…-zsxq.html",
+            "其他/身份证前6位户籍地查询-shenfenzhengqian6weichaxunhujisuozaidi.html",
+            "其他/身份证前四位户籍地查询-IDOXU_2025-07-11T14-36-24.html",
+            "其他/身份证性别识别器-xingbie.html",
+            "其他/身份证性别识别工具-快速判断性别-shenfenzhengxingbieshibiegongju.html",
+            "其他/身份证水印工具-shenfenzhengshuiyingongju.html",
+            "其他/车牌归属地查询工具-chepaiguishudichaxungongju.html",
+            "其他/车贷计算器-car_loan_calculator.html",
+            "其他/转换至JPG文件-AI工具集-converter-to-jpg.html",
+            "其他/轻量级文本格式化工具-qingliangjigeshihuagongju1.html",
+            "其他/过去式连连看-deepseek_html_20260207_906b6f.html",
+            "其他/进制转换器-base-converter.html",
+            "其他/进制转换器-jinzhizhuanhuan.html",
+            "其他/进制转换器-jinzhizhuanhuanqi.html",
+            "其他/进制转换器-_E8_BF_9B_E5_88_B6_E8_BD_AC_E6_8D_A2_E5_99_A8.html",
+            "其他/进制转换器_BaseConverter-BaseConverterjinzhizhuanhuanqi.html",
+            "其他/进程调度可视化：FCFS_SJF_RR_优先级-process_scheduling.html",
+            "其他/连续劳务计税计算器-lianxu_laowu_tax_25817ys.html",
+            "其他/迷你观光小火车系列-miniguanguangxiaohuochexilie.html",
+            "其他/退休年龄计算器-age.html",
+            "其他/退休规划计算器-deepseek_html_20250728_ab400e.html",
+            "其他/选择排序可视化(动态单行演示)-selectionSort.html",
+            "其他/造数系统-随机数据生成器-create_data.html",
+            "其他/遇见yh自媒体与写作资源中心_短文写作_一人企业_私域运营-yujianyhzimeitiyuxiezuoziyuanzhongxin.html",
+            "其他/邓紫棋歌曲歌词大全-dengziqigeci.html",
+            "其他/邮件语气调整工具-youjianyuqitiaozheng.html",
+            "其他/部编版高中古诗文抽查系统-bubianbangaozhonggushiwenchouchaxitong.html",
+            "其他/郭富城高分电影大全-guofuchengdianying.html",
+            "其他/配色工具_ColorPaletteTool-peisegongjuColorPaletteTool.html",
+            "其他/重力模拟动画-zhonglimonidonghua.html",
+            "其他/重要关系维护提醒工具-zhongyaoguanxiweihu.html",
+            "其他/重量价钱计算工具-keshihuazhongliangjiaqianjisuangongju_2025-09-19T14-04-31.html",
+            "其他/金句分类收藏工具-jinjufenleishoucang.html",
+            "其他/金句卡片生成工具-BeautifulWords.html",
+            "其他/金句收集工具-jinjushoujichazhaogongju.html",
+            "其他/金庸武侠小说大全-jinyong.html",
+            "其他/金额大小写转换工具-amount-converter.html",
+            "其他/银行家算法可视化：一步一步看安全序列-bankers_algorithm.html",
+            "其他/链接保鲜存档器-lianjiebaoxiancundangqi.html",
+            "其他/链接转二维码-简单、优雅、快速-qrcode-generator.html",
+            "其他/错别字挑战_自动跳题版-cuobiezitiaozhan.html",
+            "其他/错题分类整理工具-cuotifenleizhengli.html",
+            "其他/键盘快捷键查询-jianpankuaijiejianchaxun.html",
+            "其他/长度单位换算-changduhuansuan.html",
+            "其他/长方形生成器-网页设计必备工具-changfangxingshengchengqi.html",
+            "其他/长沙去哪玩攻略-changshalvyou1.html",
+            "其他/问题跟踪工具-issue-tracker.html",
+            "其他/闲鱼文案智能编辑-专注虚拟资料与副业-xianyu-copywriter.html",
+            "其他/闲鱼软件推广文案生成器-简化版-xianyuwenanshengchengqi-jianhuaban.html",
+            "其他/闲鱼违禁词雷达·张老板工具-xianyuweijincijianceleida.html",
+            "其他/阅读时间估算器-reading-time-estimator.html",
+            "其他/阅读理解测验-yuedulijeceyan.html",
+            "其他/阅读计划生成器-yuedujihuashengchengqi.html",
+            "其他/阅读速度测试工具-yuedusuduceshi.html",
+            "其他/阿木易同学的个人主页-Amuyi.html",
+            "其他/陈奕迅歌曲歌词大全-chenyixungeci.html",
+            "其他/陕西名胜古迹-探索古都文化之美-shaanxi-tourist-attractions.html",
+            "其他/陨石雨-MeteorRain-07-meteor-rain.html",
+            "其他/陶喆歌曲歌词大全-taozhegeci.html",
+            "其他/随机决策助手Pro-suijishu.html",
+            "其他/随机决策转盘-suijijuece.html",
+            "其他/随机密码生成器-password_generator.html",
+            "其他/随机密码生成器-安全密码管理工具-password-generator.html",
+            "其他/随机数据生成器-在线生成姓名、手机号、身份证号等测试数据-random-data-generator.html",
+            "其他/随机数据集生成器-suijishujujishengchengqi.html",
+            "其他/随机数据集生成器-suijiyonghushujushengcheng.html",
+            "其他/随机点名-suijidianming.html",
+            "其他/随机点名小工具-suijidianming.html",
+            "其他/随机点名系统-name.html",
+            "其他/随机点名系统-suijidianming.html",
+            "其他/随机账号密码生成器-suijimimagpt.html",
+            "其他/随机迷宫生成器-migongshengchengqi.html",
+            "其他/随机颜色生成器_ColorGenerator-suijiyanseshengchengqiRandomColorGenerator.html",
+            "其他/随机颜色选择器-suijiyanse.html",
+            "其他/零食热量计算与健康管理工具-rlhjk.html",
+            "其他/零食热量计算网站-kj_to_kcal.html",
+            "其他/震动时间时钟_2025年-zhendongshizhong.html",
+            "其他/青春之恋-爱情纪念册-index.html",
+            "其他/静态汇率换算器_CurrencyConverter-CurrencyConverter.html",
+            "其他/韩国去哪玩攻略-hanguolvyou1.html",
+            "其他/韩国特色美食大全-hanguomeishi.html",
+            "其他/韩红歌曲歌词大全-hanhonggeci.html",
+            "其他/音乐心情卡片MVP-musicMoodCard.html",
+            "其他/音频可视化器-yinpinkeshihuaqi.html",
+            "其他/音频格式转换器-yinpineshizhuanhuan.html",
+            "其他/音频格式转换工具-yinpingeshizhuanhuan.html",
+            "其他/音频波形可视化工具-直观展示音频节奏-yinpinboxingkeshihua.html",
+            "其他/音频片段裁剪工具-yinpinpianduancaijian.html",
+            "其他/音频裁剪器-audio-trimmer.html",
+            "其他/项目优先级排序_紧急重要四象限-xiangmuyouxianjipaixu.html",
+            "其他/项目文件夹创建工具-project-folder-creator.html",
+            "其他/项目时间估算器-xiangmushijiangusuanqi.html",
+            "其他/预算规划工具-budget-planner.html",
+            "其他/颜色值转换工具-_E9_A2_9C_E8_89_B2_E8_BD_AC_E6_8D_A2_E5_99_A8.html",
+            "其他/颜色名称挑战-yansetiaozhan.html",
+            "其他/风水植物推荐小工具-feng-shui-plants.html",
+            "其他/飞机票统计小工具-flight-tracker.html",
+            "其他/食在中国-特色菜肴大全-shizaichina.html",
+            "其他/食材保质期追踪工具-food-expiry-tracker.html",
+            "其他/食材保质期追踪工具-shicaibozhiqi.html",
+            "其他/食材食谱生成器-shicaishipushengchengqi.html",
+            "其他/食物热量估算与健康建议-shiwurelianggusuanyujiankangjianyi.html",
+            "其他/食物热量分析工具-food-calorie-analyzer.html",
+            "其他/饮品店收银系统-yinpindianshouyinxitong.html",
+            "其他/饮食热量估算工具-yinshirelianggusuan.html",
+            "其他/首饰搭配模拟器_虚拟试戴体验-jewelryMatching.html",
+            "其他/香港去哪玩攻略-xiangganglvyou1.html",
+            "其他/马到成功-成语接龙小工具-deepseek_html_20260121.html",
+            "其他/马卡龙色卡-makalong1.html",
+            "其他/马卡龙色卡_MacaronColorPalette-makalongseka.html",
+            "其他/高中文言文教材知识一本全-gaozhongwenyanwenjiaocaizhishiyibenquan2.html",
+            "其他/高分美剧大全-youzhimeiju.html",
+            "其他/高分英剧大全-youzhiyingju.html",
+            "其他/高强度密码生成器-mimashengchengqi.html",
+            "其他/高效任务管理工具-gaoxiaorenwuguanligongju.html",
+            "其他/高空飞翔系列游乐设施-gaokongfeixiangxiangmu.html",
+            "其他/高级IP查询工具_AdvancedIPChecker-ipip.html",
+            "其他/高级Markdown编辑器-gaojiMarkdownbianjiqi.html",
+            "其他/高级三角形生成器-网页设计必备工具-sanjiaoxingshengchengqi.html",
+            "其他/高级业务流程编辑器-连接功能优化-yongdaoyewutuV6.htm",
+            "其他/高级任务清单-已修复拖拽删除问题-renwuqingdan.html",
+            "其他/高级任务清单-带强关联功能-gaojirenwu.html",
+            "其他/高级密码生成器-password-generator-3.html",
+            "其他/高级摇号小工具-yaohao.html",
+            "其他/高级文件重命名工具-wenjianzhongmingminggongju.html",
+            "其他/高级文字字数统计器-wenzizishutongjiqi.html",
+            "其他/高级进制转换器-gaojijinzhizhuanhuanqi.html",
+            "其他/高级颜色提取工具-yansetiqu.html",
+            "其他/高考倒计时_金榜题名-DeepSeek_html_2025722_ys_gkdjs.html",
+            "其他/高速公路运营安全风险辨识和评估-finalgaosu.html",
+            "其他/高音谱表(中央组)读谱练习-gaoyinpubiaozhongyangzudupulianxi2.html",
+            "其他/高音谱表调式演示-gaoyinpubiaodiaoshiyanshi.html",
+            "其他/魔术读心术-magic-card-trick.html",
+            "其他/鲁迅书籍大全-luxunshuji.html",
+            "其他/鸡兔同笼-jitutonglong.html",
+            "其他/鹤趣画板-丹顶鹤绘画应用-huaban.html",
+            "其他/黑暗科技风井字棋-LYYSSSJ2022-JZQ.html",
+            "其他/黑白照片转换器-大云说AI实战-LYYSSJ2022-HBZPZHQ.html",
+            "其他/鼠标测试工具_MouseTester-shubiaoceshi.html",
+            "学习/ChemViewLite-化学分子3D渲染器-chemicalMolecularStructureDisplay.html",
+            "学习/MathlyPro-智能数学计算器-shuxuejisuanqi.html",
+            "学习/StudySpace-大学生虚拟自习室-virtualStudyRoom.html",
+            "学习/《活着》-余华-文学结构化拆解-huozhe_jiegouhuachaijie.html",
+            "学习/一年级小学生错题库-xiaoxueshengcuotiku.html",
+            "学习/三年级数学(上册)计算练习生成器-js3a.html",
+            "学习/三年级英语趣味学习乐园-sannianjiyingyuquweileyuan-html-1759042402768.html",
+            "学习/专题1化学使生活更美好-83onlineChemistry1.html",
+            "学习/专题2体验化学实验探究-83onlineChemistry2.html",
+            "学习/中小学必背古诗抽背系统-gushi.html",
+            "学习/交互式化学元素周期表-huaxue.html",
+            "学习/亲子沟通技巧学习工具-qinzigoutongjiqiaoxuexigongju.html",
+            "学习/作业刮刮卡-趣味学习工具-homework_scratch_card.html",
+            "学习/健康减脂7天饮食规划器-科学减重膳食计划生成工具-diet_planner.html",
+            "学习/初中函数图像生成器-数学教学工具-juniorHighSchoolFunctionGenerator.html",
+            "学习/化学分子式展示-huaxuefenzishizhanshi.html",
+            "学习/化学式分子量计算器-huaxueshifenziliangjisuanqi.html",
+            "学习/北师大版三年级数学(下册)计算题练习-js3b.html",
+            "学习/可自定义颜色科学计算器-duogongnengjisuanqi.html",
+            "学习/同窗录-电子同学录-classmaterecord.html",
+            "学习/名字评分器(姓名学)-name_evaluator.html",
+            "学习/哈希值计算与学习工具-haxizhijisuanyuxuexigongju.html",
+            "学习/国学智慧-传统文化学习小游戏-deepseek_html_20250717_a90f37.html",
+            "学习/国际中文教学材料生成器-tishicishengchengqitiaozhuandoubao.html",
+            "学习/填空小助手-小学语文填空题生成器-generateFillInTheBlankQuestions.html",
+            "学习/声学单位换算工具-shengxuedanweizhuanhuan.html",
+            "学习/大学计算机学习资源导航站-computer_science_resources.html",
+            "学习/天体运行演示器-初二物理教学工具-demonstrationDiagramOfCelestialMotion.html",
+            "学习/婴幼儿育儿补贴计算器-deepseek_html_20250731_385705.html",
+            "学习/学习专注度计时工具-zhuanzhuxuexijishiqi.html",
+            "学习/学期课程表管理系统-xueqikechengbiaoguanlixitong.html",
+            "学习/学生档案快速查询系统-studentFileQuerySystem.html",
+            "学习/学龄前拼音汉字学习-xuepinyin.html",
+            "学习/宝宝辅食计划助手-按月龄科学喂养-BabyComplementaryFoodPlanAssistant.html",
+            "学习/小学一年级拼音生字练习工具_汉字拼音学习-xiaoxueyinianjipinyinshengzilianxi.html",
+            "学习/小学一年级随机口算系统-xiaoxueyinianjikousuan.html",
+            "学习/小学低年级\"你比我猜\"游戏-nibiwocai.html",
+            "学习/小学六年级必背诗词随机抽查系统-xiaoxueliunianjishicichouchaxitong.html",
+            "学习/小学学习游戏合集-1-6年级完整版-xiaoxuexuexiyouxiheji-wanzhengban.html",
+            "学习/小学必背诗词随机抽查系统-deepseek_xiaoxueshicichouchaxitong.html",
+            "学习/小学成语学习平台-chengyuwannengbiao.html",
+            "学习/小学数学相遇问题动画演示-xiangyu.html",
+            "学习/小学生减压小笑话-jiangxiaohua.html",
+            "学习/小学生口算乐园-Mentalarithmetic-DeepSeek2.html",
+            "学习/小学生口算练习-math-practice.html",
+            "学习/小学生字语闯关游戏-zimichuangg.html",
+            "学习/小学生谜语闯关游戏-miyuchuangg.html",
+            "学习/小学生趣味点名工具-xsdm.html",
+            "学习/小学英语学习工具-xiaoxueyingyuxuexigongju.html",
+            "学习/小学语文背诵抽查系统-苏州五年级-pagecheck.html",
+            "学习/小学阶段必背诗词随机抽查系统-gushichoucha.html",
+            "学习/小星星乐园-儿童学习产品MVP-Childrenseducation.html",
+            "学习/平行四边形和梯形交互学习-pxsbxytx.html",
+            "学习/年月日教学动画演示-nianyueri.html",
+            "学习/废话文学十级考试｜NonsenseMasterTest-nonsense-test.html",
+            "学习/张学友歌曲歌词大全-zhangxueyougeci.html",
+            "学习/张学友高分电影大全-zhangxueyoudianying.html",
+            "学习/心理学300题随机抽题工具-312datizidongchouqian26.html",
+            "学习/心理学焦虑测试量表SAS-SAS4.html",
+            "学习/成语接龙乐园-小学生版-IdiomSolitaire.html",
+            "学习/技能学习路径图工具-AIjinengxuexilujingtu.html",
+            "学习/数列预测挑战-测试你的数学直觉-shulieyucexiaoyouxi.html",
+            "学习/数学运算表达式计算器_MathExpressionCalculator-changyongshuxueyunsuanbiaodashijisuanqiMathExpressionCalculator.html",
+            "学习/时钟学习乐园-clock.html",
+            "学习/易经卦象学习游戏-deepseek_html_20250906_d3e6e5.html",
+            "学习/每天学个冷知识-meitianlengzhishi1.html",
+            "学习/每天学个歇后语-meitianxiehouyu1.html",
+            "学习/每天学个生活小妙招-meitianxiaomiaozhao1.html",
+            "学习/每天学个省钱小技巧-meitianshengqianjiqiao1.html",
+            "学习/每天学个绕口令-meitianraokoulin1.html",
+            "学习/汉字笔顺学习工具-bishun_gif.html",
+            "学习/湖南警察学院门岗执勤模拟-mengangzhiqinyouxi.html",
+            "学习/灵猫修真·游戏化学习系统v4-cat-learning-app-v4.html",
+            "学习/玉米世界-玉米科普与学术研究-corn-world.html",
+            "学习/知千克学习小PK-PK.html",
+            "学习/知千克自定义数学口算题-kousuanti.html",
+            "学习/科学冰箱食品保质期管理-baozhiqi.html",
+            "学习/科学计算器-kexuejisuanqi.html",
+            "学习/笔顺小助手-汉字笔画顺序教学工具-strokeOrderAssistant.html",
+            "学习/经典力学计算工具-jingdianlixuejisuan.html",
+            "学习/胡happy-中英词表学习-word-study-A.html",
+            "学习/苏州四年级数学每日练习-dailyMathExercises.html",
+            "学习/苏州市小学五年级英语单词拼写练习-pinjielianxi_.html",
+            "学习/英语单词卡片应用-engliscard.html",
+            "学习/英语单词卡片翻转器-xiaoxuegaopinyingyucihui.htm",
+            "学习/英语单词填空测试-dctkEnglish.html",
+            "学习/英语单词探险家-儿童英语学习游戏-englishWordExplorer.html",
+            "学习/英语单词消消乐-english_rjb.html",
+            "学习/英语单词消消乐-english_word_match_game.html",
+            "学习/英语单词消消乐·递增关卡·9排上限·原地消失-yingyudancixiaoxiaole1.0v.html",
+            "学习/英语单词连连看-english-sentence-game.html",
+            "学习/英语听力填空测试-tlEnglish.html",
+            "学习/英语学习系统-all-in-one.html",
+            "学习/英语学习系统-文本转语音与词典查询-wenbenfanyilangdu.html",
+            "学习/英语音标学习卡-48个国际音标互动学习-yinbiaoxuexi.html",
+            "学习/英语音标学习卡-yingbiaoxuexika.html",
+            "学习/语文填空题生成器-赋能中小学教育教-tiankongshengch.html",
+            "学习/语言学习抽认卡-yuyanxuexichourenka.html",
+            "学习/趣味数学闯关练习-00-quweishuxue.html",
+            "学习/键盘指法分层练习-小学三年级打字游戏-daziyouxilianxitiaozhan.html",
+            "工作/AI内容格式转换工具_公众号+小红书图片生成-AIneirongzhuanhuaweigongzhonghaoxiaohongshu.html",
+            "工作/AI图片转线稿工具-tupianzhuanxiangao.html",
+            "工作/AI图片转线稿工具-已修复-tupianzhuanxiangao.html",
+            "工作/Chrome插件图标生成器-chrome-icon-generator.html",
+            "工作/CodeLive-苹果风格代码预览工具-CodeLive2.0.html",
+            "工作/Excel公式调试器-Excelgongshitiaoshiqi.html",
+            "工作/Excel内容匹配系统-excel_Vlookup.html",
+            "工作/Excel数据可视化工具-ExcelToChart.html",
+            "工作/Excel数据转换器-excel-converter.html",
+            "工作/Excel文件合并工具-excel-merger.html",
+            "工作/Excel条码生成器-增强版-piliangshengchengtiaomav1.7.7.html",
+            "工作/Excel表格对比工具-Excelbiaogeduibi.html",
+            "工作/Excel表格差异对比工具(带__标记版)-EXCELduibibiao.htm",
+            "工作/Excel转换工具-免费在线转换-excelzhuanhuan.html",
+            "工作/Favicon生成器_在线图标包生成工具-faviconGenerator.html",
+            "工作/HTML代码导出工具-HTMLwenjianshengcheng.html",
+            "工作/HTML批量底部代码添加工具-html_footer.html",
+            "工作/HTML转PDF工具-在线转换器-html-to-pdf-converter.html",
+            "工作/HTML转图片工具-deepseek_html_20250824_074b83.html",
+            "工作/HTML转图片工具-html2img.html",
+            "工作/HTML转图片工具-HTMLzhuantupiangongju.html",
+            "工作/ID与Base-36代码转换工具-Base-36yu10jinzhishujuzhuanhuan.html",
+            "工作/ImageOptimizer-高级图像压缩工具-ImageOptimizer.html",
+            "工作/IMG2PDFPRO-赛博朋克风格-deepseek_html_20250705_IMG2PDF.html",
+            "工作/JPG转PDF-AI工具集-converter-jpg-to-pdf.html",
+            "工作/Markdown转PDF-美好人生工具站-markdown-to-pdf.html",
+            "工作/Matrix经典代码雨-matrix-classic-fixed.html",
+            "工作/pdf-split-pdf_spliter.html",
+            "工作/PDFtoTextConverter-pdf-to-text-converter.html",
+            "工作/PDF与图片互转工具-pdf-image-converter.html",
+            "工作/PDF内容脱敏工具-pdfmask.html",
+            "工作/PDF分割(单页HTML本地运行)-pdf_spliter.html",
+            "工作/PDF区域内容清除工具-PDFquyuqingchu.html",
+            "工作/PDF区域消除工具-pdf_eraser.html",
+            "工作/PDF压缩工具-PDFyasuogongju.html",
+            "工作/PDF去水印工具-pdfremovewatermark.html",
+            "工作/PDF合并与拆分工具-deepseek_html_20250711_ce257c.html",
+            "工作/PDF合并工具-pdf-merge.html",
+            "工作/PDF增删提工具-Delete-And-Extract-Pages-In-PDF.html",
+            "工作/PDF处理工具-pdf-processor.html",
+            "工作/PDF处理工具-PDFchuligongju.html",
+            "工作/PDF工具-合并与拆分-PDFhebingchaifen.html",
+            "工作/PDF工具-拆分与合并-PDF-Splitmerge1.01.html",
+            "工作/PDF工具箱-专业PDF处理工具-pdf-tools.html",
+            "工作/PDF工具箱-在线PDF分割合并工具-pdf-splitter.html",
+            "工作/PDF工具集-分割与合并-pdf_tools.html",
+            "工作/PDF批量提取工具_简洁高效的PDF处理-PDFpiliangtiqu.html",
+            "工作/PDF拆分+合并·优化版·阿记工具-Pdffenheqi.html",
+            "工作/PDF拆分器-PDFchaifenqi.html",
+            "工作/PDF文本快速提取工具-PDFwenbenkuaisutiqu.html",
+            "工作/PDF水印工具-高密度防截图方案-PDFshuiyin.html",
+            "工作/PDF脱敏-多模块版-PdfDataMasking.html",
+            "工作/PDF转PNG工具-PDFzhuantupiangongju.html",
+            "工作/PDF转Word工具-pdf-to-word-converter.html",
+            "工作/PDF转图片工具-pdf2image.html",
+            "工作/PDF转图片工具-修复版-pdf-to-tupian.html",
+            "工作/PDF转换工具-专业高效的在线文档处理-pdf-converter.html",
+            "工作/PDF转换工具_PDF转Word_Markdown-PDFzhuanhuan.html",
+            "工作/PDF页面批量删除工具_简洁高效-PDFyemianshanchu.html",
+            "工作/PDF骑缝章批量标注工具-PDFqifengzhang.html",
+            "工作/PDF骑缝章批量标注工具-PDFqifengzhangpiliangbiaozhugongju.html",
+            "工作/PPT大纲生成工具-PPTdagangshengchenggongju.html",
+            "工作/PPT拼图工具·Apple风格-Jiasaw.html",
+            "工作/PPT文案精简工具-online-html-1758453756972.html",
+            "工作/PPT转PDF工具-ppt-to-pdf.html",
+            "工作/SVG优化器-网页图标压缩工具-SVGyouhuagongjujidaimashixian.html",
+            "工作/SVG图标制作器-在线矢量图标设计工具-svg-generator.html",
+            "工作/Web截图工具-screenshot-tool.html",
+            "工作/Word_TXT→高清PDF(完美中文支持)-worddaochugaoqingPDF.html",
+            "工作/Word转PDF转换器-word-to-pdf-converter.html",
+            "工作/xhs-pdfframe.html",
+            "工作/专业A3转A4文件转换器-html.html",
+            "工作/专业BMI计算工具_健康体重评估-BMIjiankangjisuangongju.html",
+            "工作/专业化妆补光灯_ProfessionalMakeupLight-deepseek_html_20250723_1b5e61.html",
+            "工作/专业图片水印工具-tupianjiashuiyin.html",
+            "工作/专业在线节拍器-metronome.html",
+            "工作/专业字数统计分析工具_现代写作助手-deepseek_html_20260129_4c32fe.html",
+            "工作/专业性格测试工具-zhuanyexinggeceshigongju.html",
+            "工作/专业文本净化工具-清除冗余符号和杂乱格式-wenbenjinghuagongju.html",
+            "工作/专业文本差异对比工具-wenbenchayiduibigongju.html",
+            "工作/专业色度图谱工具-设计师必备的颜色选择器-sedutupugongju.html",
+            "工作/专业艺术签名设计器-A4练字帖生成-deepseek_yishuqianmingshejiqi.html",
+            "工作/专业证件照生成器-id-photo-generator-V.html",
+            "工作/专业颜色代码转换工具_支持Hex_RGB_HSL格式-yansedaimazhuanhuangongju.html",
+            "工作/九宫格图片生成器-jiugonggesc.html",
+            "工作/九宫格图片生成器-jiugonggetupianshengchengqi.html",
+            "工作/九宫格图片编辑器-nine_grid_editor.html",
+            "工作/交互式解释器-JSON_代码可视化-interactive-interpreter.html",
+            "工作/人物关系图谱工具-renwuguanxitupugongju.html",
+            "工作/代码审查清单生成器-code-review-checklist-generator.html",
+            "工作/代码差异对比器-daimachayiduibiqi.html",
+            "工作/代码注释移除工具-daimazhushiyichugongju.html",
+            "工作/代码注释转换器_CommentConverter-daimazhushizhuanhuanqiCommentConverter.html",
+            "工作/代码语法高亮工具-code-syntax-highlighter.html",
+            "工作/代码语法高亮工具-daimayufagaolianggongju.html",
+            "工作/任务目标管理系统-mission-tracing.html",
+            "工作/任务管理系统-全面优化版-066_Todolist.html",
+            "工作/任务进度追踪器-renwujinduzhuizongqi.html",
+            "工作/任务追踪器_文璧-deepseek_html_20250721_cb1e91.html",
+            "工作/会议发言提纲工具-huiyifayantigang.html",
+            "工作/会议实时字幕工具-huiyishishizimu.html",
+            "工作/会议成本计算器-MeetingCostCalculator-032_meeting_cost.html",
+            "工作/会议时间安排器_MeetingScheduler-huiyishijiananpaiqiMeetingscheduler.html",
+            "工作/会议纪要智能生成器-meeting_tools.html",
+            "工作/会议纪要自动排版工具-huiyijiyaopaiban.html",
+            "工作/全平台图片去水印工具-qushuiyin2.html",
+            "工作/全平台背景图片生成器_自媒体运营必备工具_2025最新版-quanpingtaibeijingtupianshengchengqi1.html",
+            "工作/公众号小红书首图生成器-cover-generator.html",
+            "工作/函数图形自动生成工具-hanshutuxiangshengchengqi.html",
+            "工作/加好友图片生成器-jiahaoyoutupian.html",
+            "工作/加好友图片生成器-jiahaoyou_pic_scq_25819ys.html",
+            "工作/动漫图片转铅笔线稿工具-程序员小艾-AnimeSketchMarker2.html",
+            "工作/十字绣图纸生成器-shizixiu.html",
+            "工作/南丁格尔玫瑰图制作工具-nandinggeermeiguituzhizuogongju.html",
+            "工作/图像对比动画生成工具-image_comparison_animate.html",
+            "工作/图像批量裁剪-image_batch_crop.html",
+            "工作/图像拼接工具-image_stitcher.html",
+            "工作/图像格式转换器-image_format_converter.html",
+            "工作/图片EXIF信息查看工具-专业元数据分析-picEXIF.html",
+            "工作/图片与Base64转换工具-base64image.html",
+            "工作/图片分割工具-image.html",
+            "工作/图片分辨率与格式转换工具-tool1_single.html",
+            "工作/图片切割工具-vieport.html",
+            "工作/图片取色器工具-3.0.html",
+            "工作/图片批量压缩神器-tupianpiliangsuoxiao.html",
+            "工作/图片批量调整工具-image_resizer.html",
+            "工作/图片拼接工具-image-splicing-tool.html",
+            "工作/图片拼接工具-merged.html",
+            "工作/图片拼接工具-tupianpinjiegongju.html",
+            "工作/图片换色工具-美好人生工具站-color-replace.html",
+            "工作/图片文件大小调整工具-tupianxiangsubiandahuojianxiao.html",
+            "工作/图片文字提取工具-image-text-extractor.html",
+            "工作/图片文字提取工具-image-to-text.html",
+            "工作/图片文字提取工具-ocr_new.html",
+            "工作/图片智能裁切工具-pic-cut.html",
+            "工作/图片标签添加工具-简单高效的图片标注工具-tupianbiaoqiantianjia.html",
+            "工作/图片格式转换工具-tupiangeshizhuanhuanqi.html",
+            "工作/图片格式转换工具-在线转换JPG,PNG,GIF,WebP,BMP-image-converter.html",
+            "工作/图片模板生成器·批量版-picture.html",
+            "工作/图片水印批量添加工具-tupianshuiyinpiliangtianjia.html",
+            "工作/图片水印添加工具-tupianshuiyintianjiagongju.html",
+            "工作/图片裁剪工具-Image_cropping.html",
+            "工作/图片裁剪工具_专业的图片处理工具-tupiancaijiangongju.html",
+            "工作/图片转Icon工具-image2Icon.html",
+            "工作/图片转Icon工具-免费在线转换-tupianzhuanicon.html",
+            "工作/图片转PDF工具-imagetopdf.html",
+            "工作/图片转PDF工具-tupian-to-pdf.html",
+            "工作/图片转PDF工具-tupianzhuanPDFgongju.html",
+            "工作/图片转PDF工具_全平台支持-tupianzhuanPDF.html",
+            "工作/图片转像素画·单文件-tupianzhuanxiangsuhuagongju.html",
+            "工作/图片转圆形图标工具-免费在线生成完美圆形图标-tupianzhuanyuanxingtubiaogongju.html",
+            "工作/图片转字符画&字符画转图片工具-tupianzifuhuzhuan.html",
+            "工作/图片转字符画工具-AsciiMagic(2).html",
+            "工作/图片转字符画工具-AsciiMagic.html",
+            "工作/图片转字符画工具-tupianzhuanzifuhua.html",
+            "工作/图片转矢量图工具(ImagetoVector)-image-to-vector.html",
+            "工作/图片转矢量图工具-image-to-vector.html",
+            "工作/图片转线稿工具-tupianzhuanxiangaogongju.html",
+            "工作/图片边框添加工具-tupianbiankuang.html",
+            "工作/图片边框生成器-国庆特别版-tupianbiankuangshengchengqi.html",
+            "工作/图表生成器-015_chart_pie_gen_tool.html",
+            "工作/圆形像素风图片转换器-LYYSSJ2022-XSZHQ.html",
+            "工作/在线代码预览器-simple-editor.html",
+            "工作/在线图片处理工具-image-processor.html",
+            "工作/在线图片处理工具-实用工具箱-image_processor.html",
+            "工作/在线文本比对-text-comparison-tool-1.html",
+            "工作/在线文本比对工具-TextComparator(2).html",
+            "工作/在线文本比对工具-TextComparator.html",
+            "工作/在线树形图制作工具-zaixianshuxingtuzhizuogongju.html",
+            "工作/堆叠柱状图制作工具-duidiezhuzhuangtuzhizuogongju.html",
+            "工作/堆叠面积图制作工具-duidiemianjituzhizuogongju.html",
+            "工作/多人筹码计分器-自定义额度版-online-html-1760792484287.html",
+            "工作/多元思维模型：查理·芒格的智慧工具箱-charlie_munger_mental_models.html",
+            "工作/多功能倒计时目标追踪器-duogongnengdaojishimubiaozhuizongqi.html",
+            "工作/多功能单位换算器_在线单位转换工具-小路工具箱-unit-converter.html",
+            "工作/多功能单位转换器-unit_converter.html",
+            "工作/多功能密码生成器-安全、可靠、可定制-password-generator.html",
+            "工作/多功能文件处理工具-complete-tools.html",
+            "工作/多功能节拍器-duogongnengjiepaiqi.html",
+            "工作/多功能节拍器-jiepaiqi.html",
+            "工作/多因素决策分析工具-Tools-09-Decision-Analysis.html",
+            "工作/多平台密码生成器-duopingtaimimashengchengqi.html",
+            "工作/多平台违禁词检测工具-专业版-wjc_search.html",
+            "工作/多时区会议调度器-duoshiquhuiyidiaoduqi.html",
+            "工作/多格式图标生成器-PNG_JPG_ICO_SVG-Tubiaoshengcheng.html",
+            "工作/多维生命计时器-时间分析工具-smjsq.html",
+            "工作/多语言问候语生成器-duoyuyanwenhouyu.html",
+            "工作/小程序图标生成器-combined.html",
+            "工作/小红书图文生成器-高级背景版-deepseek_html_20250710_82c258.html",
+            "工作/小红书图片文字提取工具-pic_convert_word.html",
+            "工作/小红书首图生成器-xiaohongshu-image-generator.html",
+            "工作/工作价值计算器-JobWorthCalculator-job-worth-calculator.html",
+            "工作/工作日健康习惯提醒-gongzuorijiankangxiguantixing.html",
+            "工作/工作日计算器-gongzuorijisuanqi.html",
+            "工作/工作日计算器-working_day_calculator.html",
+            "工作/微信公众号文章封面图提取工具-wechat_cover_extractor.html",
+            "工作/思维导图工具-可修改中心节点-siweidaotu.html",
+            "工作/情绪地图与分析系统-探索你的情感世界-qingxudituyufenxixitong.html",
+            "工作/截图管理器-screenshot_manager.html",
+            "工作/批量图片转圆形图标工具-yuanxingtubiao.html",
+            "工作/拼豆图案生成器-美好人生工具站-perler-beads.html",
+            "工作/散点图制作工具-sandiantuzhizuogongju.html",
+            "工作/文件MD5计算器-md5_calculator.html",
+            "工作/文件加密器-安全保护您的压缩文件-file-encryptor.html",
+            "工作/文件加密解密工具-file-encrypt.html",
+            "工作/文件加密解密工具-wenjianjiamijiemi.html",
+            "工作/文件压缩工具-wenjianyasuogongju.html",
+            "工作/文件命名规范生成工具-wenjianguifanmingminggongju.html",
+            "工作/文件哈希计算器-file_hash_calculator.html",
+            "工作/文件差异对比工具-file_compare.html",
+            "工作/文件批量改名·草绿工具-Renamefile.html",
+            "工作/文件批量重命名工具-fileRenameMerge.html",
+            "工作/文件批量重命名工具-piliangmingming.html",
+            "工作/文件格式转换器-wenjiangeshizhuanhuanqi.html",
+            "工作/文件重命名工具-批量重命名文件，支持正则表达式-file_renamer.html",
+            "工作/文本去重工具-text-deduplicator.html",
+            "工作/文本去重工具-wenbenquzhonggongju.html",
+            "工作/文本去重排序工具-text-dedup-sort-tool.html",
+            "工作/文本反转工具-wenbenfanzhuangongju.html",
+            "工作/文本处理工具-text-processor-tool.html",
+            "工作/文本大小写转换工具-TextCaseConversionTool.html",
+            "工作/文本大小写转换工具-wenbendaxiaoxie.html",
+            "工作/文本字数统计与纠错工具-text-counter-checker.html",
+            "工作/文本对比工具-text-diff.html",
+            "工作/文本对比工具-wenbenduibigongju.html",
+            "工作/文本差异比较工具-wenbenchayibijiaogongju.html",
+            "工作/文本差异比较工具-修复版-wenbenchayibijiaogongju.html",
+            "工作/文本格式化工具-formatting_tools.html",
+            "工作/文本格式转换器-text-format-converter.html",
+            "工作/文本格式转换工具-text_converter_tool.html",
+            "工作/文本格式转换工具·大小写_内容提取-text_converter.html",
+            "工作/文本检测-wenbenjiance.html",
+            "工作/文本比对工具-textcheck.html",
+            "工作/文本混淆器_反混淆器-text-obfuscator.html",
+            "工作/文本统计工具-text-counter-standalone.html",
+            "工作/文本转HTML工具-wenbenzhuanHTMLgongju.html",
+            "工作/文档处理器-终极优化版-.html",
+            "工作/智能图片切割工具-image_cutting.html",
+            "工作/智能图片切割工具-tupianqiege.html",
+            "工作/智能图片压缩-图片处理工具集-compress.html",
+            "工作/智能图片压缩工具-image-compressor.html",
+            "工作/智能图片压缩工具-image_compresser.html",
+            "工作/校友人脉地图-毕业生去向可视化-alumniNetworkMap.html",
+            "工作/格式转换-图片处理工具集-convert.html",
+            "工作/毛玻璃图片生成器-glasseffect.html",
+            "工作/毛玻璃图片生成器-maobolitupian.html",
+            "工作/水印处理-图片处理工具集-watermark.html",
+            "工作/流程图生成器MVP-FlowchartGenerator.html",
+            "工作/浏览器插件图标转换工具-browser-extension-icon-converter.html",
+            "工作/浏览器插件图标转换工具-tubiaozhuanhuan.html",
+            "工作/海报二维码工具-poster-qr-tool.html",
+            "工作/海报二维码生成工具-poster-generator-new.html",
+            "工作/海报二维码自动填充工具-poster-qr-tool.html",
+            "工作/海报批量处理工具-专业图片合成工具-haibaopiliangchuligongju.html",
+            "工作/源代码内容导出.html",
+            "工作/甘特图生成器(颜色自定义版)-jianyigantetushengchengqi.html",
+            "工作/电商主图优化建议工具-dianshangzhutuyouhuajianyigongju.html",
+            "工作/电子名片生成器-dianzimingpianshengchengqi_yuanbao.html",
+            "工作/电子签名提取工具-专业版-dianziqianmingtiqu.html",
+            "工作/电子签名板-dianziqianmingban.html",
+            "工作/电子签名生成器-signature_maker.html",
+            "工作/电子签名生成工具-dianziqianmingshengchenggongju.html",
+            "工作/电影字幕拼图工具-dianyingzimupintugongju.html",
+            "工作/电影字幕拼图工具-dianyinzimu.html",
+            "工作/电脑快捷键大全-kuaijiejiandaquan.html",
+            "工作/电脑系统安装与维护指南-deepseek_diannaoxitonganzhuangyuweihuzhinan.html",
+            "工作/番茄手账-专注计时器-tomatoJournal.html",
+            "工作/番茄时钟-专注工作助手-pomodoro_timer.html",
+            "工作/番茄时钟_专注工作法-deepseek_html_20250714_ee5071.html",
+            "工作/番茄钟+环境音效-fanqiezhongyinxiaoqi.html",
+            "工作/番茄钟工作法工具-fanqiegongzuofagongju.html",
+            "工作/番茄钟计时器-timer.html",
+            "工作/目标拆解工具-全屏思维导图优化版-Tool_OGSM_ds.html",
+            "工作/移动端图片转PDF工具-saomiaoPDF.html",
+            "工作/空调故障代码检索工具-kongtiaoguzhangdaima1.html",
+            "工作/简体转繁体-jiantizhuanfanti.html",
+            "工作/简历关键词匹配工具-jianliguanjiancipipei.html",
+            "工作/简历生成器-resume-builder.html",
+            "工作/简易图片编辑器-jianyitupianbianjiqi.html",
+            "工作/简易图片编辑工具-deepseek.html",
+            "工作/绘图遮罩工具-drawing-tool.html",
+            "工作/美图裁剪助手-image_crop_tool.html",
+            "工作/翻页时钟-fanyeshizhong.html",
+            "工作/聊天截图马赛克处理工具-PictureCropTool-V1.0.html",
+            "工作/职业技能雷达图生成器-zhiyejinengleidatu.html",
+            "工作/视频截图_工具-shipinjietugongju.html",
+            "工作/视频截图工具-shipinjietugongju.html",
+            "工作/词云图生成器-ciyuntushengcheng.html",
+            "工作/趣味拼图-quweipintuyouxi.html",
+            "工作/透明圆角图片生成工具-toumingyuanjiaotupianshengchenggongju.html",
+            "工作/颜色代码转换器-yansedaimazhuanhuanqi.html",
+            "工作/颜色提取-图片颜色识别工具-yansetiqu.html",
+            "工作/高级图片二值化工具-AdvancedImageBinarizer2.0.html",
+            "工作/高级图片压缩工具-piliangtupyasuo.html",
+            "工作/高级图片压缩工具-tupianyasuogongju.html",
+            "工作/高级图片批量模糊工具-主选区功能-img-mh.html",
+            "工作/高级图片转PDF工具-photochangetools.html",
+            "工作/高级图片转PDF工具_PremiumImagetoPDFConverter-Pic2PDF.html",
+            "游戏/2025古琴模拟器-在线弹奏-deepseek_html_20250820_627a67.html",
+            "游戏/2048游戏-2048.html",
+            "游戏/2048游戏-deepseek_html_20250727_a3d66c.html",
+            "游戏/2048绿色版-2048.html",
+            "游戏/24点计算器在线版_24点游戏自动计算_24点解法查询工具-24dian.html",
+            "游戏/Emoji黄脸连连看-emojilianliankan1.html",
+            "游戏/PuzzleElegance-苹果风格拼图游戏-putuxiaoyouxi.html",
+            "游戏/Q版打砖块游戏-breakout-game.html",
+            "游戏/一笔画游戏-one-stroke-game.html",
+            "游戏/三年级英语单词游戏-xiaoxuesannianjiyingyudanciyouxi-html-1755335892664.html",
+            "游戏/中文近义词消消乐闯关游戏-jinyicixxl.html",
+            "游戏/中英双语词汇分类游戏-xiaoxueshuangyucihuifenleiyouxi.html",
+            "游戏/二分法猜数字游戏-caishuzi.html",
+            "游戏/五子棋-wuziqi.html",
+            "游戏/五子棋·策略对弈-FiveinaRow.shuci.html",
+            "游戏/五子棋游戏-gomoku-game.html",
+            "游戏/五子棋游戏-wuziqiyouxi.html",
+            "游戏/五福临门-春节福袋收集游戏-wufulinmen.html",
+            "游戏/井字棋游戏-jinziqi.html",
+            "游戏/俄罗斯方块(DOM版)-els.html",
+            "游戏/俄罗斯方块-tetris.html",
+            "游戏/俄罗斯方块_经典益智游戏-eluosifangkuaiyouxi.html",
+            "游戏/倒水排序-闯关游戏-daoshuipaixu.html",
+            "游戏/像素飞机射击-deepseek_html_20250728_38b278.html",
+            "游戏/元旦谜语闯关游戏-yuandanmiyu.html",
+            "游戏/凑十法与破十法闯关游戏-xiaoshuchaifen.html",
+            "游戏/动词过去式匹配游戏-优化版-guoqushipipeiyouxi.html",
+            "游戏/千禧年赛车游戏-Y2KRacing-2000_car.html",
+            "游戏/千禧年赛车游戏_Y2KRacing-saicheyouxi.html",
+            "游戏/单词拼写游戏-增强版-English_word_spelling_V1.4.html",
+            "游戏/单词消消乐-dcxxl1.html",
+            "游戏/单词消消乐-优化版-dancixiaoxiaolei.html",
+            "游戏/单词记忆游戏工具-dancijiyigongju.html",
+            "游戏/卡片拼图游戏(升级版)-挑战你的逻辑思维-kapianpintuyouxi.html",
+            "游戏/四色定理小游戏-sisedinglixiaoyouxi.html",
+            "游戏/图片拼图小游戏-puzzle-game.html",
+            "游戏/在线21点游戏-挑战庄家赢大奖-21dianyouxi.html",
+            "游戏/在线拼图游戏-pintu.html",
+            "游戏/坦克大战现代复刻版-tank-fight.html",
+            "游戏/塔罗占卜屋-tarot.html",
+            "游戏/增强版文字冒险游戏-deepseek_html_20250730_e5e9e5.html",
+            "游戏/太空入侵者-SpaceInvaders-02-space-invaders.html",
+            "游戏/太空入侵者-SpaceInvaders-taikongruqinzhe.html",
+            "游戏/字谜游戏制作工具-六年级语文教师版-charadeActivity.html",
+            "游戏/宇宙陨石雨-太空躲避游戏-yuzhouyunshiyu.html",
+            "游戏/小鱼钓手乐园-儿童钓鱼游戏-childrensFishingGame.html",
+            "游戏/幸运抽奖-choujiang.html",
+            "游戏/弹珠小游戏-danzhuxiaoyouxi.html",
+            "游戏/弹球消除-BallBreaker-08-ball-breaker.html",
+            "游戏/彩虹扫雷-saoleiyouxi.html",
+            "游戏/情绪球对战游戏-qingxuqiuduizhanxiaoyouxi.html",
+            "游戏/愤怒的小鸟-五关卡版-deepseek_html_20250727_bdd2f1.html",
+            "游戏/成就闯关猜数字游戏-终极优化版-chuangguancaishuzi.html",
+            "游戏/我的游戏日记-deepseek_html_20250721_c99d2a.html",
+            "游戏/扑克-pukev0.2.html",
+            "游戏/打地鼠游戏-whack-a-mole.html",
+            "游戏/打砖块-_E6_89_93_E7_A0_96_E5_9D_97.html",
+            "游戏/打砖块游戏-dazhuankuai.html",
+            "游戏/扫雷Minesweeper-minesweeper.html",
+            "游戏/扫雷游戏-saoleiyouxi.html",
+            "游戏/拉布布养成游戏-labubu-pet-game.html",
+            "游戏/按一按小游戏-anyianxiaoyouxi.html",
+            "游戏/挑战字中字游戏-趣味汉字认知-tiaozhanzizizhongziyouxi.html",
+            "游戏/数字华容道-shuzihuarongdao.html",
+            "游戏/数字华容道-shuzihuarongdaoyouxi.html",
+            "游戏/数字华容道-烧脑小游戏-shuzihuarongdaoyouxi.html",
+            "游戏/数字消消乐-Xiaoxiaole.html",
+            "游戏/数字顺序记忆游戏-shuzishunxu.html",
+            "游戏/数独-简洁优雅的益智游戏-shudu.html",
+            "游戏/数独挑战-在线游戏-shudu_student_ys2597.html",
+            "游戏/数独游戏-shuduyouxi.html",
+            "游戏/数独游戏-sudoku.html",
+            "游戏/斐波那契递推规律闯关游戏-shujudituiguilvtigaoyingyongchuangguanyouxi.html",
+            "游戏/方块消除小游戏-block-elimination-game.html",
+            "游戏/智能五子棋-挑战AI高手-zhinengwuziqi.html",
+            "游戏/极致打地鼠游戏-whack_a_mole.html",
+            "游戏/欢乐打地鼠-儿童反应速度训练-WhackAMole.html",
+            "游戏/欢乐打地鼠-多关卡版-dadishu.html",
+            "游戏/水果切切乐-shuiguoqieqiele1.html",
+            "游戏/水果连连看-shuiguolianliankan1.html",
+            "游戏/汉字找不同闯关游戏-hanzizhaobutong.html",
+            "游戏/汉字拼图游戏-优化版-hanzipintu.html",
+            "游戏/汉字推箱子成语填空游戏-chinese-character-sokoban.html",
+            "游戏/游戏合集-全息娱乐系统-index.html",
+            "游戏/游戏装备属性随机生成器-youxizhuangbeishuxingsuijishengchengqi.html",
+            "游戏/游戏计分工具-jifen.html",
+            "游戏/火箭躲避游戏-huojianduobi.html",
+            "游戏/烧脑小游戏合集-shaonaoxiaoyouxiheji.html",
+            "游戏/猜单词游戏-键盘版-caidanciyouxi.html",
+            "游戏/猜数字小游戏-挑战你的直觉-caishuzixiaoyouxi.html",
+            "游戏/猜数字游戏-caishuzi.html",
+            "游戏/电子骰子-dianzitouzigongju.html",
+            "游戏/电子骰子游戏工具-deepseek_html_20250706_003.html",
+            "游戏/省妈神器-打折提醒体验游戏-discountReminder.html",
+            "游戏/知识点九宫格转盘游戏-五年级语文-knowledgeNineSquareGrid.html",
+            "游戏/石头剪刀布-三局两胜制-shitoujiandaobu.html",
+            "游戏/石头剪刀布-心理博弈-shitoujiandaobujiandanboyiban.html",
+            "游戏/石头剪刀布游戏-三局两胜制-shitoujiandaobuyouxi.html",
+            "游戏/简易扫雷-saolei.html",
+            "游戏/经典俄罗斯方块-eluosifangkuai.html",
+            "游戏/经典打地鼠游戏-dadishu.html",
+            "游戏/经典打砖块游戏-dazhuankuai.html",
+            "游戏/经典扫雷-saoleiyouxi.html",
+            "游戏/经典扫雷游戏-Minesweeper-ClassicMinesweeper.html",
+            "游戏/经典推箱子-tuixiangzi.html",
+            "游戏/经典点击小球得分游戏-dianjixiaoqiu.html",
+            "游戏/经典猜数字游戏-caishuzi.html",
+            "游戏/经典猜灯谜-RiddleGuess.html",
+            "游戏/经典猜灯谜-传统文化互动游戏-caidengmi.html",
+            "游戏/经典贪吃蛇-ClassicSnakeGame-01-snake-game.html",
+            "游戏/经典贪吃蛇游戏-SnakeGame.html",
+            "游戏/绿色井字棋-在线对战游戏-lvsejingziqi.html",
+            "游戏/绿色记忆翻牌游戏-deepseek_html_20260206_e134a3.html",
+            "游戏/美食连连看-meishilianlian1.html",
+            "游戏/老板消消乐-laobanxiaoxiaole.html",
+            "游戏/聚会小游戏大全-juhuixiaoyouxi1.html",
+            "游戏/聚会游戏选择器-juhuiyouxixuanzeqi.html",
+            "游戏/自然拼读游戏：元音长短音匹配-Phonics.html",
+            "游戏/英语动词过去式配对游戏-game.html",
+            "游戏/英语单词消消乐游戏-Word_Matching_V2.5.html",
+            "游戏/英语单词闯关游戏-english-word-game.html",
+            "游戏/萌宠连连看-mengchongxiaoxiao1.html",
+            "游戏/蓝色记忆翻牌游戏-最终版-memory-card-master.html",
+            "游戏/记忆翻牌游戏-jiyifanpai.html",
+            "游戏/记忆翻牌游戏-jiyifanpaiyouxi.html",
+            "游戏/记忆翻牌游戏-memory-game.html",
+            "游戏/记忆翻牌游戏-锻炼你的记忆力-jiyifanpanyouxi.html",
+            "游戏/贪吃蛇-tanchishe.html",
+            "游戏/贪吃蛇小游戏-tanchishe.html",
+            "游戏/超级脑筋急转弯游戏-naojinjizhuan.html",
+            "游戏/趣味抓阄-deepseek_html_20250723_61d5e3.html",
+            "游戏/躲避球-DodgeBall-04-dodge-ball.html",
+            "游戏/迷宫小游戏-migongxiaoyouxi.html",
+            "游戏/雷霆战机-太空射击游戏-leitingzhanjiwanzhengban.html",
+            "游戏/霓虹贪吃蛇-tanchishe.html",
+            "游戏/音乐贪吃蛇-008_yinyuetanshishe.html",
+            "游戏/骰子模拟器-touzimoniqi.html",
+            "游戏/骰子游戏_DiceGame-touziyouxiDiceGame.html",
+            "游戏/黄金挖矿大师-gold-mining-game.html"
+        ];
+
+        (function () {
+            'use strict';
+            if (typeof FILE_NAMES === 'undefined') {
+                console.error('请确保 FILE_NAMES 已正确定义。');
+                return;
+            }
+
+            const grid = document.getElementById('fileGrid');
+            const searchInput = document.getElementById('searchInput');
+            const totalCountEl = document.getElementById('totalCount');
+            const visibleCountEl = document.getElementById('visibleCount');
+            const overlay = document.getElementById('overlay');
+            const backBtn = document.getElementById('backBtn');
+            const contentFrame = document.getElementById('contentFrame');
+            const overlayTitle = document.getElementById('overlayTitle');
+
+            function getDisplayName(filename) {
+                const baseName = filename.split('/').pop();
+                const base = baseName.replace(/\.[^.]+$/, '');
+                const parts = base.split(/[-_]/);
+                return parts[0] && parts[0].trim() ? parts[0].trim() : base;
+            }
+
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+
+            function render(files) {
+                if (!files || files.length === 0) {
+                    grid.innerHTML = `
+                        <div class="empty-state">
+                            <span class="emoji">📭</span>
+                            没有找到匹配的 HTML 文件
+                        </div>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                for (const f of files) {
+                    const display = getDisplayName(f);
+                    html += `
+                        <div class="file-card visible" data-filename="${escapeHtml(f)}">
+                            <a href="#" title="${escapeHtml(f)}">
+                                <span class="filename">${escapeHtml(display)}</span>
+                            </a>
+                        </div>
+                    `;
+                }
+                grid.innerHTML = html;
+            }
+
+            function updateStats(total, visible) {
+                totalCountEl.textContent = total;
+                visibleCountEl.textContent =
+                    visible === total ? '' : `(已搜索 ${visible} 个文件)`;
+            }
+
+            function filterFiles(query) {
+                const q = query.trim().toLowerCase();
+                const filtered = q
+                    ? FILE_NAMES.filter(f =>
+                        getDisplayName(f).toLowerCase().includes(q) ||
+                        f.toLowerCase().includes(q)
+                    )
+                    : FILE_NAMES.slice();
+
+                render(filtered);
+                updateStats(FILE_NAMES.length, filtered.length);
+            }
+
+            function openFile(filename) {
+                overlay.classList.add('active');
+                overlayTitle.textContent = filename;
+                contentFrame.src = encodeURI(filename);
+            }
+
+            function closeOverlay() {
+                overlay.classList.remove('active');
+                contentFrame.src = 'about:blank';
+                overlayTitle.textContent = '正在加载…';
+            }
+
+            grid.addEventListener('click', e => {
+                const card = e.target.closest('.file-card');
+                if (card) {
+                    e.preventDefault();
+                    openFile(card.dataset.filename);
+                }
+            });
+
+            backBtn.addEventListener('click', e => {
+                e.preventDefault();
+                closeOverlay();
+            });
+
+            document.addEventListener('keydown', e => {
+                if (e.key === 'Escape' && overlay.classList.contains('active')) {
+                    closeOverlay();
+                }
+            });
+
+            searchInput.addEventListener('input', () => filterFiles(searchInput.value));
+            searchInput.addEventListener('keydown', e => {
+                if (e.key === 'Escape') {
+                    searchInput.value = '';
+                    filterFiles('');
+                    searchInput.blur();
+                }
+            });
+
+            render(FILE_NAMES);
+            updateStats(FILE_NAMES.length, FILE_NAMES.length);
+        })();
+    </script>
+</body>
+
+</html>
