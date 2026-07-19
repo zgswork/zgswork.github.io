@@ -169,18 +169,10 @@
             background: rgba(16, 185, 129, 0.08);
         }
 
-        /* 主按钮和导出按钮容器 */
-        #generate-export-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 14px 0;
-        }
-
-        #generate-export-wrapper #btn-generate {
-            flex: 1;
-            margin: 0;
-            width: auto;
+        /* 主按钮 */
+        #btn-generate {
+            width: calc(100% - 28px);
+            margin: 10px 14px 0;
             padding: 9px;
             background: transparent;
             border: 1px solid var(--green);
@@ -193,25 +185,28 @@
             transition: 0.1s;
         }
 
-        #generate-export-wrapper #btn-generate:hover {
+        #btn-generate:hover {
             background: rgba(16, 185, 129, 0.12);
         }
 
-        #generate-export-wrapper #btn-generate:active {
+        #btn-generate:active {
             background: rgba(16, 185, 129, 0.22);
         }
 
-        #generate-export-wrapper #btn-generate:disabled {
+        #btn-generate:disabled {
             opacity: 0.4;
             cursor: default;
         }
 
+        /* 导出按钮组 */
         .export-group {
             display: flex;
             gap: 6px;
+            margin-top: 6px;
         }
 
         .exp-btn {
+            flex: 1;
             padding: 6px 4px;
             background: transparent;
             border: 1px solid var(--border2);
@@ -220,7 +215,7 @@
             font-size: 16px;
             cursor: pointer;
             transition: 0.1s;
-            border-radius: 2px;
+            text-align: center;
         }
 
         .exp-btn:hover {
@@ -468,10 +463,9 @@
                 </div>
             </div>
             <div id="error-msg"></div>
-            
-            <!-- 生成按钮和导出按钮在同一行 -->
-            <div id="generate-export-wrapper">
-                <button id="btn-generate">▶ 生成填充方案</button>
+            <button id="btn-generate">▶ 生成填充方案</button>
+            <div class="section" style="margin-top:10px; padding-bottom:12px;">
+                <div class="section-title">导出</div>
                 <div class="export-group">
                     <button class="exp-btn" id="exp-jpg" disabled>JPG</button>
                     <button class="exp-btn" id="exp-pdf" disabled>PDF</button>
@@ -925,7 +919,7 @@
                     return `M ${-R} 0 A ${R} ${R} 0 1 1 ${R} 0 A ${R} ${R} 0 1 1 ${-R} 0 Z`;
                 }
                 case 'ellipse': {
-                    const a = s.semiMajor ?? 1, b = s.emiMinor ?? 1;
+                    const a = s.semiMajor ?? 1, b = s.semiMinor ?? 1;
                     return `M ${-a} 0 A ${a} ${b} 0 1 1 ${a} 0 A ${a} ${b} 0 1 1 ${-a} 0 Z`;
                 }
                 case 'annulus': {
@@ -958,7 +952,7 @@
                     const ox1 = ro * Math.sin(-half), oy1 = -ro * Math.cos(-half);
                     const ox2 = ro * Math.sin(half), oy2 = -ro * Math.cos(half);
                     const ix1 = ri * Math.sin(half), iy1 = -ri * Math.cos(half);
-                    const ix2 = ri * Math.sin(-half), iy2 = -ri * Math.cos(half);
+                    const ix2 = ri * Math.sin(-half), iy2 = -ri * Math.cos(-half);
                     const large = angle >= 180 ? 1 : 0;
                     return `M ${ox1} ${oy1} A ${ro} ${ro} 0 ${large} 1 ${ox2} ${oy2} L ${ix1} ${iy1} A ${ri} ${ri} 0 ${large} 0 ${ix2} ${iy2} Z`;
                 }
@@ -1356,20 +1350,8 @@
             statsContent.innerHTML = html;
         }
         function getSvgForExport() {
-            const canvasW_raw = canvasWrap.clientWidth;
-            const canvasH_raw = canvasWrap.clientHeight;
-            
-            // 确保最小宽度为1920px，高度按比例缩放
-            const MIN_WIDTH = 1920;
-            let canvasW = canvasW_raw;
-            let canvasH = canvasH_raw;
-            
-            if (canvasW_raw < MIN_WIDTH) {
-                const scale = MIN_WIDTH / canvasW_raw;
-                canvasW = MIN_WIDTH;
-                canvasH = canvasH_raw * scale;
-            }
-            
+            const canvasW = canvasWrap.clientWidth;
+            const canvasH = canvasWrap.clientHeight;
             const svgClone = mainSvg.cloneNode(true);
             svgClone.setAttribute('width', canvasW);
             svgClone.setAttribute('height', canvasH);
@@ -1437,8 +1419,9 @@
             const config = SHAPE_PARAMS_CONFIG[shape.type] || [];
             const parts = config.map(f => {
                 const val = shape[f.id];
-                return val !== undefined ? Math.round(val) : '';
-            }).filter(v => v !== '');
+                if (val !== undefined) return `${f.label}${val}`;
+                return '';
+            }).filter(s => s);
             return parts.join(', ');
         }
         function generateFileName(shape, w1, h1, smallW, smallH, totalW, totalH) {
@@ -1478,29 +1461,15 @@
             const blob = new Blob([svgStr], { type: 'image/svg+xml' });
             const url = URL.createObjectURL(blob);
             const img = new Image();
-            
-            // 使用与getSvgForExport相同的尺寸计算逻辑
-            const canvasW_raw = canvasWrap.clientWidth;
-            const canvasH_raw = canvasWrap.clientHeight;
-            const MIN_WIDTH = 1920;
-            let exportW = canvasW_raw;
-            let exportH = canvasH_raw;
-            
-            if (canvasW_raw < MIN_WIDTH) {
-                const scale = MIN_WIDTH / canvasW_raw;
-                exportW = MIN_WIDTH;
-                exportH = canvasH_raw * scale;
-            }
-            
+            const canvasW = canvasWrap.clientWidth, canvasH = canvasWrap.clientHeight;
             img.onload = () => {
                 const c = document.createElement('canvas');
-                c.width = exportW * 2;  // 保持2倍分辨率
-                c.height = exportH * 2;
+                c.width = canvasW * 2; c.height = canvasH * 2;
                 const ctx = c.getContext('2d');
                 ctx.scale(2, 2);
                 ctx.fillStyle = '#0f1a2b';
-                ctx.fillRect(0, 0, exportW, exportH);
-                ctx.drawImage(img, 0, 0, exportW, exportH);
+                ctx.fillRect(0, 0, canvasW, canvasH);
+                ctx.drawImage(img, 0, 0, canvasW, canvasH);
                 URL.revokeObjectURL(url);
                 const link = document.createElement('a');
                 link.href = c.toDataURL('image/jpeg', 0.95);
@@ -1523,36 +1492,22 @@
             const blob = new Blob([svgStr], { type: 'image/svg+xml' });
             const url = URL.createObjectURL(blob);
             const img = new Image();
-            
-            // 使用与getSvgForExport相同的尺寸计算逻辑
-            const canvasW_raw = canvasWrap.clientWidth;
-            const canvasH_raw = canvasWrap.clientHeight;
-            const MIN_WIDTH = 1920;
-            let exportW = canvasW_raw;
-            let exportH = canvasH_raw;
-            
-            if (canvasW_raw < MIN_WIDTH) {
-                const scale = MIN_WIDTH / canvasW_raw;
-                exportW = MIN_WIDTH;
-                exportH = canvasH_raw * scale;
-            }
-            
+            const canvasW = canvasWrap.clientWidth, canvasH = canvasWrap.clientHeight;
             img.onload = () => {
                 const c = document.createElement('canvas');
-                c.width = exportW * 2;
-                c.height = exportH * 2;
+                c.width = canvasW * 2; c.height = canvasH * 2;
                 const ctx = c.getContext('2d');
                 ctx.scale(2, 2);
                 ctx.fillStyle = '#0f1a2b';
-                ctx.fillRect(0, 0, exportW, exportH);
-                ctx.drawImage(img, 0, 0, exportW, exportH);
+                ctx.fillRect(0, 0, canvasW, canvasH);
+                ctx.drawImage(img, 0, 0, canvasW, canvasH);
                 URL.revokeObjectURL(url);
                 const imgData = c.toDataURL('image/jpeg', 0.92);
                 try {
                     const { jsPDF } = window.jspdf;
-                    const orient = exportW > exportH ? 'landscape' : 'portrait';
-                    const pdf = new jsPDF({ orientation: orient, unit: 'px', format: [exportW, exportH] });
-                    pdf.addImage(imgData, 'JPEG', 0, 0, exportW, exportH);
+                    const orient = canvasW > canvasH ? 'landscape' : 'portrait';
+                    const pdf = new jsPDF({ orientation: orient, unit: 'px', format: [canvasW, canvasH] });
+                    pdf.addImage(imgData, 'JPEG', 0, 0, canvasW, canvasH);
                     pdf.save(fileName + '.pdf');
                 } catch (e) {
                     alert('PDF 导出失败，请确认 jsPDF 已加载：' + e.message);
@@ -1620,6 +1575,7 @@
                 }
                 return pts;
             }
+            let contourPoints = [];
             switch (shape.type) {
                 case 'circle': {
                     const R = shape.radius ?? 1;
@@ -1796,6 +1752,8 @@
             const update = () => {
                 const w = canvasWrap.clientWidth, h = canvasWrap.clientHeight;
                 mainSvg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+                document.querySelector('#grid-rect').setAttribute('width', w);
+                document.querySelector('#grid-rect').setAttribute('height', h);
                 chV.setAttribute('y1', 0); chV.setAttribute('y2', h);
                 chH.setAttribute('x1', 0); chH.setAttribute('x2', w);
             };
