@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>首页概览</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/static/css/welcome.css">
+</head>
+<body>
+    <div class="page-welcome">
+        <h1>LED显示屏设计工具集</h1>
+        <p class="subtitle">一站式LED显示屏设计解决方案，涵盖结构设计、模组排列、弧形计算、应用模型等功能，助力工程师高效完成项目设计与实施。</p>
+
+        <div class="stats">
+            <div class="stat-card"><div class="stat-value">N+</div><div class="stat-label">专业工具</div></div>
+            <div class="stat-card"><div class="stat-value">100%</div><div class="stat-label">设计精度</div></div>
+            <div class="stat-card"><div class="stat-value">50+</div><div class="stat-label">支持型号</div></div>
+            <div class="stat-card"><div class="stat-value">24/7</div><div class="stat-label">技术支持</div></div>
+        </div>
+
+        <div>
+            <h2 class="section-title">常用工具</h2>
+            <div class="tools-grid">
+                <div class="tool-card" data-page="led-design">
+                    <div class="tool-icon"><i class="fa-solid fa-palette"></i></div>
+                    <div class="tool-title">结构设计</div>
+                    <div class="tool-desc">支持Q系列/S系列多种型号，自动计算显示尺寸，提供多种安装样式和结构截面选择。</div>
+                    <div class="tool-tags"><span class="tag">室内/户外</span><span class="tag">多种型号</span><span class="tag">自动计算</span></div>
+                </div>
+                <div class="tool-card" data-page="module-padding">
+                    <div class="tool-icon"><i class="fa-solid fa-cubes-stacked"></i></div>
+                    <div class="tool-title">模组排列</div>
+                    <div class="tool-desc">规则图形内模组的排列，包含圆形、梯形、三角形、椭圆、扇形、弓形、圆环、扇环、正多边形。</div>
+                    <div class="tool-tags"><span class="tag">大小模组</span><span class="tag">规则轮廓</span><span class="tag">排列计算</span></div>
+                </div>
+                <div class="tool-card" data-page="arc-calculator">
+                    <div class="tool-icon"><i class="fa-solid fa-calculator"></i></div>
+                    <div class="tool-title">弧形计算</div>
+                    <div class="tool-desc">已知弧长、半径、弦长、弦高、圆心角中的2个值,进而计算出其余3个参数值。</div>
+                    <div class="tool-tags"><span class="tag">弦长拱高</span><span class="tag">优弧劣弧</span><span class="tag">求三用二</span></div>
+                </div>
+                <div class="tool-card" data-page="display-application-3d">
+                    <div class="tool-icon"><i class="fa-solid fa-cubes"></i></div>
+                    <div class="tool-title">应用模型</div>
+                    <div class="tool-desc">各种样式的显示屏三维模型结构展示，包含常规异形、机械结构、箱体结构、包材工具等。</div>
+                    <div class="tool-tags"><span class="tag">屏钢结构</span><span class="tag">箱体结构</span><span class="tag">其他工具</span></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // 卡片点击跳转（调用父窗口的切换函数）
+        document.querySelectorAll('.tool-card').forEach(card => {
+            card.addEventListener('click', function() {
+                const page = this.dataset.page;
+                if (page && window.parent.switchPage) {
+                    window.parent.switchPage(page);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
