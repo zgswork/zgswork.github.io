@@ -39,13 +39,11 @@
             overflow: hidden;
         }
 
-        /* ── 布局 ───────────────────────── */
         #app {
             display: flex;
             height: 100vh;
         }
 
-        /* ── 左侧控制台 ─────────────────── */
         #sidebar {
             width: 310px;
             min-width: 270px;
@@ -86,7 +84,6 @@
             margin-top: 3px;
         }
 
-        /* ── 可折叠区域 ────────────────── */
         #sidebar-scroll {
             flex: 0 1 auto;
             overflow-y: auto;
@@ -120,7 +117,6 @@
             margin-bottom: 8px;
         }
 
-        /* 表单元素 */
         label {
             display: block;
             font-size: 16px;
@@ -168,7 +164,6 @@
             margin-bottom: 12px;
         }
 
-        /* 单选模式 */
         .mode-group {
             display: flex;
             gap: 8px;
@@ -193,7 +188,6 @@
             background: rgba(16, 185, 129, 0.08);
         }
 
-        /* 主按钮 */
         #btn-generate {
             width: calc(100% - 28px);
             margin: 10px 14px 0;
@@ -223,7 +217,6 @@
             cursor: default;
         }
 
-        /* 导出按钮组 — 无标题 */
         .export-section {
             padding: 8px 14px 14px;
             flex-shrink: 0;
@@ -256,7 +249,6 @@
             cursor: default;
         }
 
-        /* 错误提示 */
         #error-msg {
             margin: 6px 14px 0;
             font-size: 16px;
@@ -266,7 +258,6 @@
             flex-shrink: 0;
         }
 
-        /* ── 右侧工作区 ──────────────────── */
         #workspace {
             flex: 1;
             display: flex;
@@ -288,15 +279,6 @@
             display: block;
         }
 
-        /* 网格背景 via SVG pattern */
-        #grid-bg {
-            position: absolute;
-            inset: 0;
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* 统计面板 */
         #stats-panel {
             position: absolute;
             top: 12px;
@@ -386,21 +368,8 @@
         }
 
         @keyframes dashIn {
-            from {
-                stroke-dashoffset: 1000;
-            }
-
-            to {
-                stroke-dashoffset: 0;
-            }
-        }
-
-        .shape-outline {
-            animation: dashIn 0.4s ease-out forwards;
-        }
-
-        .rect-anim {
-            animation: dashIn 0.3s ease-out forwards;
+            from { stroke-dashoffset: 1000; }
+            to { stroke-dashoffset: 0; }
         }
 
         #statusbar {
@@ -424,7 +393,6 @@
         input[type="number"]::-webkit-outer-spin-button {
             -webkit-appearance: none;
         }
-
         input[type="number"] {
             -moz-appearance: textfield;
             appearance: textfield;
@@ -542,6 +510,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
     </script>
     <script>
+        // ── 工具函数 ──
         function d2r(deg) { return deg * Math.PI / 180; }
 
         function pointInConvexPolygon(px, py, verts) {
@@ -565,19 +534,13 @@
             const cosB = (c * c + a * a - b * b) / (2 * c * a);
             if (cosB < -1 || cosB > 1) return null;
             const sinB = Math.sqrt(Math.max(0, 1 - cosB * cosB));
-            const Bx = -a / 2,
-                By = 0;
-            const Cx = a / 2,
-                Cy = 0;
+            const Bx = -a / 2, By = 0;
+            const Cx = a / 2, Cy = 0;
             const Ax = Bx + c * cosB;
             const Ay = By - c * sinB;
             const gx = (Ax + Bx + Cx) / 3;
             const gy = (Ay + By + Cy) / 3;
-            return [
-                [Ax - gx, Ay - gy],
-                [Bx - gx, By - gy],
-                [Cx - gx, Cy - gy]
-            ];
+            return [[Ax - gx, Ay - gy], [Bx - gx, By - gy], [Cx - gx, Cy - gy]];
         }
 
         function regularPolygonVertices(n, R) {
@@ -588,8 +551,7 @@
         }
 
         function trapezoidVertices(a, b, h, la, ra) {
-            const laR = d2r(la),
-                raR = d2r(ra);
+            const laR = d2r(la), raR = d2r(ra);
             const bl = [-b / 2, h / 2];
             const br = [b / 2, h / 2];
             const tlx = -b / 2 + h / Math.tan(laR);
@@ -613,8 +575,7 @@
                     return px * px + py * py <= R * R;
                 }
                 case 'ellipse': {
-                    const a = s.semiMajor ?? 1,
-                        b = s.semiMinor ?? 1;
+                    const a = s.semiMajor ?? 1, b = s.semiMinor ?? 1;
                     return (px / a) ** 2 + (py / b) ** 2 <= 1;
                 }
                 case 'triangle': {
@@ -635,14 +596,12 @@
                     return px * px + py * py <= R * R && py <= chordY;
                 }
                 case 'annulus': {
-                    const ro = s.outerRadius ?? 2,
-                        ri = s.innerRadius ?? 1;
+                    const ro = s.outerRadius ?? 2, ri = s.innerRadius ?? 1;
                     const r2 = px * px + py * py;
                     return r2 >= ri * ri && r2 <= ro * ro;
                 }
                 case 'sector-annulus': {
-                    const ro = s.outerRadius ?? 2,
-                        ri = s.innerRadius ?? 1;
+                    const ro = s.outerRadius ?? 2, ri = s.innerRadius ?? 1;
                     const half = d2r((s.centralAngle ?? 90) / 2);
                     const r2 = px * px + py * py;
                     if (r2 < ri * ri || r2 > ro * ro) return false;
@@ -655,11 +614,9 @@
                     return pointInConvexPolygon(px, py, regularPolygonVertices(n, R));
                 }
                 case 'trapezoid': {
-                    const a = s.topBase ?? 1,
-                        b = s.bottomBase ?? 2;
+                    const a = s.topBase ?? 1, b = s.bottomBase ?? 2;
                     const h = s.height ?? 1;
-                    const la = s.leftAngle ?? 60,
-                        ra = s.rightAngle ?? 60;
+                    const la = s.leftAngle ?? 60, ra = s.rightAngle ?? 60;
                     return pointInConvexPolygon(px, py, trapezoidVertices(a, b, h, la, ra));
                 }
                 default: return false;
@@ -673,8 +630,7 @@
                     return { minX: -R, maxX: R, minY: -R, maxY: R };
                 }
                 case 'ellipse': {
-                    const a = s.semiMajor ?? 1,
-                        b = s.semiMinor ?? 1;
+                    const a = s.semiMajor ?? 1, b = s.semiMinor ?? 1;
                     return { minX: -a, maxX: a, minY: -b, maxY: b };
                 }
                 case 'triangle': {
@@ -730,13 +686,9 @@
 
         function getShapeSymmetry(s) {
             switch (s.type) {
-                case 'circle':
-                case 'ellipse':
-                case 'annulus':
+                case 'circle': case 'ellipse': case 'annulus':
                     return { xSym: true, ySym: true };
-                case 'sector':
-                case 'segment':
-                case 'sector-annulus':
+                case 'sector': case 'segment': case 'sector-annulus':
                     return { xSym: true, ySym: false };
                 case 'triangle':
                     return { xSym: false, ySym: false };
@@ -745,8 +697,7 @@
                     return { xSym: true, ySym: n % 2 === 0 };
                 }
                 case 'trapezoid': {
-                    const la = s.leftAngle ?? 60,
-                        ra = s.rightAngle ?? 60;
+                    const la = s.leftAngle ?? 60, ra = s.rightAngle ?? 60;
                     return { xSym: Math.abs(la - ra) < 0.5, ySym: false };
                 }
                 default: return { xSym: false, ySym: false };
@@ -764,15 +715,13 @@
                 case 'circle':
                     return Math.max(0, (s.radius ?? 1) - r);
                 case 'annulus': {
-                    const ri = s.innerRadius ?? 1,
-                        ro = s.outerRadius ?? 2;
+                    const ri = s.innerRadius ?? 1, ro = s.outerRadius ?? 2;
                     return Math.max(0, Math.min(r - ri, ro - r));
                 }
                 case 'sector': {
                     const R = s.radius ?? 1;
                     const half = d2r((s.centralAngle ?? 90) / 2);
-                    const cosH = Math.cos(half),
-                        sinH = Math.sin(half);
+                    const cosH = Math.cos(half), sinH = Math.sin(half);
                     const dArc = R - r;
                     const dRight = -(px * cosH + py * sinH);
                     const dLeft = px * cosH - py * sinH;
@@ -787,11 +736,9 @@
                     return Math.max(0, Math.min(dArc, dChord));
                 }
                 case 'sector-annulus': {
-                    const ri = s.innerRadius ?? 1,
-                        ro = s.outerRadius ?? 2;
+                    const ri = s.innerRadius ?? 1, ro = s.outerRadius ?? 2;
                     const half = d2r((s.centralAngle ?? 90) / 2);
-                    const cosH = Math.cos(half),
-                        sinH = Math.sin(half);
+                    const cosH = Math.cos(half), sinH = Math.sin(half);
                     const dInner = r - ri;
                     const dOuter = ro - r;
                     const dRight = -(px * cosH + py * sinH);
@@ -803,8 +750,7 @@
                     const dist = r;
                     const ndx = dist < 1e-9 ? 1 : px / dist;
                     const ndy = dist < 1e-9 ? 0 : py / dist;
-                    let lo = 0,
-                        hi = charR * 3;
+                    let lo = 0, hi = charR * 3;
                     for (let i = 0; i < 64; i++) {
                         const mid = (lo + hi) / 2;
                         if (isPointInShape(px + mid * ndx, py + mid * ndy, s)) lo = mid;
@@ -829,10 +775,7 @@
                 }
             }
             if (insidePoints.length === 0) return false;
-            let minX = Infinity,
-                maxX = -Infinity,
-                minY = Infinity,
-                maxY = -Infinity;
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
             for (const p of insidePoints) {
                 if (p.x < minX) minX = p.x;
                 if (p.x > maxX) maxX = p.x;
@@ -868,17 +811,14 @@
             const oxList = xSym ? [0, w / 2] : Array.from({ length: N }, (_, i) => i * w / N);
             const oyList = ySym ? [0, h / 2] : Array.from({ length: N }, (_, i) => i * h / N);
             const result = [];
-            for (const ox of oxList)
-                for (const oy of oyList) result.push([ox, oy]);
+            for (const ox of oxList) for (const oy of oyList) result.push([ox, oy]);
             return result;
         }
 
         function scanBounds(s, w, h, ox, oy) {
             const b = getShapeBounds(s);
-            const xMin = b.minX - w,
-                yMin = b.minY - h;
-            const xMax = b.maxX + w,
-                yMax = b.maxY + h;
+            const xMin = b.minX - w, yMin = b.minY - h;
+            const xMax = b.maxX + w, yMax = b.maxY + h;
             const col0 = ox + Math.ceil((xMin - ox) / w) * w;
             const row0 = oy + Math.ceil((yMin - oy) / h) * h;
             return { col0, row0, xMax, yMax };
@@ -916,13 +856,11 @@
         }
 
         function solveMixedShapeContains(shape, w1, h1, w2, h2) {
-            const k = Math.round(w1 / w2),
-                m = Math.round(h1 / h2);
+            const k = Math.round(w1 / w2), m = Math.round(h1 / h2);
             let best = { large: [], small: [] };
             for (const [ox, oy] of getSearchOffsets(w1, h1, shape)) {
                 const { col0, row0, xMax, yMax } = scanBounds(shape, w1, h1, ox, oy);
-                const large = [],
-                    small = [];
+                const large = [], small = [];
                 for (let rx = col0; rx < xMax; rx += w1) {
                     for (let ry = row0; ry < yMax; ry += h1) {
                         if (rectFullyInShape(rx, ry, w1, h1, shape)) {
@@ -930,8 +868,7 @@
                         } else {
                             for (let p = 0; p < k; p++)
                                 for (let q = 0; q < m; q++) {
-                                    const sx = rx + p * w2,
-                                        sy = ry + q * h2;
+                                    const sx = rx + p * w2, sy = ry + q * h2;
                                     if (rectFullyInShape(sx, sy, w2, h2, shape))
                                         small.push({ x: sx, y: sy, w: w2, h: h2 });
                                 }
@@ -945,13 +882,11 @@
         }
 
         function solveMixedRectsSurroundShape(shape, w1, h1, w2, h2, allowance = 0) {
-            const k = Math.round(w1 / w2),
-                m = Math.round(h1 / h2);
+            const k = Math.round(w1 / w2), m = Math.round(h1 / h2);
             let best = null;
             for (const [ox, oy] of getSearchOffsets(w1, h1, shape)) {
                 const { col0, row0, xMax, yMax } = scanBounds(shape, w1, h1, ox, oy);
-                const large = [],
-                    small = [];
+                const large = [], small = [];
                 for (let rx = col0; rx < xMax; rx += w1) {
                     for (let ry = row0; ry < yMax; ry += h1) {
                         if (!rectOverlapsShape(rx, ry, w1, h1, shape)) continue;
@@ -961,8 +896,7 @@
                         } else {
                             for (let p = 0; p < k; p++) {
                                 for (let q = 0; q < m; q++) {
-                                    const sx = rx + p * w2,
-                                        sy = ry + q * h2;
+                                    const sx = rx + p * w2, sy = ry + q * h2;
                                     if (rectOverlapsShape(sx, sy, w2, h2, shape) &&
                                         shouldKeepRect(sx, sy, w2, h2, shape, allowance)) {
                                         small.push({ x: sx, y: sy, w: w2, h: h2 });
@@ -983,23 +917,9 @@
             if (!rects.length) return 0;
             let maxDist = 0;
             for (const r of rects)
-                for (const [cx, cy] of [
-                        [r.x, r.y],
-                        [r.x + r.w, r.y],
-                        [r.x, r.y + r.h],
-                        [r.x + r.w, r.y + r.h]
-                    ])
+                for (const [cx, cy] of [[r.x, r.y], [r.x + r.w, r.y], [r.x, r.y + r.h], [r.x + r.w, r.y + r.h]])
                     maxDist = Math.max(maxDist, Math.sqrt(cx * cx + cy * cy));
             return maxDist;
-        }
-
-        function svgArcPath(cx, cy, r, startAngle, endAngle, sweep) {
-            const x1 = cx + r * Math.cos(startAngle);
-            const y1 = cy + r * Math.sin(startAngle);
-            const x2 = cx + r * Math.cos(endAngle);
-            const y2 = cy + r * Math.sin(endAngle);
-            const large = Math.abs(endAngle - startAngle) >= Math.PI ? 1 : 0;
-            return `M ${x1} ${y1} A ${r} ${r} 0 ${large} ${sweep} ${x2} ${y2}`;
         }
 
         function shapeToSvgPath(s) {
@@ -1009,13 +929,11 @@
                     return `M ${-R} 0 A ${R} ${R} 0 1 1 ${R} 0 A ${R} ${R} 0 1 1 ${-R} 0 Z`;
                 }
                 case 'ellipse': {
-                    const a = s.semiMajor ?? 1,
-                        b = s.semiMinor ?? 1;
+                    const a = s.semiMajor ?? 1, b = s.semiMinor ?? 1;
                     return `M ${-a} 0 A ${a} ${b} 0 1 1 ${a} 0 A ${a} ${b} 0 1 1 ${-a} 0 Z`;
                 }
                 case 'annulus': {
-                    const ro = s.outerRadius ?? 2,
-                        ri = s.innerRadius ?? 1;
+                    const ro = s.outerRadius ?? 2, ri = s.innerRadius ?? 1;
                     return `M ${-ro} 0 A ${ro} ${ro} 0 1 1 ${ro} 0 A ${ro} ${ro} 0 1 1 ${-ro} 0 Z ` +
                         `M ${-ri} 0 A ${ri} ${ri} 0 1 0 ${ri} 0 A ${ri} ${ri} 0 1 0 ${-ri} 0 Z`;
                 }
@@ -1023,10 +941,8 @@
                     const R = s.radius ?? 1;
                     const angle = s.centralAngle ?? 90;
                     const half = d2r(angle / 2);
-                    const x1 = R * Math.sin(-half),
-                        y1 = -R * Math.cos(-half);
-                    const x2 = R * Math.sin(half),
-                        y2 = -R * Math.cos(half);
+                    const x1 = R * Math.sin(-half), y1 = -R * Math.cos(-half);
+                    const x2 = R * Math.sin(half), y2 = -R * Math.cos(half);
                     const large = angle >= 180 ? 1 : 0;
                     return `M 0 0 L ${x1} ${y1} A ${R} ${R} 0 ${large} 1 ${x2} ${y2} Z`;
                 }
@@ -1034,26 +950,19 @@
                     const R = s.radius ?? 1;
                     const angle = s.centralAngle ?? 90;
                     const half = d2r(angle / 2);
-                    const x1 = -R * Math.sin(half),
-                        y1 = -R * Math.cos(half);
-                    const x2 = R * Math.sin(half),
-                        y2 = -R * Math.cos(half);
+                    const x1 = -R * Math.sin(half), y1 = -R * Math.cos(half);
+                    const x2 = R * Math.sin(half), y2 = -R * Math.cos(half);
                     const large = angle >= 180 ? 1 : 0;
                     return `M ${x1} ${y1} A ${R} ${R} 0 ${large} 1 ${x2} ${y2} Z`;
                 }
                 case 'sector-annulus': {
-                    const ro = s.outerRadius ?? 2,
-                        ri = s.innerRadius ?? 1;
+                    const ro = s.outerRadius ?? 2, ri = s.innerRadius ?? 1;
                     const angle = s.centralAngle ?? 90;
                     const half = d2r(angle / 2);
-                    const ox1 = ro * Math.sin(-half),
-                        oy1 = -ro * Math.cos(-half);
-                    const ox2 = ro * Math.sin(half),
-                        oy2 = -ro * Math.cos(half);
-                    const ix1 = ri * Math.sin(half),
-                        iy1 = -ri * Math.cos(half);
-                    const ix2 = ri * Math.sin(-half),
-                        iy2 = -ri * Math.cos(-half);
+                    const ox1 = ro * Math.sin(-half), oy1 = -ro * Math.cos(-half);
+                    const ox2 = ro * Math.sin(half), oy2 = -ro * Math.cos(half);
+                    const ix1 = ri * Math.sin(half), iy1 = -ri * Math.cos(half);
+                    const ix2 = ri * Math.sin(-half), iy2 = -ri * Math.cos(-half);
                     const large = angle >= 180 ? 1 : 0;
                     return `M ${ox1} ${oy1} A ${ro} ${ro} 0 ${large} 1 ${ox2} ${oy2} L ${ix1} ${iy1} A ${ri} ${ri} 0 ${large} 0 ${ix2} ${iy2} Z`;
                 }
@@ -1077,37 +986,30 @@
                 default: return '';
             }
         }
+
         const SHAPE_PARAMS_CONFIG = {
             circle: [{ id: 'radius', label: '半径 (mm)', def: 2000 }],
             ellipse: [{ id: 'semiMajor', label: '长轴半径', def: 2000 },
-            { id: 'semiMinor', label: '短轴半径', def: 1000 }
-            ],
+            { id: 'semiMinor', label: '短轴半径', def: 1000 }],
             sector: [{ id: 'radius', label: '半径 (mm)', def: 2000 },
-            { id: 'centralAngle', label: '圆心角 (°)', def: 90 }
-            ],
+            { id: 'centralAngle', label: '圆心角 (°)', def: 90 }],
             segment: [{ id: 'radius', label: '半径 (mm)', def: 2000 },
-            { id: 'centralAngle', label: '圆心角 (°)', def: 90 }
-            ],
+            { id: 'centralAngle', label: '圆心角 (°)', def: 90 }],
             annulus: [{ id: 'outerRadius', label: '外半径 (mm)', def: 2000 },
-            { id: 'innerRadius', label: '内半径 (mm)', def: 1000 }
-            ],
+            { id: 'innerRadius', label: '内半径 (mm)', def: 1000 }],
             'sector-annulus': [{ id: 'outerRadius', label: '外半径 (mm)', def: 2000 },
             { id: 'innerRadius', label: '内半径 (mm)', def: 1000 },
-            { id: 'centralAngle', label: '圆心角 (°)', def: 90 }
-            ],
+            { id: 'centralAngle', label: '圆心角 (°)', def: 90 }],
             triangle: [{ id: 'sideA', label: '边 a (mm)', def: 2000 },
             { id: 'sideB', label: '边 b (mm)', def: 3000 },
-            { id: 'sideC', label: '边 c (mm)', def: 2000 }
-            ],
+            { id: 'sideC', label: '边 c (mm)', def: 2000 }],
             'regular-polygon': [{ id: 'sides', label: '边数', def: 6 },
-            { id: 'sideLength', label: '边长 (mm)', def: 2000 }
-            ],
+            { id: 'sideLength', label: '边长 (mm)', def: 2000 }],
             trapezoid: [{ id: 'topBase', label: '上底 (mm)', def: 2000 },
             { id: 'bottomBase', label: '下底 (mm)', def: 5000 },
             { id: 'height', label: '高 (mm)', def: 4000 },
             { id: 'leftAngle', label: '左底角 (°)', def: 90 },
-            { id: 'rightAngle', label: '右底角 (°)', def: 70 }
-            ],
+            { id: 'rightAngle', label: '右底角 (°)', def: 70 }],
         };
 
         function getShapeParamsLines(shape) {
@@ -1121,11 +1023,12 @@
             }
             return lines;
         }
+
         let currentMode = 'contains';
         let lastResult = null;
         let lastShape = null;
-        let lastW1 = 320,
-            lastH1 = 160;
+        let lastW1 = 320, lastH1 = 160;
+
         const shapeTypeEl = document.getElementById('shape-type');
         const shapeParamsEl = document.getElementById('shape-params');
         const w1El = document.getElementById('w1');
@@ -1147,7 +1050,7 @@
         const expJpg = document.getElementById('exp-jpg');
         const expPdf = document.getElementById('exp-pdf');
 
-        // ── 侧边栏折叠 ────────────────────
+        // ── 侧边栏折叠 ──
         const sidebarHeader = document.getElementById('sidebar-header');
         const sidebarScroll = document.getElementById('sidebar-scroll');
         const headerTitle = document.getElementById('header-title');
@@ -1159,7 +1062,6 @@
             headerTitle.textContent = isCollapsed ? '▼ 填充矩形工具' : '▶ 填充矩形工具';
             sidebarHeader.setAttribute('aria-expanded', !isCollapsed);
         }
-
         sidebarHeader.addEventListener('click', toggleSidebar);
         sidebarHeader.addEventListener('keydown', (e) => {
             if (e.key === 'Enter' || e.key === ' ') {
@@ -1168,12 +1070,11 @@
             }
         });
 
-        // ── 渲染形状参数 ──────────────────
+        // ── 参数渲染 ──
         function renderShapeParams() {
             const type = shapeTypeEl.value;
             const fields = SHAPE_PARAMS_CONFIG[type] || [];
             shapeParamsEl.innerHTML = '<div class="section-title">形状参数</div>';
-            const isOdd = fields.length % 2 !== 0;
             const useGrid = fields.length >= 2;
             if (useGrid) {
                 const grid = document.createElement('div');
@@ -1181,8 +1082,7 @@
                 fields.forEach(f => {
                     const div = document.createElement('div');
                     div.className = 'field';
-                    div.innerHTML =
-                        `<label>${f.label}</label>
+                    div.innerHTML = `<label>${f.label}</label>
         <input type="number" id="sp-${f.id}" value="${f.def}" min="1" step="any">`;
                     grid.appendChild(div);
                 });
@@ -1191,8 +1091,7 @@
                 fields.forEach(f => {
                     const div = document.createElement('div');
                     div.className = 'field';
-                    div.innerHTML =
-                        `<label>${f.label}</label>
+                    div.innerHTML = `<label>${f.label}</label>
         <input type="number" id="sp-${f.id}" value="${f.def}" min="1" step="any">`;
                     shapeParamsEl.appendChild(div);
                 });
@@ -1216,11 +1115,7 @@
                 btn.classList.add('active');
                 currentMode = btn.dataset.mode;
                 const allowanceContainer = document.getElementById('allowance-container');
-                if (currentMode === 'surround') {
-                    allowanceContainer.style.display = 'block';
-                } else {
-                    allowanceContainer.style.display = 'none';
-                }
+                allowanceContainer.style.display = currentMode === 'surround' ? 'block' : 'none';
             });
         });
 
@@ -1243,10 +1138,8 @@
         function validate() {
             const type = shapeTypeEl.value;
             const sp = getShapeParams();
-            const w1 = parseFloat(w1El.value),
-                h1 = parseFloat(h1El.value);
-            const w2str = w2El.value.trim(),
-                h2str = h2El.value.trim();
+            const w1 = parseFloat(w1El.value), h1 = parseFloat(h1El.value);
+            const w2str = w2El.value.trim(), h2str = h2El.value.trim();
             const hasSmall = w2str !== '' && h2str !== '';
             if (!w1 || w1 <= 0) return '大矩形宽 w1 必须大于 0';
             if (!h1 || h1 <= 0) return '大矩形高 h1 必须大于 0';
@@ -1261,18 +1154,15 @@
                 if ((sp.innerRadius ?? 0) >= (sp.outerRadius ?? 1)) return '内半径必须小于外半径';
             }
             if (type === 'trapezoid') {
-                const la = sp.leftAngle ?? 0,
-                    ra = sp.rightAngle ?? 0;
+                const la = sp.leftAngle ?? 0, ra = sp.rightAngle ?? 0;
                 if (la <= 0 || la >= 180 || ra <= 0 || ra >= 180) return '底角必须在 0°~180° 之间';
                 if (la + ra >= 180) return '底角之和必须小于 180°';
             }
             if (hasSmall) {
-                const w2 = parseFloat(w2str),
-                    h2 = parseFloat(h2str);
+                const w2 = parseFloat(w2str), h2 = parseFloat(h2str);
                 if (!w2 || w2 <= 0) return '小矩形宽 w2 必须大于 0';
                 if (!h2 || h2 <= 0) return '小矩形高 h2 必须大于 0';
-                const kw = w1 / w2,
-                    kh = h1 / h2;
+                const kw = w1 / w2, kh = h1 / h2;
                 if (Math.abs(kw - Math.round(kw)) > 1e-6) return 'w1 必须是 w2 的整数倍';
                 if (Math.abs(kh - Math.round(kh)) > 1e-6) return 'h1 必须是 h2 的整数倍';
             }
@@ -1286,8 +1176,7 @@
             const shape = getShapeParams();
             const w1 = parseFloat(w1El.value);
             const h1 = parseFloat(h1El.value);
-            const w2str = w2El.value.trim(),
-                h2str = h2El.value.trim();
+            const w2str = w2El.value.trim(), h2str = h2El.value.trim();
             const hasSmall = w2str !== '' && h2str !== '';
             const w2 = hasSmall ? parseFloat(w2str) : 0;
             const h2 = hasSmall ? parseFloat(h2str) : 0;
@@ -1339,15 +1228,8 @@
             expJpg.disabled = false;
             expPdf.disabled = false;
             const SHAPE_NAMES = {
-                circle: '圆',
-                trapezoid: '梯形',
-                triangle: '三角形',
-                ellipse: '椭圆',
-                sector: '扇形',
-                segment: '弓形',
-                annulus: '圆环',
-                'sector-annulus': '扇环',
-                'regular-polygon': '正多边形'
+                circle: '圆', trapezoid: '梯形', triangle: '三角形', ellipse: '椭圆',
+                sector: '扇形', segment: '弓形', annulus: '圆环', 'sector-annulus': '扇环', 'regular-polygon': '正多边形'
             };
             sbShape.textContent = SHAPE_NAMES[shape.type] || shape.type;
             sbMode.textContent = currentMode === 'contains' ? '形状包围矩形' : '矩形包围形状';
@@ -1372,10 +1254,7 @@
             const canvasW = canvasWrap.clientWidth || 800;
             const canvasH = canvasWrap.clientHeight || 600;
             const b = getShapeBounds(shape);
-            let viewMinX = b.minX,
-                viewMinY = b.minY,
-                viewMaxX = b.maxX,
-                viewMaxY = b.maxY;
+            let viewMinX = b.minX, viewMinY = b.minY, viewMaxX = b.maxX, viewMaxY = b.maxY;
             for (const r of allRects) {
                 viewMinX = Math.min(viewMinX, r.x);
                 viewMaxX = Math.max(viewMaxX, r.x + r.w);
@@ -1383,54 +1262,43 @@
                 viewMaxY = Math.max(viewMaxY, r.y + r.h);
             }
             const pad = Math.max(viewMaxX - viewMinX, viewMaxY - viewMinY) * 0.08;
-            viewMinX -= pad;
-            viewMinY -= pad;
-            viewMaxX += pad;
-            viewMaxY += pad;
+            viewMinX -= pad; viewMinY -= pad; viewMaxX += pad; viewMaxY += pad;
             const scale = Math.min(canvasW / (viewMaxX - viewMinX), canvasH / (viewMaxY - viewMinY));
             const tx = canvasW / 2 - (viewMinX + viewMaxX) / 2 * scale;
             const ty = canvasH / 2 - (viewMinY + viewMaxY) / 2 * scale;
             const ns = 'http://www.w3.org/2000/svg';
             drawLayer.innerHTML = '';
             drawLayer.setAttribute('transform', `translate(${tx}, ${ty}) scale(${scale})`);
+            // crosshair
             const cross = document.createElementNS(ns, 'g');
             cross.setAttribute('opacity', '0.3');
             const cl = document.createElementNS(ns, 'line');
-            cl.setAttribute('x1', String(-viewMaxX));
-            cl.setAttribute('x2', String(viewMaxX));
-            cl.setAttribute('y1', '0');
-            cl.setAttribute('y2', '0');
-            cl.setAttribute('stroke', '#38BDF8');
-            cl.setAttribute('stroke-width', String(1 / scale));
+            cl.setAttribute('x1', String(-viewMaxX)); cl.setAttribute('x2', String(viewMaxX));
+            cl.setAttribute('y1', '0'); cl.setAttribute('y2', '0');
+            cl.setAttribute('stroke', '#38BDF8'); cl.setAttribute('stroke-width', String(1 / scale));
             cl.setAttribute('stroke-dasharray', String(8 / scale) + ' ' + String(8 / scale));
             const cv = document.createElementNS(ns, 'line');
-            cv.setAttribute('y1', String(-viewMaxY));
-            cv.setAttribute('y2', String(viewMaxY));
-            cv.setAttribute('x1', '0');
-            cv.setAttribute('x2', '0');
-            cv.setAttribute('stroke', '#38BDF8');
-            cv.setAttribute('stroke-width', String(1 / scale));
+            cv.setAttribute('y1', String(-viewMaxY)); cv.setAttribute('y2', String(viewMaxY));
+            cv.setAttribute('x1', '0'); cv.setAttribute('x2', '0');
+            cv.setAttribute('stroke', '#38BDF8'); cv.setAttribute('stroke-width', String(1 / scale));
             cv.setAttribute('stroke-dasharray', String(8 / scale) + ' ' + String(8 / scale));
-            cross.appendChild(cl);
-            cross.appendChild(cv);
+            cross.appendChild(cl); cross.appendChild(cv);
             drawLayer.appendChild(cross);
+            // large rects
             for (const r of result.large) {
                 const el = document.createElementNS(ns, 'rect');
-                el.setAttribute('x', r.x);
-                el.setAttribute('y', r.y);
-                el.setAttribute('width', r.w);
-                el.setAttribute('height', r.h);
+                el.setAttribute('x', r.x); el.setAttribute('y', r.y);
+                el.setAttribute('width', r.w); el.setAttribute('height', r.h);
                 el.setAttribute('fill', 'rgba(16,185,129,0.18)');
                 el.setAttribute('stroke', '#10B981');
                 el.setAttribute('stroke-width', String(1.5 / scale));
                 drawLayer.appendChild(el);
             }
+            // small rects
             for (const r of result.small) {
                 const el = document.createElementNS(ns, 'rect');
-                el.setAttribute('x', r.x);
-                el.setAttribute('y', r.y);
-                el.setAttribute('width', r.w);
-                el.setAttribute('height', r.h);
+                el.setAttribute('x', r.x); el.setAttribute('y', r.y);
+                el.setAttribute('width', r.w); el.setAttribute('height', r.h);
                 el.setAttribute('fill', 'rgba(56,189,248,0.14)');
                 el.setAttribute('stroke', '#38BDF8');
                 el.setAttribute('stroke-width', String(1.2 / scale));
@@ -1454,23 +1322,17 @@
             const allRects = [...result.large, ...result.small];
             const largeCount = result.large.length;
             const smallCount = result.small.length;
-            let minX = Infinity,
-                maxX = -Infinity,
-                minY = Infinity,
-                maxY = -Infinity;
+            let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
             for (const r of allRects) {
-                minX = Math.min(minX, r.x);
-                maxX = Math.max(maxX, r.x + r.w);
-                minY = Math.min(minY, r.y);
-                maxY = Math.max(maxY, r.y + r.h);
+                minX = Math.min(minX, r.x); maxX = Math.max(maxX, r.x + r.w);
+                minY = Math.min(minY, r.y); maxY = Math.max(maxY, r.y + r.h);
             }
             const totalW = allRects.length ? maxX - minX : 0;
             const totalH = allRects.length ? maxY - minY : 0;
             const areaLarge = largeCount * w1 * h1;
             const areaSmall = result.small.length > 0 ? result.small.length * result.small[0].w * result.small[0].h : 0;
             const totalArea = (areaLarge + areaSmall) / 1e6;
-            let cols = null,
-                rows = null;
+            let cols = null, rows = null;
             if (allRects.length > 0) {
                 const allW = allRects.map(r => r.w);
                 const allH = allRects.map(r => r.h);
@@ -1490,24 +1352,14 @@
                 if (mode === 'contains') {
                     const cornerCount = new Map();
                     for (const r of allRects) {
-                        for (const [cx, cy] of [
-                                [r.x, r.y],
-                                [r.x + r.w, r.y],
-                                [r.x, r.y + r.h],
-                                [r.x + r.w, r.y + r.h]
-                            ]) {
+                        for (const [cx, cy] of [[r.x, r.y], [r.x + r.w, r.y], [r.x, r.y + r.h], [r.x + r.w, r.y + r.h]]) {
                             const key = `${cx.toFixed(3)},${cy.toFixed(3)}`;
                             cornerCount.set(key, (cornerCount.get(key) ?? 0) + 1);
                         }
                     }
                     let maxGap = 0;
                     for (const r of allRects) {
-                        for (const [cx, cy] of [
-                                [r.x, r.y],
-                                [r.x + r.w, r.y],
-                                [r.x, r.y + r.h],
-                                [r.x + r.w, r.y + r.h]
-                            ]) {
+                        for (const [cx, cy] of [[r.x, r.y], [r.x + r.w, r.y], [r.x, r.y + r.h], [r.x + r.w, r.y + r.h]]) {
                             const key = `${cx.toFixed(3)},${cy.toFixed(3)}`;
                             if ((cornerCount.get(key) ?? 0) < 4) {
                                 const d = distanceToShapeBoundary(cx, cy, shape);
@@ -1529,111 +1381,209 @@
             statsPanel.style.display = 'block';
             let html = '';
             if (stats.cols !== null)
-                html +=
-                `<div class="stat-row"><span class="stat-key">列数</span><span class="stat-val">${stats.cols}</span></div>`;
+                html += `<div class="stat-row"><span class="stat-key">列数</span><span class="stat-val">${stats.cols}</span></div>`;
             if (stats.rows !== null)
-                html +=
-                `<div class="stat-row"><span class="stat-key">行数</span><span class="stat-val">${stats.rows}</span></div>`;
-            html +=
-                `<div class="stat-row"><span class="stat-key">包围盒</span><span class="stat-val yellow">${stats.totalW.toFixed(0)} × ${stats.totalH.toFixed(0)} mm</span></div>`;
+                html += `<div class="stat-row"><span class="stat-key">行数</span><span class="stat-val">${stats.rows}</span></div>`;
+            html += `<div class="stat-row"><span class="stat-key">包围盒</span><span class="stat-val yellow">${stats.totalW.toFixed(0)} × ${stats.totalH.toFixed(0)} mm</span></div>`;
             html += `<div class="stat-row"><span class="stat-key">大矩形数</span><span class="stat-val">${stats.largeCount}</span></div>`;
             if (stats.smallCount > 0) {
-                html +=
-                    `<div class="stat-row"><span class="stat-key">小矩形数</span><span class="stat-val cyan">${stats.smallCount}</span></div>`;
+                html += `<div class="stat-row"><span class="stat-key">小矩形数</span><span class="stat-val cyan">${stats.smallCount}</span></div>`;
             }
-            html +=
-                `<div class="stat-row"><span class="stat-key">总面积</span><span class="stat-val">${stats.totalArea.toFixed(4)} m²</span></div>`;
+            html += `<div class="stat-row"><span class="stat-key">总面积</span><span class="stat-val">${stats.totalArea.toFixed(4)} m²</span></div>`;
             statsContent.innerHTML = html;
         }
 
-        function getSvgForExport() {
-            const canvasW = canvasWrap.clientWidth;
-            const canvasH = canvasWrap.clientHeight;
-            const svgClone = mainSvg.cloneNode(true);
-            svgClone.setAttribute('width', canvasW);
-            svgClone.setAttribute('height', canvasH);
-            svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-            const allPaths = svgClone.querySelectorAll('path');
-            allPaths.forEach(path => {
-                path.style.animation = 'none';
-                path.removeAttribute('stroke-dasharray');
-                path.removeAttribute('stroke-dashoffset');
-            });
-            if (lastResult && lastShape) {
-                const stats = computeStats(lastShape, lastResult, lastW1, lastH1, currentMode);
-                const lines = [];
-                const paramLines = getShapeParamsLines(lastShape);
-                lines.push('声明：');
-                lines.push('本软件由笙制作，仅为展示之用');
-                lines.push('产生的数据由用户自行甄别');
-                lines.push('--------------------');
-                for (const line of paramLines) {
-                    lines.push(line);
-                }
-                lines.push('--------------------');
-                lines.push(`列数: ${stats.cols !== null ? stats.cols : '--'}`);
-                lines.push(`行数: ${stats.rows !== null ? stats.rows : '--'}`);
-                lines.push(`包围盒: ${stats.totalW.toFixed(0)} × ${stats.totalH.toFixed(0)} mm`);
-                lines.push(`大矩形数: ${stats.largeCount}`);
-                if (stats.smallCount > 0) lines.push(`小矩形数: ${stats.smallCount}`);
-                lines.push(`总面积: ${stats.totalArea.toFixed(4)} m²`);
-                const allowance = parseFloat(document.getElementById('allowance')?.value) || 0;
-                if (currentMode === 'surround' && allowance > 0) {
-                    const allRectsNow = [...lastResult.large, ...lastResult.small];
-                    const noAllowRects = solveRectsSurroundShape(lastShape, lastW1, lastH1, 0);
-                    if (noAllowRects.length > allRectsNow.length) {
-                        lines.push(`实际边沿留空: ${allowance} mm (过滤 ${noAllowRects.length - allRectsNow.length} 个矩形)`);
-                    }
-                }
-                const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-                const fontSize = 14;
-                const lineHeight = fontSize * 1.5;
-                const margin = 20;
-                let xPos = canvasW - margin;
-                let yPos = canvasH - margin;
-                for (let i = lines.length - 1; i >= 0; i--) {
-                    const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-                    textEl.setAttribute('x', xPos);
-                    textEl.setAttribute('y', yPos);
-                    textEl.setAttribute('text-anchor', 'end');
-                    textEl.setAttribute('font-family', 'SimSun, sans-serif');
-                    textEl.setAttribute('font-size', fontSize);
-                    textEl.setAttribute('fill', '#FFFFFF');
-                    textEl.textContent = lines[i];
-                    textGroup.appendChild(textEl);
-                    yPos -= lineHeight;
-                }
-                svgClone.appendChild(textGroup);
+        // ── 导出核心：生成独立 SVG（视口 = 包围盒 × 1.5） ──
+        function generateExportSVG() {
+            if (!lastShape || !lastResult) return null;
+            const allRects = [...lastResult.large, ...lastResult.small];
+            // 计算整体包围盒（形状 + 所有矩形）
+            const shapeBounds = getShapeBounds(lastShape);
+            let minX = shapeBounds.minX, maxX = shapeBounds.maxX;
+            let minY = shapeBounds.minY, maxY = shapeBounds.maxY;
+            for (const r of allRects) {
+                minX = Math.min(minX, r.x);
+                maxX = Math.max(maxX, r.x + r.w);
+                minY = Math.min(minY, r.y);
+                maxY = Math.max(maxY, r.y + r.h);
             }
-            const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            bgRect.setAttribute('width', canvasW);
-            bgRect.setAttribute('height', canvasH);
-            bgRect.setAttribute('fill', '#0f1a2b');
-            svgClone.insertBefore(bgRect, svgClone.firstChild);
-            return new XMLSerializer().serializeToString(svgClone);
+            const shapeW = maxX - minX;
+            const shapeH = maxY - minY;
+            if (shapeW < 1e-6 || shapeH < 1e-6) return null;
+
+            const targetScale = 1.5;
+            let viewW = Math.max(shapeW * targetScale, 400);
+            let viewH = Math.max(shapeH * targetScale, 400);
+            // 保持比例，避免拉伸
+            const ratio = shapeW / shapeH;
+            if (viewW / viewH > ratio) {
+                viewW = viewH * ratio;
+            } else {
+                viewH = viewW / ratio;
+            }
+            // 确保最小尺寸
+            viewW = Math.max(viewW, 400);
+            viewH = Math.max(viewH, 400);
+
+            const cx = (minX + maxX) / 2;
+            const cy = (minY + maxY) / 2;
+            const dx = viewW / 2 - cx;
+            const dy = viewH / 2 - cy;
+
+            // 构建 SVG
+            const ns = 'http://www.w3.org/2000/svg';
+            const svg = document.createElementNS(ns, 'svg');
+            svg.setAttribute('width', viewW);
+            svg.setAttribute('height', viewH);
+            svg.setAttribute('viewBox', `0 0 ${viewW} ${viewH}`);
+            svg.setAttribute('xmlns', ns);
+
+            // 背景
+            const bg = document.createElementNS(ns, 'rect');
+            bg.setAttribute('width', viewW);
+            bg.setAttribute('height', viewH);
+            bg.setAttribute('fill', '#0f1a2b');
+            svg.appendChild(bg);
+
+            // 网格（简单画一些线）
+            const gridG = document.createElementNS(ns, 'g');
+            gridG.setAttribute('opacity', '0.3');
+            const step = Math.min(viewW, viewH) / 20;
+            for (let x = 0; x <= viewW; x += step) {
+                const line = document.createElementNS(ns, 'line');
+                line.setAttribute('x1', x); line.setAttribute('y1', '0');
+                line.setAttribute('x2', x); line.setAttribute('y2', viewH);
+                line.setAttribute('stroke', '#1a2d45');
+                line.setAttribute('stroke-width', '0.5');
+                gridG.appendChild(line);
+            }
+            for (let y = 0; y <= viewH; y += step) {
+                const line = document.createElementNS(ns, 'line');
+                line.setAttribute('x1', '0'); line.setAttribute('y1', y);
+                line.setAttribute('x2', viewW); line.setAttribute('y2', y);
+                line.setAttribute('stroke', '#1a2d45');
+                line.setAttribute('stroke-width', '0.5');
+                gridG.appendChild(line);
+            }
+            svg.appendChild(gridG);
+
+            // 十字线（视口中心）
+            const cross = document.createElementNS(ns, 'g');
+            cross.setAttribute('opacity', '0.25');
+            const chv = document.createElementNS(ns, 'line');
+            chv.setAttribute('x1', viewW / 2); chv.setAttribute('x2', viewW / 2);
+            chv.setAttribute('y1', '0'); chv.setAttribute('y2', viewH);
+            chv.setAttribute('stroke', '#38BDF8');
+            chv.setAttribute('stroke-width', '0.5');
+            chv.setAttribute('stroke-dasharray', '4 4');
+            const chh = document.createElementNS(ns, 'line');
+            chh.setAttribute('x1', '0'); chh.setAttribute('x2', viewW);
+            chh.setAttribute('y1', viewH / 2); chh.setAttribute('y2', viewH / 2);
+            chh.setAttribute('stroke', '#38BDF8');
+            chh.setAttribute('stroke-width', '0.5');
+            chh.setAttribute('stroke-dasharray', '4 4');
+            cross.appendChild(chv); cross.appendChild(chh);
+            svg.appendChild(cross);
+
+            // 图形组（平移至居中）
+            const g = document.createElementNS(ns, 'g');
+            g.setAttribute('transform', `translate(${dx}, ${dy})`);
+
+            // 矩形（大）
+            for (const r of lastResult.large) {
+                const rect = document.createElementNS(ns, 'rect');
+                rect.setAttribute('x', r.x); rect.setAttribute('y', r.y);
+                rect.setAttribute('width', r.w); rect.setAttribute('height', r.h);
+                rect.setAttribute('fill', 'rgba(16,185,129,0.18)');
+                rect.setAttribute('stroke', '#10B981');
+                rect.setAttribute('stroke-width', '1.5');
+                g.appendChild(rect);
+            }
+            // 矩形（小）
+            for (const r of lastResult.small) {
+                const rect = document.createElementNS(ns, 'rect');
+                rect.setAttribute('x', r.x); rect.setAttribute('y', r.y);
+                rect.setAttribute('width', r.w); rect.setAttribute('height', r.h);
+                rect.setAttribute('fill', 'rgba(56,189,248,0.14)');
+                rect.setAttribute('stroke', '#38BDF8');
+                rect.setAttribute('stroke-width', '1.2');
+                g.appendChild(rect);
+            }
+            // 形状轮廓
+            const pathD = shapeToSvgPath(lastShape);
+            if (pathD) {
+                const path = document.createElementNS(ns, 'path');
+                path.setAttribute('d', pathD);
+                path.setAttribute('fill', 'rgba(245,158,11,0.05)');
+                path.setAttribute('stroke', '#FFFFFF');
+                path.setAttribute('stroke-width', '2');
+                path.setAttribute('fill-rule', 'evenodd');
+                g.appendChild(path);
+            }
+            svg.appendChild(g);
+
+            // 右下角文本（统计信息）
+            const stats = computeStats(lastShape, lastResult, lastW1, lastH1, currentMode);
+            const lines = [];
+            const paramLines = getShapeParamsLines(lastShape);
+            lines.push('声明：');
+            lines.push('本软件由笙制作，仅为展示之用');
+            lines.push('产生的数据由用户自行甄别');
+            lines.push('--------------------');
+            for (const line of paramLines) lines.push(line);
+            lines.push('--------------------');
+            lines.push(`列数: ${stats.cols !== null ? stats.cols : '--'}`);
+            lines.push(`行数: ${stats.rows !== null ? stats.rows : '--'}`);
+            lines.push(`包围盒: ${stats.totalW.toFixed(0)} × ${stats.totalH.toFixed(0)} mm`);
+            lines.push(`大矩形数: ${stats.largeCount}`);
+            if (stats.smallCount > 0) lines.push(`小矩形数: ${stats.smallCount}`);
+            lines.push(`总面积: ${stats.totalArea.toFixed(4)} m²`);
+            const allowance = parseFloat(document.getElementById('allowance')?.value) || 0;
+            if (currentMode === 'surround' && allowance > 0) {
+                const allRectsNow = [...lastResult.large, ...lastResult.small];
+                const noAllowRects = solveRectsSurroundShape(lastShape, lastW1, lastH1, 0);
+                if (noAllowRects.length > allRectsNow.length) {
+                    lines.push(`实际边沿留空: ${allowance} mm (过滤 ${noAllowRects.length - allRectsNow.length} 个矩形)`);
+                }
+            }
+
+            const textGroup = document.createElementNS(ns, 'g');
+            const fontSize = 14;
+            const lineHeight = fontSize * 1.5;
+            const margin = 20;
+            let xPos = viewW - margin;
+            let yPos = viewH - margin;
+            for (let i = lines.length - 1; i >= 0; i--) {
+                const text = document.createElementNS(ns, 'text');
+                text.setAttribute('x', xPos);
+                text.setAttribute('y', yPos);
+                text.setAttribute('text-anchor', 'end');
+                text.setAttribute('font-family', 'SimSun, sans-serif');
+                text.setAttribute('font-size', fontSize);
+                text.setAttribute('fill', '#FFFFFF');
+                text.textContent = lines[i];
+                textGroup.appendChild(text);
+                yPos -= lineHeight;
+            }
+            svg.appendChild(textGroup);
+
+            return new XMLSerializer().serializeToString(svg);
         }
 
-        function getShapeParamsString(shape) {
-            const config = SHAPE_PARAMS_CONFIG[shape.type] || [];
-            const parts = config.map(f => {
-                const val = shape[f.id];
-                if (val !== undefined) return `${f.label}${val}`;
-                return '';
-            }).filter(s => s);
-            return parts.join(', ');
+        // ── 导出按钮 ──
+        function getFileName() {
+            if (!lastShape || !lastResult) return 'export';
+            const stats = computeStats(lastShape, lastResult, lastW1, lastH1, currentMode);
+            const { totalW, totalH, smallCount } = stats;
+            const smallW = (smallCount > 0) ? lastResult.small[0].w : 0;
+            const smallH = (smallCount > 0) ? lastResult.small[0].h : 0;
+            return generateFileName(lastShape, lastW1, lastH1, smallW, smallH, totalW, totalH);
         }
 
         function generateFileName(shape, w1, h1, smallW, smallH, totalW, totalH) {
             const shapeNames = {
-                circle: '圆',
-                trapezoid: '梯形',
-                triangle: '三角形',
-                ellipse: '椭圆',
-                sector: '扇形',
-                segment: '弓形',
-                annulus: '圆环',
-                'sector-annulus': '扇环',
-                'regular-polygon': '正多边形'
+                circle: '圆', trapezoid: '梯形', triangle: '三角形', ellipse: '椭圆',
+                sector: '扇形', segment: '弓形', annulus: '圆环', 'sector-annulus': '扇环', 'regular-polygon': '正多边形'
             };
             const type = shape.type;
             const name = shapeNames[type] || type;
@@ -1659,32 +1609,32 @@
                 alert('请先生成填充方案');
                 return;
             }
-            const stats = computeStats(lastShape, lastResult, lastW1, lastH1, currentMode);
-            const { totalW, totalH, smallCount } = stats;
-            const smallW = (smallCount > 0) ? lastResult.small[0].w : 0;
-            const smallH = (smallCount > 0) ? lastResult.small[0].h : 0;
-            const fileName = generateFileName(lastShape, lastW1, lastH1, smallW, smallH, totalW, totalH);
-            const svgStr = getSvgForExport();
+            const svgStr = generateExportSVG();
+            if (!svgStr) { alert('导出数据无效'); return; }
             const blob = new Blob([svgStr], { type: 'image/svg+xml' });
             const url = URL.createObjectURL(blob);
             const img = new Image();
-            const canvasW = canvasWrap.clientWidth,
-                canvasH = canvasWrap.clientHeight;
+            // 解析视口尺寸
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(svgStr, 'image/svg+xml');
+            const svgEl = doc.documentElement;
+            const w = parseFloat(svgEl.getAttribute('width'));
+            const h = parseFloat(svgEl.getAttribute('height'));
             img.onload = () => {
                 const c = document.createElement('canvas');
-                c.width = canvasW * 2;
-                c.height = canvasH * 2;
+                const scale = 2;
+                c.width = w * scale;
+                c.height = h * scale;
                 const ctx = c.getContext('2d');
-                ctx.scale(2, 2);
-                ctx.fillStyle = '#0f1a2b';
-                ctx.fillRect(0, 0, canvasW, canvasH);
-                ctx.drawImage(img, 0, 0, canvasW, canvasH);
+                ctx.scale(scale, scale);
+                ctx.drawImage(img, 0, 0, w, h);
                 URL.revokeObjectURL(url);
                 const link = document.createElement('a');
                 link.href = c.toDataURL('image/jpeg', 0.95);
-                link.download = fileName + '.jpg';
+                link.download = getFileName() + '.jpg';
                 link.click();
             };
+            img.onerror = () => { alert('JPG 导出失败'); };
             img.src = url;
         });
 
@@ -1693,41 +1643,41 @@
                 alert('请先生成填充方案');
                 return;
             }
-            const stats = computeStats(lastShape, lastResult, lastW1, lastH1, currentMode);
-            const { totalW, totalH, smallCount } = stats;
-            const smallW = (smallCount > 0) ? lastResult.small[0].w : 0;
-            const smallH = (smallCount > 0) ? lastResult.small[0].h : 0;
-            const fileName = generateFileName(lastShape, lastW1, lastH1, smallW, smallH, totalW, totalH);
-            const svgStr = getSvgForExport();
+            const svgStr = generateExportSVG();
+            if (!svgStr) { alert('导出数据无效'); return; }
             const blob = new Blob([svgStr], { type: 'image/svg+xml' });
             const url = URL.createObjectURL(blob);
             const img = new Image();
-            const canvasW = canvasWrap.clientWidth,
-                canvasH = canvasWrap.clientHeight;
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(svgStr, 'image/svg+xml');
+            const svgEl = doc.documentElement;
+            const w = parseFloat(svgEl.getAttribute('width'));
+            const h = parseFloat(svgEl.getAttribute('height'));
             img.onload = () => {
                 const c = document.createElement('canvas');
-                c.width = canvasW * 2;
-                c.height = canvasH * 2;
+                const scale = 2;
+                c.width = w * scale;
+                c.height = h * scale;
                 const ctx = c.getContext('2d');
-                ctx.scale(2, 2);
-                ctx.fillStyle = '#0f1a2b';
-                ctx.fillRect(0, 0, canvasW, canvasH);
-                ctx.drawImage(img, 0, 0, canvasW, canvasH);
+                ctx.scale(scale, scale);
+                ctx.drawImage(img, 0, 0, w, h);
                 URL.revokeObjectURL(url);
                 const imgData = c.toDataURL('image/jpeg', 0.92);
                 try {
                     const { jsPDF } = window.jspdf;
-                    const orient = canvasW > canvasH ? 'landscape' : 'portrait';
-                    const pdf = new jsPDF({ orientation: orient, unit: 'px', format: [canvasW, canvasH] });
-                    pdf.addImage(imgData, 'JPEG', 0, 0, canvasW, canvasH);
-                    pdf.save(fileName + '.pdf');
+                    const orient = w > h ? 'landscape' : 'portrait';
+                    const pdf = new jsPDF({ orientation: orient, unit: 'px', format: [w, h] });
+                    pdf.addImage(imgData, 'JPEG', 0, 0, w, h);
+                    pdf.save(getFileName() + '.pdf');
                 } catch (e) {
                     alert('PDF 导出失败，请确认 jsPDF 已加载：' + e.message);
                 }
             };
+            img.onerror = () => { alert('PDF 导出失败'); };
             img.src = url;
         });
 
+        // ── 窗口resize重绘 ──
         let resizeTimer;
         window.addEventListener('resize', () => {
             clearTimeout(resizeTimer);
@@ -1738,10 +1688,10 @@
             }, 150);
         });
 
+        // ── 初始化 ──
         (function init() {
             const update = () => {
-                const w = canvasWrap.clientWidth,
-                    h = canvasWrap.clientHeight;
+                const w = canvasWrap.clientWidth, h = canvasWrap.clientHeight;
                 mainSvg.setAttribute('viewBox', `0 0 ${w} ${h}`);
                 const gridRect = document.querySelector('#grid-rect');
                 if (gridRect) {
