@@ -1414,14 +1414,13 @@
             const targetScale = 1.5;
             let viewW = Math.max(shapeW * targetScale, 400);
             let viewH = Math.max(shapeH * targetScale, 400);
-            // 保持比例，避免拉伸
+            // 保持比例
             const ratio = shapeW / shapeH;
             if (viewW / viewH > ratio) {
                 viewW = viewH * ratio;
             } else {
                 viewH = viewW / ratio;
             }
-            // 确保最小尺寸
             viewW = Math.max(viewW, 400);
             viewH = Math.max(viewH, 400);
 
@@ -1445,7 +1444,7 @@
             bg.setAttribute('fill', '#0f1a2b');
             svg.appendChild(bg);
 
-            // 网格（简单画一些线）
+            // 网格
             const gridG = document.createElementNS(ns, 'g');
             gridG.setAttribute('opacity', '0.3');
             const step = Math.min(viewW, viewH) / 20;
@@ -1467,7 +1466,7 @@
             }
             svg.appendChild(gridG);
 
-            // 十字线（视口中心）
+            // 十字线
             const cross = document.createElementNS(ns, 'g');
             cross.setAttribute('opacity', '0.25');
             const chv = document.createElementNS(ns, 'line');
@@ -1485,11 +1484,10 @@
             cross.appendChild(chv); cross.appendChild(chh);
             svg.appendChild(cross);
 
-            // 图形组（平移至居中）
+            // 图形组
             const g = document.createElementNS(ns, 'g');
             g.setAttribute('transform', `translate(${dx}, ${dy})`);
 
-            // 矩形（大）
             for (const r of lastResult.large) {
                 const rect = document.createElementNS(ns, 'rect');
                 rect.setAttribute('x', r.x); rect.setAttribute('y', r.y);
@@ -1499,7 +1497,6 @@
                 rect.setAttribute('stroke-width', '1.5');
                 g.appendChild(rect);
             }
-            // 矩形（小）
             for (const r of lastResult.small) {
                 const rect = document.createElementNS(ns, 'rect');
                 rect.setAttribute('x', r.x); rect.setAttribute('y', r.y);
@@ -1509,7 +1506,6 @@
                 rect.setAttribute('stroke-width', '1.2');
                 g.appendChild(rect);
             }
-            // 形状轮廓
             const pathD = shapeToSvgPath(lastShape);
             if (pathD) {
                 const path = document.createElementNS(ns, 'path');
@@ -1522,7 +1518,7 @@
             }
             svg.appendChild(g);
 
-            // 右下角文本（统计信息）
+            // ── 统计信息（自适应字号） ──
             const stats = computeStats(lastShape, lastResult, lastW1, lastH1, currentMode);
             const lines = [];
             const paramLines = getShapeParamsLines(lastShape);
@@ -1547,15 +1543,23 @@
                 }
             }
 
-            const textGroup = document.createElementNS(ns, 'g');
-            const fontSize = 14;
+            // 计算合适字号
+            const margin = Math.max(20, Math.min(viewW, viewH) * 0.05);
+            let fontSize = Math.min(24, Math.max(10, Math.min(viewW, viewH) / 35));
             const lineHeight = fontSize * 1.5;
-            const margin = 20;
-            let xPos = viewW - margin;
+            const totalTextHeight = lines.length * lineHeight;
+            const availHeight = viewH - margin * 2;
+            // 若超出，减小字号
+            while (fontSize > 8 && lines.length * fontSize * 1.5 > availHeight) {
+                fontSize -= 1;
+            }
+            const finalLineHeight = fontSize * 1.5;
+
+            const textGroup = document.createElementNS(ns, 'g');
             let yPos = viewH - margin;
             for (let i = lines.length - 1; i >= 0; i--) {
                 const text = document.createElementNS(ns, 'text');
-                text.setAttribute('x', xPos);
+                text.setAttribute('x', viewW - margin);
                 text.setAttribute('y', yPos);
                 text.setAttribute('text-anchor', 'end');
                 text.setAttribute('font-family', 'SimSun, sans-serif');
@@ -1563,7 +1567,7 @@
                 text.setAttribute('fill', '#FFFFFF');
                 text.textContent = lines[i];
                 textGroup.appendChild(text);
-                yPos -= lineHeight;
+                yPos -= finalLineHeight;
             }
             svg.appendChild(textGroup);
 
@@ -1614,7 +1618,6 @@
             const blob = new Blob([svgStr], { type: 'image/svg+xml' });
             const url = URL.createObjectURL(blob);
             const img = new Image();
-            // 解析视口尺寸
             const parser = new DOMParser();
             const doc = parser.parseFromString(svgStr, 'image/svg+xml');
             const svgEl = doc.documentElement;
@@ -1709,4 +1712,4 @@
     </script>
 </body>
 
-</html>
+    </html>
