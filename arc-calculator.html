@@ -5,9 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>弧形计算器 · 专业版</title>
     <style>
-        /* ============================================================
-                   CSS 变量 & 主题系统 (12 套)
-                   ============================================================ */
         :root {
             --theme-1: #0f172a;
             --theme-2: #1e293b;
@@ -37,54 +34,8 @@
             flex-direction: column;
             align-items: center;
             padding: 20px;
-            padding-top: 52px;
+            padding-top: 20px;
             transition: background 0.4s, color 0.3s;
-        }
-
-        /* ===== 顶部色条 ===== */
-        .color-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 40px;
-            background: rgba(15, 23, 42, 0.82);
-            backdrop-filter: blur(8px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            z-index: 9999;
-            border-bottom: 1px solid var(--theme-6);
-            padding: 0 12px;
-            flex-wrap: wrap;
-        }
-        .color-bar .info {
-            font-size: 13px;
-            color: #94a3b8;
-            margin-right: 8px;
-        }
-        .color-bar .label {
-            font-size: 13px;
-            color: #94a3b8;
-            margin-right: 4px;
-        }
-        .color-block {
-            width: 26px;
-            height: 26px;
-            border-radius: 8px;
-            cursor: pointer;
-            border: 2px solid transparent;
-            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
-            flex-shrink: 0;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-        .color-block:hover {
-            transform: scale(1.18);
-        }
-        .color-block.active {
-            border-color: #ffffff;
-            box-shadow: 0 0 16px var(--theme-7);
         }
 
         /* ===== 主容器 ===== */
@@ -191,7 +142,7 @@
             gap: 10px;
         }
         .row label {
-            width: 80px;
+            width: 90px;
             flex-shrink: 0;
             font-weight: 600;
             color: #f0f9ff;
@@ -229,6 +180,7 @@
         }
         .row input[type="number"] {
             -moz-appearance: textfield;
+            appearance: textfield;
         }
 
         /* 提示 */
@@ -247,6 +199,25 @@
         }
         .hint-box p strong {
             color: var(--theme-4);
+        }
+
+        /* 定弦长结果 */
+        .fixed-chord-result {
+            background: rgba(34, 197, 94, 0.08);
+            border-left: 3px solid #22c55e;
+            border-radius: 6px;
+            padding: 8px 14px;
+            margin: 2px 0;
+            display: none;
+        }
+        .fixed-chord-result p {
+            font-size: 13px;
+            color: #86efac;
+            line-height: 1.6;
+            margin: 0;
+        }
+        .fixed-chord-result p strong {
+            color: #4ade80;
         }
 
         /* 按钮行 */
@@ -332,19 +303,6 @@
             .header-area h2 {
                 font-size: 1.5rem;
             }
-            .color-bar {
-                height: 36px;
-                padding: 0 6px;
-                gap: 4px;
-            }
-            .color-block {
-                width: 22px;
-                height: 22px;
-            }
-            .color-bar .info,
-            .color-bar .label {
-                font-size: 12px;
-            }
             .radio-row {
                 gap: 16px;
                 font-size: 14px;
@@ -354,7 +312,7 @@
         @media (max-width: 440px) {
             body {
                 padding: 10px;
-                padding-top: 44px;
+                padding-top: 10px;
             }
             .box {
                 padding: 12px;
@@ -377,10 +335,6 @@
             .hint-box p {
                 font-size: 12px;
             }
-            .color-block {
-                width: 18px;
-                height: 18px;
-            }
         }
 
         /* ===== 滚动条美化 ===== */
@@ -398,18 +352,12 @@
 </head>
 <body>
 
-    <!-- ===== 色条 ===== -->
-    <div class="color-bar" id="colorBar">
-        <span class="info">🎨 主题</span>
-        <!-- 由 JS 动态生成色块 -->
-    </div>
-
     <!-- ===== 主容器 ===== -->
     <div class="box">
 
         <!-- 标题 -->
         <div class="header-area">
-            <h2>📐 弧形计算器</h2>
+            <h2>📐 弧形计算器 <span style="font-size: .5em; font-weight: bold;">V1.11.0</span> </h2>
             <div class="sub">已知任意 2 个量 · 自动求解全参数</div>
         </div>
 
@@ -442,6 +390,12 @@
                     <p>💡 任意填写 <strong>2 个</strong> 非空值 · 双解时切换优/劣弧 · 所有值 ≥ 0</p>
                 </div>
 
+                <!-- 定弦长 L -->
+                <div class="row"><label>定弦长 L</label><input id="L" type="number" step="any" min="0" placeholder="mm（可选，不影响弧形计算）" /></div>
+
+                <!-- 定弦长结果 -->
+                <div class="fixed-chord-result" id="fixedChordResult"></div>
+
                 <!-- 按钮 -->
                 <div class="btn-row">
                     <button onclick="calc()">⚡ 计算</button>
@@ -458,106 +412,6 @@
     JavaScript 业务逻辑
     ============================================================ -->
     <script>
-        /* ============================================================
-                   12 套主题色
-                   ============================================================ */
-        const themes = [{
-            name: '纯白',
-            colors: ['#ffffff', '#f5f5f5', '#0ea5e9', '#0369a1', 'rgba(14,165,233,.15)', 'rgba(3,105,161,.1)', 'rgba(14,165,233,.4)',
-                'rgba(14,165,233,.2)'
-            ]
-        }, {
-            name: '科技蓝',
-            colors: ['#0f172a', '#1e293b', '#38bdf8', '#7dd3fc', 'rgba(2,132,199,.3)', 'rgba(94,234,212,.2)',
-                'rgba(56,189,248,.5)', 'rgba(56,189,248,.3)'
-            ]
-        }, {
-            name: '薄荷绿',
-            colors: ['#0b1f1a', '#15382f', '#34d399', '#6ee7b7', 'rgba(16,185,129,.3)', 'rgba(110,231,183,.2)',
-                'rgba(52,211,153,.5)', 'rgba(52,211,153,.3)'
-            ]
-        }, {
-            name: '樱花粉',
-            colors: ['#281e2a', '#3f2c42', '#f472b6', '#f9a8d4', 'rgba(244,114,182,.3)', 'rgba(249,168,212,.2)',
-                'rgba(244,114,182,.5)', 'rgba(244,114,182,.3)'
-            ]
-        }, {
-            name: '落日橙',
-            colors: ['#2a1d14', '#4b2e20', '#fb923c', '#fcd34d', 'rgba(251,146,60,.3)', 'rgba(252,211,77,.2)',
-                'rgba(251,146,60,.5)', 'rgba(251,146,60,.3)'
-            ]
-        }, {
-            name: '紫幻',
-            colors: ['#1e1b2e', '#2e2157', '#a78bfa', '#c4b5fd', 'rgba(167,139,250,.3)', 'rgba(196,181,253,.2)',
-                'rgba(167,139,250,.5)', 'rgba(167,139,250,.3)'
-            ]
-        }, {
-            name: '青黛',
-            colors: ['#1b212e', '#243447', '#60a5fa', '#93c5fd', 'rgba(96,165,250,.3)', 'rgba(147,197,253,.2)',
-                'rgba(96,165,250,.5)', 'rgba(96,165,250,.3)'
-            ]
-        }, {
-            name: '柠檬',
-            colors: ['#2a2516', '#4a3e1a', '#facc15', '#fde047', 'rgba(250,204,21,.3)', 'rgba(253,224,71,.2)',
-                'rgba(250,204,21,.5)', 'rgba(250,204,21,.3)'
-            ]
-        }, {
-            name: '猩红',
-            colors: ['#2b1216', '#4d1d22', '#f43f5e', '#fb7185', 'rgba(244,63,94,.3)', 'rgba(251,113,133,.2)',
-                'rgba(244,63,94,.5)', 'rgba(244,63,94,.3)'
-            ]
-        }, {
-            name: '极光青',
-            colors: ['#102327', '#1d3a40', '#22d3ee', '#67e8f9', 'rgba(34,211,238,.3)', 'rgba(103,232,249,.2)',
-                'rgba(34,211,238,.5)', 'rgba(34,211,238,.3)'
-            ]
-        }, {
-            name: '暗夜灰',
-            colors: ['#121212', '#222222', '#6366f1', '#a5b4fc', 'rgba(99,102,241,.3)', 'rgba(165,180,252,.2)',
-                'rgba(99,102,241,.5)', 'rgba(99,102,241,.3)'
-            ]
-        }, {
-            name: '纯黑',
-            colors: ['#000000', '#111111', '#38bdf8', '#7dd3fc', 'rgba(2,132,199,.4)', 'rgba(94,234,212,.25)',
-                'rgba(56,189,248,.6)', 'rgba(56,189,248,.35)'
-            ]
-        }];
-
-        /* =============== 色条初始化 =============== */
-        function initColorBar() {
-            const bar = document.getElementById('colorBar');
-            themes.forEach((t, i) => {
-                const block = document.createElement('div');
-                block.className = 'color-block';
-                block.style.background = t.colors[2];
-                block.title = t.name;
-                block.onclick = () => applyTheme(i);
-                bar.appendChild(block);
-            });
-            applyTheme(1); // 默认科技蓝
-        }
-
-        function applyTheme(idx) {
-            const t = themes[idx];
-            const r = document.documentElement;
-            t.colors.forEach((c, i) => r.style.setProperty(`--theme-${i + 1}`, c));
-            document.querySelectorAll('.color-block').forEach((b, i) => b.classList.toggle('active', i === idx));
-            // 文字颜色适配
-            if (idx === 0) {
-                r.style.color = '#1f2937';
-                r.style.setProperty('--theme-4', '#1f2937');
-            } else if (idx === 11) {
-                r.style.color = '#e2e8f0';
-                r.style.setProperty('--theme-4', '#7dd3fc');
-            } else {
-                r.style.color = '#e2e8f0';
-                r.style.setProperty('--theme-4', '#7dd3fc');
-            }
-        }
-
-        /* ============================================================
-                   核心计算
-                   ============================================================ */
         const DEG = Math.PI / 180;
         const IDS = ['s', 'r', 'c', 'h', 'theta'];
         let lastResult = null;
@@ -584,12 +438,10 @@
             const v = getInputs();
             let res = {};
 
-            // ---- 辅助：填充标准结果 ----
             function makeResult(s, r, c, h, thetaDeg) {
                 return { s, r, c, h, theta: thetaDeg };
             }
 
-            // ---- 各组合 ----
             const has = (k) => k in v;
 
             // 1) s + r
@@ -610,9 +462,7 @@
             // 3) s + c
             else if (has('s') && has('c')) {
                 const { s, c } = v;
-
                 function f(t) { return Math.sin(t / 2) - (c / s) * (t / 2); }
-
                 function df(t) { return 0.5 * Math.cos(t / 2) - (c / s) * 0.5; }
                 let t = 1.0;
                 for (let i = 0; i < 60; i++) {
@@ -631,9 +481,7 @@
             // 4) s + h
             else if (has('s') && has('h')) {
                 const { s, h } = v;
-
                 function f(t) { return 1 - Math.cos(t / 2) - (t * h) / s; }
-
                 function df(t) { return 0.5 * Math.sin(t / 2) - h / s; }
                 let t = 1.0;
                 for (let i = 0; i < 60; i++) {
@@ -653,8 +501,7 @@
             else if (has('r') && has('thetaRad')) {
                 const theta = v.thetaRad;
                 if (theta > 2 * Math.PI) throw new Error('圆心角不能超过360°');
-                res = makeResult(v.r * theta, v.r, 2 * v.r * Math.sin(theta / 2), v.r * (1 - Math.cos(theta / 2)), theta /
-                DEG);
+                res = makeResult(v.r * theta, v.r, 2 * v.r * Math.sin(theta / 2), v.r * (1 - Math.cos(theta / 2)), theta / DEG);
             }
             // 6) r + c
             else if (has('r') && has('c')) {
@@ -669,11 +516,9 @@
                 const theta = 2 * Math.acos(1 - v.h / v.r);
                 if (theta > 2 * Math.PI) throw new Error('圆心角不能超过360°');
                 res = makeResult(v.r * theta, v.r, 2 * v.r * Math.sin(theta / 2), v.h, theta / DEG);
-                // 优弧补充
                 const thetaM = 2 * Math.PI - theta;
                 if (thetaM > 0 && thetaM < 2 * Math.PI) {
-                    res.major = makeResult(v.r * thetaM, v.r, 2 * v.r * Math.sin(thetaM / 2), v.r * (1 - Math.cos(thetaM /
-                        2)), thetaM / DEG);
+                    res.major = makeResult(v.r * thetaM, v.r, 2 * v.r * Math.sin(thetaM / 2), v.r * (1 - Math.cos(thetaM / 2)), thetaM / DEG);
                 }
             }
             // 8) c + h
@@ -714,7 +559,6 @@
                     throw new Error(`计算结果异常: ${k} = ${res[k]}`);
                 }
             }
-            // 检查圆周约束
             if (res.s > 2 * Math.PI * res.r + 1e-9) throw new Error('弧长超过周长');
             if (res.c > 2 * res.r + 1e-9) throw new Error('弦长超过直径');
             if (res.h > res.r + 1e-9) throw new Error('弦高超过半径');
@@ -724,17 +568,62 @@
         }
 
         /* ============================================================
+                   定弦长计算
+                   ============================================================ */
+        function calcFixedChord(out) {
+            const LEl = document.getElementById('L');
+            const resultEl = document.getElementById('fixedChordResult');
+            const L = parseFloat(LEl.value);
+
+            resultEl.style.display = 'none';
+            resultEl.innerHTML = '';
+
+            if (isNaN(L) || L <= 0) return;
+
+            const r = out.r;
+            const thetaDeg = out.theta; // 弧长对应的圆心角（度）
+            const thetaRad = thetaDeg * DEG;
+
+            // 定弦长 L 对应的圆心角
+            const deltaRad = 2 * Math.asin(Math.min(L / (2 * r), 1));
+            const deltaDeg = deltaRad / DEG;
+
+            // 弧长 s 对应的圆心角内能容纳多少段定弦长
+            const n = Math.floor(thetaRad / deltaRad);
+
+            if (n < 1) {
+                resultEl.innerHTML = `<p>⚠ 定弦长 L = ${L.toFixed(4)} 大于该弧的弦长，无法容纳</p>`;
+                resultEl.style.display = 'block';
+                return;
+            }
+
+            // 相邻定弦长之间的夹角 = deltaDeg
+            const segArc = r * deltaRad; // 每段定弦长对应的弧长
+            const remainRad = thetaRad - n * deltaRad;
+            const remainArc = r * remainRad;
+
+            let html = `<p><strong>定弦长段数：</strong>${n} 段</p>`;
+            html += `<p><strong>每段定弦长：</strong>L = ${L.toFixed(4)} mm</p>`;
+            html += `<p><strong>相邻定弦长夹角：</strong>δ = ${deltaDeg.toFixed(4)}°</p>`;
+            html += `<p><strong>每段对应弧长：</strong>${segArc.toFixed(4)} mm</p>`;
+            if (remainRad > 1e-9) {
+                html += `<p><strong>剩余弧长：</strong>${remainArc.toFixed(4)} mm（夹角 ${(remainRad / DEG).toFixed(4)}°）</p>`;
+            } else {
+                html += `<p><strong>恰好整除，无剩余弧长</strong></p>`;
+            }
+            resultEl.innerHTML = html;
+            resultEl.style.display = 'block';
+        }
+
+        /* ============================================================
                    绘图
                    ============================================================ */
         function draw(res) {
             const cv = document.getElementById('cv');
             const ctx = cv.getContext('2d');
-            const W = cv.width,
-                H = cv.height;
-            const cx = W / 2,
-                cy = H / 2;
+            const W = cv.width, H = cv.height;
+            const cx = W / 2, cy = H / 2;
 
-            // 计算缩放
             const margin = 50;
             const maxDim = Math.min(W, H) - margin;
             const scale = maxDim / (2 * (res.r || 1) + 0.01);
@@ -742,7 +631,6 @@
 
             ctx.clearRect(0, 0, W, H);
 
-            // ---- 辅助坐标变换 ----
             const toX = (mm) => cx + mm * scale;
             const toY = (mm) => cy - mm * scale;
 
@@ -780,12 +668,13 @@
             const startAngle = -thetaRad / 2;
             const endAngle = thetaRad / 2;
 
+            const fillColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-3').trim() || '#38bdf8';
+
             ctx.save();
             ctx.beginPath();
             ctx.moveTo(cx, cy);
             ctx.arc(cx, cy, rPix, startAngle, endAngle, false);
             ctx.closePath();
-            const fillColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-3').trim() || '#38bdf8';
             ctx.fillStyle = fillColor + '25';
             ctx.fill();
             ctx.strokeStyle = fillColor + '80';
@@ -806,10 +695,8 @@
             ctx.restore();
 
             // ---- 半径线 ----
-            const x1 = res.r * Math.cos(startAngle),
-                y1 = res.r * Math.sin(startAngle);
-            const x2 = res.r * Math.cos(endAngle),
-                y2 = res.r * Math.sin(endAngle);
+            const x1 = res.r * Math.cos(startAngle), y1 = res.r * Math.sin(startAngle);
+            const x2 = res.r * Math.cos(endAngle), y2 = res.r * Math.sin(endAngle);
 
             ctx.save();
             ctx.beginPath();
@@ -838,10 +725,8 @@
             ctx.restore();
 
             // ---- 弦高标注 (虚线) ----
-            const midX = (x1 + x2) / 2,
-                midY = (y1 + y2) / 2;
-            const hEndX = 0,
-                hEndY = res.r * Math.cos(thetaRad / 2);
+            const midX = (x1 + x2) / 2, midY = (y1 + y2) / 2;
+            const hEndX = 0, hEndY = res.r * Math.cos(thetaRad / 2);
             ctx.save();
             ctx.setLineDash([3, 4]);
             ctx.strokeStyle = 'rgba(255,255,255,0.3)';
@@ -853,12 +738,72 @@
             ctx.setLineDash([]);
             ctx.restore();
 
+            // ---- 定弦长分段标注（弦线 + 分点） ----
+            const L = parseFloat(document.getElementById('L').value);
+            if (!isNaN(L) && L > 0) {
+                const deltaRad = 2 * Math.asin(Math.min(L / (2 * res.r), 1));
+                const n = Math.floor(thetaRad / deltaRad);
+                if (n >= 1) {
+                    // 收集所有分点角度（含起点）
+                    const angles = [startAngle];
+                    for (let i = 1; i <= n; i++) {
+                        const angle = startAngle + i * deltaRad;
+                        if (angle > endAngle + 1e-9) break;
+                        angles.push(angle);
+                    }
+
+                    // 画定弦长的弦线
+                    ctx.save();
+                    ctx.strokeStyle = '#4ade80';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([6, 4]);
+                    ctx.shadowColor = '#4ade8060';
+                    ctx.shadowBlur = 6;
+                    for (let i = 0; i < angles.length - 1; i++) {
+                        const px1 = res.r * Math.cos(angles[i]);
+                        const py1 = res.r * Math.sin(angles[i]);
+                        const px2 = res.r * Math.cos(angles[i + 1]);
+                        const py2 = res.r * Math.sin(angles[i + 1]);
+                        ctx.beginPath();
+                        ctx.moveTo(toX(px1), toY(py1));
+                        ctx.lineTo(toX(px2), toY(py2));
+                        ctx.stroke();
+                    }
+                    // 如果恰好到终点，补画最后一段
+                    if (angles[angles.length - 1] < endAngle - 1e-9) {
+                        const px1 = res.r * Math.cos(angles[angles.length - 1]);
+                        const py1 = res.r * Math.sin(angles[angles.length - 1]);
+                        const px2 = res.r * Math.cos(endAngle);
+                        const py2 = res.r * Math.sin(endAngle);
+                        ctx.beginPath();
+                        ctx.moveTo(toX(px1), toY(py1));
+                        ctx.lineTo(toX(px2), toY(py2));
+                        ctx.stroke();
+                    }
+                    ctx.setLineDash([]);
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
+
+                    // 画分点圆点
+                    for (const angle of angles) {
+                        const px = res.r * Math.cos(angle);
+                        const py = res.r * Math.sin(angle);
+                        ctx.save();
+                        ctx.beginPath();
+                        ctx.arc(toX(px), toY(py), 4, 0, 2 * Math.PI);
+                        ctx.fillStyle = '#4ade80';
+                        ctx.shadowColor = '#4ade8080';
+                        ctx.shadowBlur = 8;
+                        ctx.fill();
+                        ctx.shadowBlur = 0;
+                        ctx.restore();
+                    }
+                }
+            }
+
             // ---- 端点圆点 ----
             const dotColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-4').trim() || '#7dd3fc';
-            for (const [px, py] of [
-                    [x1, y1],
-                    [x2, y2]
-                ]) {
+            for (const [px, py] of [[x1, y1], [x2, y2]]) {
                 ctx.save();
                 ctx.beginPath();
                 ctx.arc(toX(px), toY(py), 5, 0, 2 * Math.PI);
@@ -880,7 +825,7 @@
             ctx.shadowBlur = 0;
             ctx.restore();
 
-            // ---- 文字信息 (使用主题色) ----
+            // ---- 文字信息 ----
             const txtColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-4').trim() || '#7dd3fc';
             ctx.save();
             ctx.fillStyle = txtColor;
@@ -904,12 +849,18 @@
             ctx.save();
             const legendY = H - 28;
             ctx.font = '12px "Segoe UI", system-ui, sans-serif';
-            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.fillStyle = fillColor;
             ctx.fillText('● 弧', 12, legendY);
             ctx.fillStyle = '#fbbf24';
             ctx.fillText('━ 半径', 72, legendY);
             ctx.fillStyle = '#f472b6';
             ctx.fillText('━ 弦', 142, legendY);
+            // 定弦长图例
+            const LVal = parseFloat(document.getElementById('L').value);
+            if (!isNaN(LVal) && LVal > 0) {
+                ctx.fillStyle = '#4ade80';
+                ctx.fillText('● 定弦长分段', 212, legendY);
+            }
             ctx.restore();
         }
 
@@ -948,6 +899,9 @@
             });
 
             draw(out);
+
+            // 定弦长计算
+            calcFixedChord(out);
         }
 
         // 劣/优 切换重新计算
@@ -962,7 +916,10 @@
 
         function resetAll() {
             IDS.forEach(id => document.getElementById(id).value = '');
+            document.getElementById('L').value = '';
             document.getElementById('err').textContent = '';
+            document.getElementById('fixedChordResult').style.display = 'none';
+            document.getElementById('fixedChordResult').innerHTML = '';
             const ctx = document.getElementById('cv').getContext('2d');
             ctx.clearRect(0, 0, 420, 420);
             document.querySelectorAll('input[name=arc]').forEach(el => {
@@ -980,7 +937,6 @@
         }
 
         // ===== 初始化 =====
-        initColorBar();
         resetAll();
     </script>
 </body>
