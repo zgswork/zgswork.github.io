@@ -5,7 +5,6 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>填充矩形工具</title>
-
         <style>
             /* ── 全局基础 ───────────────────── */
             *,
@@ -559,7 +558,6 @@
             </div>
 
         </div>
-
         <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
         <script>
             // ════════════════════════════════════════════════════════
@@ -1071,7 +1069,7 @@
                 for (const f of config) {
                     const val = shape[f.id];
                     if (val !== undefined) {
-                        lines.push(`${f.id}: ${val}`);//此处使用id兼容中英文，如需显示中文，可用label
+                        lines.push(`${f.label}: ${val}`);//此处使用id兼容中英文，如需显示中文，可用label
                     }
                 }
                 return lines;
@@ -1674,7 +1672,8 @@
 
                 lines.push(
                     '0', 'SECTION', '2', 'HEADER',
-                    '9', '$DWGCODEPAGE', '3', 'UTF-8',
+                    "9", "$ACADVER", "1", "AC1009",
+                    '9', '$DWGCODEPAGE', '3', 'ANSI_936',
                     '0', 'ENDSEC',
                     '0', 'SECTION', '2', 'TABLES',
                     '0', 'TABLE', '2', 'LAYER', '70', '4',
@@ -1684,9 +1683,9 @@
                     '0', 'LAYER', '2', 'TEXT_LAYER', '70', '0', '62', '7',
                     '0', 'ENDTAB',
                     '0', 'TABLE', '2', 'STYLE', '70', '1',
-                    '0', 'STYLE', '2', 'CNSTYLE', '70', '0', '40', '0', '3', 'SimSun', '41', '1',
-                    '0', 'ENDTAB',
-                    '0', 'ENDSEC',
+                    '0', 'STYLE', '2', 'CNSTYLE', '70', '0', '40', '0',
+                    '3', 'simsun.ttf', '4', '',
+                    '0', 'ENDTAB', '0', 'ENDSEC',
                     '0', 'SECTION', '2', 'ENTITIES'
                 );
 
@@ -1884,12 +1883,21 @@
                 const b = getShapeBounds(shape);
                 const startX = 0;
                 let yPos = Math.min(b.minY, -100) - 150;
-
+                function encodeDxfText(value) {
+                    return Array.from(value).map(function (char) {
+                        var code = char.codePointAt(0);
+                        if (code < 128) {
+                            return char;
+                        }
+                        return "\\U+" + code.toString(16).toUpperCase().padStart(4, "0");
+                    }).join("");
+                }
                 function addTextLine(text) {
+
                     lines.push(
                         `0\nTEXT\n8\n${textLayer}\n62\n${textColor}\n7\n${styleName}`,
                         `10\n${startX.toFixed(3)}\n20\n${yPos.toFixed(3)}\n40\n${textHeight}`,
-                        `1\n${text}\n72\n1\n11\n${startX.toFixed(3)}\n21\n${yPos.toFixed(3)}`
+                        `1\n${encodeDxfText(text)}\n72\n1\n11\n${startX.toFixed(3)}\n21\n${yPos.toFixed(3)}`
                     );
                     yPos -= textHeight * 1.5;
                 }
@@ -1897,14 +1905,14 @@
                 const paramLines = getShapeParamsLines(shape);
                 for (const line of paramLines) addTextLine(line);
                 addTextLine('--------------------');
-                addTextLine(`Cols: ${cols !== null ? cols : '--'}`);
-                addTextLine(`Rows: ${rows !== null ? rows : '--'}`);
-                addTextLine(`grow taller: ${totalW.toFixed(0)} x ${totalH.toFixed(0)} mm`);
-                addTextLine(`LargeRects: ${largeCount}`);
-                if (smallCount > 0) addTextLine(`SmallRects: ${smallCount}`);
-                addTextLine(`TotalArea: ${totalArea.toFixed(4)} m2`);
+                addTextLine(`列数: ${cols !== null ? cols : '--'}`);
+                addTextLine(`行数: ${rows !== null ? rows : '--'}`);
+                addTextLine(`包围盒: ${totalW.toFixed(0)} x ${totalH.toFixed(0)} mm`);
+                addTextLine(`大矩形数: ${largeCount}`);
+                if (smallCount > 0) addTextLine(`小矩形数: ${smallCount}`);
+                addTextLine(`总面积: ${totalArea.toFixed(4)} m2`);
                 if (currentMode === 'surround' && allowance > 0 && filtered) {
-                    addTextLine(`Margin: ${allowance} mm (filtered ${noAllowanceCount - allRects.length} rects)`);
+                    addTextLine(`实际边沿留空: ${allowance} mm (过滤 ${noAllowanceCount - allRects.length} 个矩形)`);
                 }
 
                 lines.push('0', 'ENDSEC', '0', 'EOF');
@@ -1915,7 +1923,8 @@
 
 
                 const dxfStr = lines.join('\n');
-                const blob = new Blob([dxfStr], { type: 'application/dxf;charset=UTF-8' });
+                //const blob = new Blob([dxfStr], { type: 'application/dxf;charset=UTF-8' });
+                const blob = new Blob([dxfStr], { type: "application/octet-stream" });
                 const url = URL.createObjectURL(blob);
                 const link = document.createElement('a');
                 link.href = url;
