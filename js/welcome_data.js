@@ -44,6 +44,6 @@
                 title: 'HTML工具',
                 desc: '涵盖有1500+个网页工具库，没有服务器，数据不留痕，离线可用，安全无忧。',
                 tags: ['1500+', '无服务器', '离线可用'],
-                page: 'Lonely-html-index'
+                page: 'Lonely-html/Lonely-html-index'
             }]
         };
