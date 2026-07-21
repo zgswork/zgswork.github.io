@@ -144,71 +144,71 @@
 </head>
 
 <body>
-    <div class="page-welcome">
-        <h1>LED显示屏设计工具集</h1>
-        <p class="subtitle">一站式LED显示屏设计解决方案，涵盖结构设计、模组排列、弧形计算、应用模型等功能，助力工程师高效完成项目设计与实施。</p>
-        <div class="stats">
-            <div class="stat-card">
-                <div class="stat-value">N+</div>
-                <div class="stat-label">专业工具</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">100%</div>
-                <div class="stat-label">设计精度</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">50+</div>
-                <div class="stat-label">支持型号</div>
-            </div>
-            <div class="stat-card">
-                <div class="stat-value">24/7</div>
-                <div class="stat-label">技术支持</div>
-            </div>
-        </div>
+    <div class="page-welcome" id="app">
+        <!-- 所有文本内容由 JS 数据驱动渲染 -->
+        <h1 id="pageTitle"></h1>
+        <p class="subtitle" id="pageSubtitle"></p>
+
+        <div class="stats" id="statsContainer"></div>
+
         <div>
-            <h2 class="section-title">常用工具</h2>
-            <div class="tools-grid">
-                <div class="tool-card" data-page="module-padding">
-                    <div class="tool-icon"><i class="fa-solid fa-cubes-stacked"></i></div>
-                    <div class="tool-title">填充矩形</div>
-                    <div class="tool-desc">规则图形内模组的排列，包含圆形、梯形、三角形、椭圆、扇形、弓形、圆环、扇环、正多边形。</div>
-                    <div class="tool-tags"><span class="tag">大小模组</span><span class="tag">规则轮廓</span><span
-                            class="tag">排列计算</span></div>
-                </div>
-                <div class="tool-card" data-page="arc-calculator">
-                    <div class="tool-icon"><i class="fa-solid fa-calculator"></i></div>
-                    <div class="tool-title">弧形计算</div>
-                    <div class="tool-desc">已知弧长、半径、弦长、弦高、圆心角中的2个值,进而计算出其余3个参数值。</div>
-                    <div class="tool-tags"><span class="tag">弦长拱高</span><span class="tag">优弧劣弧</span><span
-                            class="tag">求三用二</span></div>
-                </div>
-                <div class="tool-card" data-page="display-application-3d">
-                    <div class="tool-icon"><i class="fa-solid fa-cubes"></i></div>
-                    <div class="tool-title">应用模型</div>
-                    <div class="tool-desc">各种样式的显示屏三维模型结构展示，包含常规异形、机械结构、箱体结构、包材工具等。</div>
-                    <div class="tool-tags"><span class="tag">屏钢结构</span><span class="tag">箱体结构</span><span
-                            class="tag">其他工具</span></div>
-                </div>
-                <div class="tool-card" data-page="Lonely-html-index">
-                    <div class="tool-icon"><i class="fa-solid fa-palette"></i></div>
-                    <div class="tool-title">HTML工具</div>
-                    <div class="tool-desc">涵盖有1500+个网页工具库，没有服务器，数据不留痕，离线可用，安全无忧。</div>
-                    <div class="tool-tags"><span class="tag">1500+</span><span class="tag">无服务器</span><span
-                            class="tag">离线可用</span></div>
-                </div>
-            </div>
+            <h2 class="section-title" id="sectionTitle"></h2>
+            <div class="tools-grid" id="toolsContainer"></div>
         </div>
     </div>
+    <script src="/js/welcome_data.js"></script>
     <script>
-        // 卡片点击跳转（调用父窗口的切换函数）
-        document.querySelectorAll('.tool-card').forEach(card => {
-            card.addEventListener('click', function () {
-                const page = this.dataset.page;
-                if (page && window.parent.switchPage) {
-                    window.parent.switchPage(page);
-                }
+        
+        // ============================================================
+        // 🖌️ 渲染引擎 —— 将数据填充到页面 DOM
+        // ============================================================
+        function renderPage() {
+            // 1. 渲染 h1 主标题
+            document.getElementById('pageTitle').textContent = PAGE_DATA.title;
+
+            // 2. 渲染副标题
+            document.getElementById('pageSubtitle').textContent = PAGE_DATA.subtitle;
+
+            // 3. 渲染统计卡片
+            const statsContainer = document.getElementById('statsContainer');
+            statsContainer.innerHTML = PAGE_DATA.stats.map(stat =>
+                `<div class="stat-card">
+                    <div class="stat-value">${stat.value}</div>
+                    <div class="stat-label">${stat.label}</div>
+                </div>`
+            ).join('');
+
+            // 4. 渲染 h2 章节标题
+            document.getElementById('sectionTitle').textContent = PAGE_DATA.sectionTitle;
+
+            // 5. 渲染工具卡片
+            const toolsContainer = document.getElementById('toolsContainer');
+            toolsContainer.innerHTML = PAGE_DATA.tools.map(tool =>
+                `<div class="tool-card" data-page="${tool.page}">
+                    <div class="tool-icon"><i class="${tool.icon}"></i></div>
+                    <div class="tool-title">${tool.title}</div>
+                    <div class="tool-desc">${tool.desc}</div>
+                    <div class="tool-tags">
+                        ${tool.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                    </div>
+                </div>`
+            ).join('');
+
+            // 6. 重新绑定卡片点击事件（因为 DOM 被重新生成）
+            document.querySelectorAll('.tool-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const page = this.dataset.page;
+                    if (page && window.parent.switchPage) {
+                        window.parent.switchPage(page);
+                    }
+                });
             });
-        });
+        }
+
+        // ============================================================
+        // 🚀 页面加载完成后自动渲染
+        // ============================================================
+        document.addEventListener('DOMContentLoaded', renderPage);
     </script>
 </body>
 
