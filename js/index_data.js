@@ -30,7 +30,7 @@ const navItems = [
             {
                 id: 'Lonely-HTML',
                 title: 'LonelyH',
-                subtitle: 'HTML工具库',
+                subtitle: '本栏目工具大多数收集于互联网，若有侵犯之处，请E-mail：zgswork@foxmail.com 通知删除',
                 icon: 'fa-regular fa-plug-circle-bolt',
                 page: 'Lonely-html/Lonely-html-index.html'
             },
