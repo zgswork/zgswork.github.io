@@ -38,7 +38,6 @@
             transition: background 0.4s, color 0.3s;
         }
 
-        /* ===== 主容器 ===== */
         .box {
             width: 100%;
             max-width: 880px;
@@ -51,7 +50,6 @@
             transition: border-color 0.3s, background 0.3s;
         }
 
-        /* ===== 标题 ===== */
         .header-area {
             text-align: center;
             margin-bottom: 18px;
@@ -70,14 +68,12 @@
             margin-top: 2px;
         }
 
-        /* ===== 左右布局 ===== */
         .main-layout {
             display: flex;
             gap: 28px;
             align-items: stretch;
         }
 
-        /* ===== 左侧画布 ===== */
         .left-panel {
             flex: 0 0 50%;
             display: flex;
@@ -98,7 +94,6 @@
             transition: border-color 0.3s;
         }
 
-        /* ===== 右侧面板 ===== */
         .right-panel {
             flex: 1;
             display: flex;
@@ -107,7 +102,6 @@
             min-width: 0;
         }
 
-        /* 单选行 */
         .radio-row {
             display: flex;
             justify-content: center;
@@ -115,6 +109,12 @@
             font-size: 15px;
             padding: 4px 0 6px;
             flex-wrap: wrap;
+            align-items: center;
+            min-height: 38px;
+            transition: all 0.3s;
+        }
+        .radio-row.hidden {
+            display: none;
         }
         .radio-row label {
             display: inline-flex;
@@ -134,8 +134,19 @@
             height: 16px;
             cursor: pointer;
         }
+        .radio-row .hint-text {
+            font-size: 13px;
+            color: #fbbf24;
+            font-weight: 400;
+            background: rgba(251, 191, 36, 0.12);
+            padding: 2px 14px;
+            border-radius: 20px;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+        .radio-row .hint-text.hidden {
+            display: none;
+        }
 
-        /* 输入行 */
         .row {
             display: flex;
             align-items: center;
@@ -172,7 +183,6 @@
             color: #475569;
             font-size: 14px;
         }
-        /* 去掉 spinner */
         .row input[type="number"]::-webkit-inner-spin-button,
         .row input[type="number"]::-webkit-outer-spin-button {
             -webkit-appearance: none;
@@ -183,7 +193,6 @@
             appearance: textfield;
         }
 
-        /* 提示 */
         .hint-box {
             background: rgba(56, 189, 248, 0.06);
             border-left: 3px solid var(--theme-3);
@@ -201,7 +210,6 @@
             color: var(--theme-4);
         }
 
-        /* 定弦长结果 */
         .fixed-chord-result {
             background: rgba(34, 197, 94, 0.08);
             border-left: 3px solid #22c55e;
@@ -220,7 +228,6 @@
             color: #4ade80;
         }
 
-        /* 按钮行 */
         .btn-row {
             display: flex;
             gap: 12px;
@@ -259,7 +266,6 @@
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
         }
 
-        /* 错误信息 */
         .error {
             color: #f87171;
             font-size: 15px;
@@ -273,7 +279,6 @@
             transition: all 0.3s;
         }
 
-        /* ===== 响应式 ===== */
         @media (max-width: 720px) {
             .main-layout {
                 flex-wrap: wrap;
@@ -304,7 +309,7 @@
                 font-size: 1.5rem;
             }
             .radio-row {
-                gap: 16px;
+                gap: 12px;
                 font-size: 14px;
             }
         }
@@ -337,7 +342,6 @@
             }
         }
 
-        /* ===== 滚动条美化 ===== */
         ::-webkit-scrollbar {
             width: 4px;
         }
@@ -352,76 +356,84 @@
 </head>
 <body>
 
-    <!-- ===== 主容器 ===== -->
     <div class="box">
 
-        <!-- 标题 -->
         <div class="header-area">
-            <h2>📐 弧形计算器 <span style="font-size: .5em; font-weight: bold;">V1.11.0</span> </h2>
-            <div class="sub">已知任意 2 个量 · 自动求解全参数</div>
+            <h2>📐 弧形计算器 <span style="font-size: .5em; font-weight: bold;">V1.12.0</span> </h2>
+            <div class="sub">已知任意 2 个量 · 自动求解全参数 · 支持优/劣弧双解</div>
         </div>
 
-        <!-- 左右布局 -->
         <div class="main-layout">
 
-            <!-- 左侧画布 -->
             <div class="left-panel">
                 <canvas id="cv" width="420" height="420"></canvas>
             </div>
 
-            <!-- 右侧控件 -->
             <div class="right-panel">
 
-                <!-- 劣弧 / 优弧 -->
-                <div class="radio-row">
-                    <label><input type="radio" name="arc" value="minor" checked disabled /> 劣弧 (θ ≤ 180°)</label>
-                    <label><input type="radio" name="arc" value="major" disabled /> 优弧 (θ &gt; 180°)</label>
+                <div class="radio-row hidden" id="arcRadioRow">
+                    <label><input type="radio" name="arc" value="minor" checked /> 劣弧 (θ ≤ 180°)</label>
+                    <label><input type="radio" name="arc" value="major" /> 优弧 (θ &gt; 180°)</label>
+                    <span class="hint-text" id="arcHint">✨ 该参数组合存在双解，请选择</span>
                 </div>
 
-                <!-- 输入 -->
                 <div class="row"><label>弧长 s</label><input id="s" type="number" step="any" min="0" placeholder="mm" /></div>
                 <div class="row"><label>半径 r</label><input id="r" type="number" step="any" min="0" placeholder="mm" /></div>
                 <div class="row"><label>弦长 c</label><input id="c" type="number" step="any" min="0" placeholder="mm" /></div>
                 <div class="row"><label>弦高 h</label><input id="h" type="number" step="any" min="0" placeholder="mm" /></div>
                 <div class="row"><label>圆心角 θ</label><input id="theta" type="number" step="any" min="0" placeholder="度" /></div>
 
-                <!-- 提示 -->
                 <div class="hint-box">
-                    <p>💡 任意填写 <strong>2 个</strong> 非空值 · 双解时切换优/劣弧 · 所有值 ≥ 0</p>
+                    <p>💡 任意填写 <strong>2 个</strong> 非空值 · 双解时自动提示切换 · 所有值 ≥ 0</p>
                 </div>
 
-                <!-- 定弦长 L -->
-                <div class="row"><label>定弦长 L</label><input id="L" type="number" step="any" min="0" placeholder="mm（可选，不影响弧形计算）" /></div>
+                <div class="row"><label>定弦长 L</label><input id="L" type="number" step="any" min="0" placeholder="mm（可选）" /></div>
 
-                <!-- 定弦长结果 -->
                 <div class="fixed-chord-result" id="fixedChordResult"></div>
 
-                <!-- 按钮 -->
                 <div class="btn-row">
-                    <button onclick="calc()">⚡ 计算</button>
+                    <button id="calcBtn">⚡ 计算</button>
                     <button class="btn-secondary" onclick="resetAll()">✕ 清空</button>
                 </div>
 
-                <!-- 错误 -->
                 <div id="err" class="error"></div>
             </div>
         </div>
     </div>
 
-    <!-- ============================================================
-    JavaScript 业务逻辑
-    ============================================================ -->
     <script>
+        // ================================================================
+        //  常量 & DOM 引用
+        // ================================================================
         const DEG = Math.PI / 180;
         const IDS = ['s', 'r', 'c', 'h', 'theta'];
-        let lastResult = null;
+        const PI2 = 2 * Math.PI;
 
-        /** 安全获取输入值，返回对象 { s, r, c, h, thetaRad } */
-        function getInputs() {
+        const $ = id => document.getElementById(id);
+        const sEl = $('s'),
+            rEl = $('r'),
+            cEl = $('c'),
+            hEl = $('h'),
+            thetaEl = $('theta');
+        const LEl = $('L');
+        const errEl = $('err');
+        const cv = $('cv');
+        const ctx = cv.getContext('2d');
+        const arcRow = $('arcRadioRow');
+        const arcHint = $('arcHint');
+        const fixedResult = $('fixedChordResult');
+
+        let lastSolutions = [];
+        let currentSolution = null;
+
+        // ================================================================
+        //  工具：读取输入
+        // ================================================================
+        function readInputs() {
             const val = {};
             let count = 0;
             for (const id of IDS) {
-                const el = document.getElementById(id);
+                const el = $(id);
                 const v = parseFloat(el.value);
                 if (!isNaN(v) && v >= 0) {
                     val[id] = v;
@@ -429,176 +441,275 @@
                 }
             }
             if (count < 2) throw new Error('请至少填写 2 个已知量');
-            if (val.theta !== undefined) val.thetaRad = val.theta * DEG;
+            if (val.theta !== undefined) {
+                val.thetaRad = val.theta * DEG;
+                if (val.thetaRad > PI2) throw new Error('圆心角不能超过 360°');
+            }
             return val;
         }
 
-        /** 核心求解器，返回 { s, r, c, h, theta, major? } */
+        // ================================================================
+        //  几何算法
+        // ================================================================
+
+        function makeResult(s, r, c, h, thetaDeg) {
+            return { s, r, c, h, theta: thetaDeg };
+        }
+
+        function fromThetaR(thetaRad, r) {
+            const s = r * thetaRad;
+            const c = 2 * r * Math.sin(thetaRad / 2);
+            const h = r * (1 - Math.cos(thetaRad / 2));
+            return makeResult(s, r, c, h, thetaRad / DEG);
+        }
+
+        function solveRH(r, h) {
+            if (h >= r) throw new Error('弦高不能大于等于半径');
+            const ratio = 1 - h / r;
+            const thetaMinor = 2 * Math.acos(Math.max(-1, Math.min(1, ratio)));
+            const resMinor = fromThetaR(thetaMinor, r);
+            const thetaMajor = PI2 - thetaMinor;
+            const resMajor = fromThetaR(thetaMajor, r);
+            return [resMinor, resMajor];
+        }
+
+        function solveCH(c, h) {
+            if (h <= 0) throw new Error('弦高必须大于 0');
+            const r = (c * c / 4 + h * h) / (2 * h);
+            if (c > 2 * r + 1e-9) throw new Error('弦长不能大于直径');
+            const thetaMinor = 2 * Math.asin(Math.min(c / (2 * r), 1));
+            const resMinor = fromThetaR(thetaMinor, r);
+            const thetaMajor = PI2 - thetaMinor;
+            const resMajor = fromThetaR(thetaMajor, r);
+            // 优弧的弦高 = r - r*cos(thetaMajor/2) = r + r*cos(thetaMinor/2)
+            resMajor.h = r - r * Math.cos(thetaMajor / 2);
+            return [resMinor, resMajor];
+        }
+
+        function solveRC(r, c) {
+            if (c > 2 * r + 1e-9) throw new Error('弦长不能大于直径');
+            const theta = 2 * Math.asin(Math.min(c / (2 * r), 1));
+            return [fromThetaR(theta, r)];
+        }
+
+        function solveRTheta(r, thetaRad) {
+            if (thetaRad > PI2) throw new Error('圆心角不能超过 360°');
+            return [fromThetaR(thetaRad, r)];
+        }
+
+        function solveSR(s, r) {
+            if (s > PI2 * r + 1e-9) throw new Error('弧长不能超过周长');
+            const theta = s / r;
+            if (theta > PI2) throw new Error('圆心角不能超过 360°');
+            return [fromThetaR(theta, r)];
+        }
+
+        function solveSTheta(s, thetaRad) {
+            if (thetaRad <= 0) throw new Error('圆心角必须大于 0');
+            const r = s / thetaRad;
+            return [fromThetaR(thetaRad, r)];
+        }
+
+        function solveCTheta(c, thetaRad) {
+            if (thetaRad <= 0 || thetaRad > PI2) throw new Error('圆心角必须在 (0, 360°]');
+            const r = c / (2 * Math.sin(thetaRad / 2));
+            if (c > 2 * r + 1e-9) throw new Error('弦长不能大于直径');
+            return [fromThetaR(thetaRad, r)];
+        }
+
+        function solveHTheta(h, thetaRad) {
+            if (thetaRad <= 0 || thetaRad > PI2) throw new Error('圆心角必须在 (0, 360°]');
+            const denom = 1 - Math.cos(thetaRad / 2);
+            if (Math.abs(denom) < 1e-15) throw new Error('圆心角不能为 0');
+            const r = h / denom;
+            if (h > r + 1e-9) throw new Error('弦高不能大于半径');
+            return [fromThetaR(thetaRad, r)];
+        }
+
+        // ================================================================
+        //  数值算法（牛顿迭代）
+        // ================================================================
+
+        function newton(f, df, x0, maxIter = 80, tol = 1e-14) {
+            let x = x0;
+            for (let i = 0; i < maxIter; i++) {
+                const fx = f(x);
+                if (Math.abs(fx) < tol) return x;
+                const dx = df(x);
+                if (Math.abs(dx) < 1e-15) break;
+                x = x - fx / dx;
+                if (x < 0 || x > PI2) break;
+            }
+            return null;
+        }
+
+        function solveSC(s, c) {
+            // 方程: sin(θ/2) = c*θ/(2s)
+            if (s <= 0 || c <= 0) throw new Error('弧长和弦长必须大于 0');
+            if (c >= s) {
+                throw new Error('弦长必须小于弧长（对于非退化弧）');
+            }
+
+            const f = (t) => Math.sin(t / 2) - (c / s) * (t / 2);
+            const df = (t) => 0.5 * Math.cos(t / 2) - (c / s) * 0.5;
+
+            const solutions = [];
+            const candidates = [0.8, 4.5];
+            for (const x0 of candidates) {
+                const sol = newton(f, df, x0);
+                if (sol !== null && sol > 0 && sol < PI2) {
+                    let dup = false;
+                    for (const existing of solutions) {
+                        if (Math.abs(existing - sol) < 1e-8) { dup = true; break; }
+                    }
+                    if (!dup) {
+                        const r = s / sol;
+                        if (c <= 2 * r + 1e-9) {
+                            solutions.push(sol);
+                        }
+                    }
+                }
+            }
+
+            solutions.sort((a, b) => a - b);
+            const results = [];
+            for (const theta of solutions) {
+                const r = s / theta;
+                results.push(fromThetaR(theta, r));
+            }
+            return results;
+        }
+
+        function solveSH(s, h) {
+            // 方程: 1 - cos(θ/2) = h*θ/s
+            if (s <= 0 || h <= 0) throw new Error('弧长和弦高必须大于 0');
+
+            const f = (t) => 1 - Math.cos(t / 2) - (h / s) * t;
+            const df = (t) => 0.5 * Math.sin(t / 2) - (h / s);
+
+            const solutions = [];
+            const candidates = [0.8, 4.5];
+            for (const x0 of candidates) {
+                const sol = newton(f, df, x0);
+                if (sol !== null && sol > 0 && sol < PI2) {
+                    let dup = false;
+                    for (const existing of solutions) {
+                        if (Math.abs(existing - sol) < 1e-8) { dup = true; break; }
+                    }
+                    if (!dup) {
+                        const r = s / sol;
+                        const hCalc = r * (1 - Math.cos(sol / 2));
+                        if (Math.abs(hCalc - h) < 1e-6) {
+                            solutions.push(sol);
+                        }
+                    }
+                }
+            }
+
+            solutions.sort((a, b) => a - b);
+            const results = [];
+            for (const theta of solutions) {
+                const r = s / theta;
+                results.push(fromThetaR(theta, r));
+            }
+            return results;
+        }
+
+        // ================================================================
+        //  主求解器
+        // ================================================================
+
         function solve() {
-            const v = getInputs();
-            let res = {};
-
-            function makeResult(s, r, c, h, thetaDeg) {
-                return { s, r, c, h, theta: thetaDeg };
-            }
-
+            const v = readInputs();
             const has = (k) => k in v;
+            let solutions = [];
 
-            // 1) s + r
             if (has('s') && has('r')) {
-                const theta = v.s / v.r;
-                if (v.s > 2 * Math.PI * v.r) throw new Error('弧长不能超过周长');
-                if (theta > 2 * Math.PI) throw new Error('圆心角不能超过360°');
-                res = makeResult(v.s, v.r, 2 * v.r * Math.sin(theta / 2), v.r * (1 - Math.cos(theta / 2)), theta / DEG);
+                solutions = solveSR(v.s, v.r);
             }
-            // 2) s + theta
             else if (has('s') && has('thetaRad')) {
-                const theta = v.thetaRad;
-                const r = v.s / theta;
-                if (theta > 2 * Math.PI) throw new Error('圆心角不能超过360°');
-                if (v.s > 2 * Math.PI * r) throw new Error('弧长不能超过周长');
-                res = makeResult(v.s, r, 2 * r * Math.sin(theta / 2), r * (1 - Math.cos(theta / 2)), theta / DEG);
+                solutions = solveSTheta(v.s, v.thetaRad);
             }
-            // 3) s + c
             else if (has('s') && has('c')) {
-                const { s, c } = v;
-                function f(t) { return Math.sin(t / 2) - (c / s) * (t / 2); }
-                function df(t) { return 0.5 * Math.cos(t / 2) - (c / s) * 0.5; }
-                let t = 1.0;
-                for (let i = 0; i < 60; i++) {
-                    const ft = f(t);
-                    if (Math.abs(ft) < 1e-14) break;
-                    t -= ft / df(t);
-                    if (t < 0) t = 0.5;
-                }
-                const theta = t;
-                const r = s / theta;
-                if (theta > 2 * Math.PI) throw new Error('圆心角不能超过360°');
-                if (s > 2 * Math.PI * r) throw new Error('弧长不能超过周长');
-                if (c > 2 * r) throw new Error('弦长不能大于直径');
-                res = makeResult(s, r, c, r * (1 - Math.cos(theta / 2)), theta / DEG);
+                solutions = solveSC(v.s, v.c);
             }
-            // 4) s + h
             else if (has('s') && has('h')) {
-                const { s, h } = v;
-                function f(t) { return 1 - Math.cos(t / 2) - (t * h) / s; }
-                function df(t) { return 0.5 * Math.sin(t / 2) - h / s; }
-                let t = 1.0;
-                for (let i = 0; i < 60; i++) {
-                    const ft = f(t);
-                    if (Math.abs(ft) < 1e-14) break;
-                    t -= ft / df(t);
-                    if (t < 0) t = 0.5;
-                }
-                const theta = t;
-                const r = s / theta;
-                if (theta > 2 * Math.PI) throw new Error('圆心角不能超过360°');
-                if (s > 2 * Math.PI * r) throw new Error('弧长不能超过周长');
-                if (h > r) throw new Error('弦高不能大于半径');
-                res = makeResult(s, r, 2 * r * Math.sin(theta / 2), h, theta / DEG);
+                solutions = solveSH(v.s, v.h);
             }
-            // 5) r + theta
             else if (has('r') && has('thetaRad')) {
-                const theta = v.thetaRad;
-                if (theta > 2 * Math.PI) throw new Error('圆心角不能超过360°');
-                res = makeResult(v.r * theta, v.r, 2 * v.r * Math.sin(theta / 2), v.r * (1 - Math.cos(theta / 2)), theta / DEG);
+                solutions = solveRTheta(v.r, v.thetaRad);
             }
-            // 6) r + c
             else if (has('r') && has('c')) {
-                const theta = 2 * Math.asin(Math.min(v.c / (2 * v.r), 1));
-                if (v.c > 2 * v.r) throw new Error('弦长不能大于直径');
-                if (theta > 2 * Math.PI) throw new Error('圆心角不能超过360°');
-                res = makeResult(v.r * theta, v.r, v.c, v.r * (1 - Math.cos(theta / 2)), theta / DEG);
+                solutions = solveRC(v.r, v.c);
             }
-            // 7) r + h
             else if (has('r') && has('h')) {
-                if (v.h >= v.r) throw new Error('弦高不能大于等于半径');
-                const theta = 2 * Math.acos(1 - v.h / v.r);
-                if (theta > 2 * Math.PI) throw new Error('圆心角不能超过360°');
-                res = makeResult(v.r * theta, v.r, 2 * v.r * Math.sin(theta / 2), v.h, theta / DEG);
-                const thetaM = 2 * Math.PI - theta;
-                if (thetaM > 0 && thetaM < 2 * Math.PI) {
-                    res.major = makeResult(v.r * thetaM, v.r, 2 * v.r * Math.sin(thetaM / 2), v.r * (1 - Math.cos(thetaM / 2)), thetaM / DEG);
-                }
+                solutions = solveRH(v.r, v.h);
             }
-            // 8) c + h
             else if (has('c') && has('h')) {
-                const r = (v.c * v.c / 4 + v.h * v.h) / (2 * v.h);
-                if (v.h >= r) throw new Error('弦高不能大于等于半径');
-                if (v.c > 2 * r) throw new Error('弦长不能大于直径');
-                const theta = 2 * Math.asin(Math.min(v.c / (2 * r), 1));
-                if (theta > 2 * Math.PI) throw new Error('圆心角不能超过360°');
-                res = makeResult(r * theta, r, v.c, v.h, theta / DEG);
-                const thetaM = 2 * Math.PI - theta;
-                if (thetaM > 0 && thetaM < 2 * Math.PI) {
-                    res.major = makeResult(r * thetaM, r, v.c, r * (1 - Math.cos(thetaM / 2)), thetaM / DEG);
-                }
+                solutions = solveCH(v.c, v.h);
             }
-            // 9) c + theta
             else if (has('c') && has('thetaRad')) {
-                const theta = v.thetaRad;
-                if (theta > 2 * Math.PI) throw new Error('圆心角不能超过360°');
-                const r = v.c / (2 * Math.sin(theta / 2));
-                if (v.c > 2 * r) throw new Error('弦长不能大于直径');
-                res = makeResult(r * theta, r, v.c, r * (1 - Math.cos(theta / 2)), theta / DEG);
+                solutions = solveCTheta(v.c, v.thetaRad);
             }
-            // 10) h + theta
             else if (has('h') && has('thetaRad')) {
-                const theta = v.thetaRad;
-                if (theta > 2 * Math.PI) throw new Error('圆心角不能超过360°');
-                const r = v.h / (1 - Math.cos(theta / 2));
-                if (v.h > r) throw new Error('弦高不能大于半径');
-                res = makeResult(r * theta, r, 2 * r * Math.sin(theta / 2), v.h, theta / DEG);
+                solutions = solveHTheta(v.h, v.thetaRad);
             } else {
                 throw new Error('不支持的参数组合');
             }
 
-            // 合法性检查
-            for (const k of ['s', 'r', 'c', 'h', 'theta']) {
-                if (res[k] === undefined || !isFinite(res[k]) || res[k] < 0) {
-                    throw new Error(`计算结果异常: ${k} = ${res[k]}`);
-                }
-            }
-            if (res.s > 2 * Math.PI * res.r + 1e-9) throw new Error('弧长超过周长');
-            if (res.c > 2 * res.r + 1e-9) throw new Error('弦长超过直径');
-            if (res.h > res.r + 1e-9) throw new Error('弦高超过半径');
-            if (res.theta > 360 + 1e-9) throw new Error('圆心角超过360°');
+            // 过滤无效解
+            solutions = solutions.filter(sol => {
+                if (!sol || !isFinite(sol.s) || !isFinite(sol.r)) return false;
+                if (sol.s < 0 || sol.r < 0 || sol.c < 0 || sol.h < 0) return false;
+                if (sol.s > PI2 * sol.r + 1e-6) return false;
+                if (sol.c > 2 * sol.r + 1e-6) return false;
+                if (sol.h > sol.r + 1e-6 && sol.theta < 180) return false;
+                if (sol.theta > 360 + 1e-6) return false;
+                return true;
+            });
 
-            return res;
+            // 去重
+            const unique = [];
+            for (const sol of solutions) {
+                let dup = false;
+                for (const existing of unique) {
+                    if (Math.abs(existing.theta - sol.theta) < 1e-6 &&
+                        Math.abs(existing.r - sol.r) < 1e-6) {
+                        dup = true;
+                        break;
+                    }
+                }
+                if (!dup) unique.push(sol);
+            }
+
+            if (unique.length === 0) throw new Error('无有效解，请检查参数');
+            return unique;
         }
 
-        /* ============================================================
-                   定弦长计算
-                   ============================================================ */
+        // ================================================================
+        //  定弦长计算
+        // ================================================================
+
         function calcFixedChord(out) {
-            const LEl = document.getElementById('L');
-            const resultEl = document.getElementById('fixedChordResult');
             const L = parseFloat(LEl.value);
-
-            resultEl.style.display = 'none';
-            resultEl.innerHTML = '';
-
+            fixedResult.style.display = 'none';
+            fixedResult.innerHTML = '';
             if (isNaN(L) || L <= 0) return;
 
             const r = out.r;
-            const thetaDeg = out.theta; // 弧长对应的圆心角（度）
-            const thetaRad = thetaDeg * DEG;
+            const thetaRad = out.theta * DEG;
 
-            // 定弦长 L 对应的圆心角
             const deltaRad = 2 * Math.asin(Math.min(L / (2 * r), 1));
             const deltaDeg = deltaRad / DEG;
-
-            // 弧长 s 对应的圆心角内能容纳多少段定弦长
             const n = Math.floor(thetaRad / deltaRad);
 
             if (n < 1) {
-                resultEl.innerHTML = `<p>⚠ 定弦长 L = ${L.toFixed(4)} 大于该弧的弦长，无法容纳</p>`;
-                resultEl.style.display = 'block';
+                fixedResult.innerHTML = `<p>⚠ 定弦长 L = ${L.toFixed(4)} 大于该弧的弦长，无法容纳</p>`;
+                fixedResult.style.display = 'block';
                 return;
             }
 
-            // 相邻定弦长之间的夹角 = deltaDeg
-            const segArc = r * deltaRad; // 每段定弦长对应的弧长
+            const segArc = r * deltaRad;
             const remainRad = thetaRad - n * deltaRad;
             const remainArc = r * remainRad;
 
@@ -611,19 +722,19 @@
             } else {
                 html += `<p><strong>恰好整除，无剩余弧长</strong></p>`;
             }
-            resultEl.innerHTML = html;
-            resultEl.style.display = 'block';
+            fixedResult.innerHTML = html;
+            fixedResult.style.display = 'block';
         }
 
-        /* ============================================================
-                   绘图
-                   ============================================================ */
-        function draw(res) {
-            const cv = document.getElementById('cv');
-            const ctx = cv.getContext('2d');
-            const W = cv.width, H = cv.height;
-            const cx = W / 2, cy = H / 2;
+        // ================================================================
+        //  绘图
+        // ================================================================
 
+        function draw(res) {
+            const W = cv.width,
+                H = cv.height;
+            const cx = W / 2,
+                cy = H / 2;
             const margin = 50;
             const maxDim = Math.min(W, H) - margin;
             const scale = maxDim / (2 * (res.r || 1) + 0.01);
@@ -634,7 +745,7 @@
             const toX = (mm) => cx + mm * scale;
             const toY = (mm) => cy - mm * scale;
 
-            // ---- 背景极简网格 ----
+            // 网格
             ctx.save();
             ctx.strokeStyle = 'rgba(255,255,255,0.04)';
             ctx.lineWidth = 0.5;
@@ -652,10 +763,10 @@
             }
             ctx.restore();
 
-            // ---- 整圆 ----
+            // 整圆
             ctx.save();
             ctx.beginPath();
-            ctx.arc(cx, cy, rPix, 0, 2 * Math.PI);
+            ctx.arc(cx, cy, rPix, 0, PI2);
             ctx.strokeStyle = 'rgba(255,255,255,0.15)';
             ctx.lineWidth = 1.5;
             ctx.setLineDash([4, 6]);
@@ -663,11 +774,10 @@
             ctx.setLineDash([]);
             ctx.restore();
 
-            // ---- 扇形填充 ----
+            // 扇形
             const thetaRad = (res.theta || 0) * DEG;
             const startAngle = -thetaRad / 2;
             const endAngle = thetaRad / 2;
-
             const fillColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-3').trim() || '#38bdf8';
 
             ctx.save();
@@ -682,7 +792,7 @@
             ctx.stroke();
             ctx.restore();
 
-            // ---- 弧线 (高亮) ----
+            // 弧线
             ctx.save();
             ctx.beginPath();
             ctx.arc(cx, cy, rPix, startAngle, endAngle, false);
@@ -694,9 +804,11 @@
             ctx.shadowBlur = 0;
             ctx.restore();
 
-            // ---- 半径线 ----
-            const x1 = res.r * Math.cos(startAngle), y1 = res.r * Math.sin(startAngle);
-            const x2 = res.r * Math.cos(endAngle), y2 = res.r * Math.sin(endAngle);
+            // 半径线
+            const x1 = res.r * Math.cos(startAngle),
+                y1 = res.r * Math.sin(startAngle);
+            const x2 = res.r * Math.cos(endAngle),
+                y2 = res.r * Math.sin(endAngle);
 
             ctx.save();
             ctx.beginPath();
@@ -711,7 +823,7 @@
             ctx.setLineDash([]);
             ctx.restore();
 
-            // ---- 弦 ----
+            // 弦
             ctx.save();
             ctx.beginPath();
             ctx.moveTo(toX(x1), toY(y1));
@@ -724,9 +836,11 @@
             ctx.shadowBlur = 0;
             ctx.restore();
 
-            // ---- 弦高标注 (虚线) ----
-            const midX = (x1 + x2) / 2, midY = (y1 + y2) / 2;
-            const hEndX = 0, hEndY = res.r * Math.cos(thetaRad / 2);
+            // 弦高标注
+            const midX = (x1 + x2) / 2,
+                midY = (y1 + y2) / 2;
+            const hEndX = 0,
+                hEndY = res.r * Math.cos(thetaRad / 2);
             ctx.save();
             ctx.setLineDash([3, 4]);
             ctx.strokeStyle = 'rgba(255,255,255,0.3)';
@@ -738,21 +852,18 @@
             ctx.setLineDash([]);
             ctx.restore();
 
-            // ---- 定弦长分段标注（弦线 + 分点） ----
-            const L = parseFloat(document.getElementById('L').value);
+            // 定弦长分段
+            const L = parseFloat(LEl.value);
             if (!isNaN(L) && L > 0) {
                 const deltaRad = 2 * Math.asin(Math.min(L / (2 * res.r), 1));
                 const n = Math.floor(thetaRad / deltaRad);
                 if (n >= 1) {
-                    // 收集所有分点角度（含起点）
                     const angles = [startAngle];
                     for (let i = 1; i <= n; i++) {
                         const angle = startAngle + i * deltaRad;
                         if (angle > endAngle + 1e-9) break;
                         angles.push(angle);
                     }
-
-                    // 画定弦长的弦线
                     ctx.save();
                     ctx.strokeStyle = '#4ade80';
                     ctx.lineWidth = 2;
@@ -769,7 +880,6 @@
                         ctx.lineTo(toX(px2), toY(py2));
                         ctx.stroke();
                     }
-                    // 如果恰好到终点，补画最后一段
                     if (angles[angles.length - 1] < endAngle - 1e-9) {
                         const px1 = res.r * Math.cos(angles[angles.length - 1]);
                         const py1 = res.r * Math.sin(angles[angles.length - 1]);
@@ -784,13 +894,12 @@
                     ctx.shadowBlur = 0;
                     ctx.restore();
 
-                    // 画分点圆点
                     for (const angle of angles) {
                         const px = res.r * Math.cos(angle);
                         const py = res.r * Math.sin(angle);
                         ctx.save();
                         ctx.beginPath();
-                        ctx.arc(toX(px), toY(py), 4, 0, 2 * Math.PI);
+                        ctx.arc(toX(px), toY(py), 4, 0, PI2);
                         ctx.fillStyle = '#4ade80';
                         ctx.shadowColor = '#4ade8080';
                         ctx.shadowBlur = 8;
@@ -801,12 +910,15 @@
                 }
             }
 
-            // ---- 端点圆点 ----
+            // 端点
             const dotColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-4').trim() || '#7dd3fc';
-            for (const [px, py] of [[x1, y1], [x2, y2]]) {
+            for (const [px, py] of [
+                    [x1, y1],
+                    [x2, y2]
+                ]) {
                 ctx.save();
                 ctx.beginPath();
-                ctx.arc(toX(px), toY(py), 5, 0, 2 * Math.PI);
+                ctx.arc(toX(px), toY(py), 5, 0, PI2);
                 ctx.fillStyle = dotColor;
                 ctx.shadowColor = dotColor + '80';
                 ctx.shadowBlur = 10;
@@ -817,7 +929,7 @@
             // 圆心
             ctx.save();
             ctx.beginPath();
-            ctx.arc(cx, cy, 4, 0, 2 * Math.PI);
+            ctx.arc(cx, cy, 4, 0, PI2);
             ctx.fillStyle = '#fbbf24';
             ctx.shadowColor = '#fbbf2480';
             ctx.shadowBlur = 10;
@@ -825,7 +937,7 @@
             ctx.shadowBlur = 0;
             ctx.restore();
 
-            // ---- 文字信息 ----
+            // 文字信息
             const txtColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-4').trim() || '#7dd3fc';
             ctx.save();
             ctx.fillStyle = txtColor;
@@ -845,7 +957,7 @@
             ctx.shadowBlur = 0;
             ctx.restore();
 
-            // ---- 图例 ----
+            // 图例
             ctx.save();
             const legendY = H - 28;
             ctx.font = '12px "Segoe UI", system-ui, sans-serif';
@@ -855,8 +967,7 @@
             ctx.fillText('━ 半径', 72, legendY);
             ctx.fillStyle = '#f472b6';
             ctx.fillText('━ 弦', 142, legendY);
-            // 定弦长图例
-            const LVal = parseFloat(document.getElementById('L').value);
+            const LVal = parseFloat(LEl.value);
             if (!isNaN(LVal) && LVal > 0) {
                 ctx.fillStyle = '#4ade80';
                 ctx.fillText('● 定弦长分段', 212, legendY);
@@ -864,70 +975,115 @@
             ctx.restore();
         }
 
-        /* ============================================================
-                   对外接口
-                   ============================================================ */
+        // ================================================================
+        //  UI 控制
+        // ================================================================
+
+        function updateUI(solutions) {
+            arcRow.classList.add('hidden');
+            arcHint.classList.add('hidden');
+
+            if (!solutions || solutions.length === 0) {
+                currentSolution = null;
+                return;
+            }
+
+            if (solutions.length === 1) {
+                currentSolution = solutions[0];
+                const minorRadio = document.querySelector('input[name="arc"][value="minor"]');
+                if (minorRadio) minorRadio.checked = true;
+                return;
+            }
+
+            // 双解
+            arcRow.classList.remove('hidden');
+            arcHint.classList.remove('hidden');
+
+            solutions.sort((a, b) => a.theta - b.theta);
+
+            const currentArc = document.querySelector('input[name="arc"]:checked');
+            if (!currentArc || currentArc.value === 'major') {
+                if (solutions[0]) {
+                    document.querySelector('input[name="arc"][value="minor"]').checked = true;
+                    currentSolution = solutions[0];
+                } else {
+                    document.querySelector('input[name="arc"][value="major"]').checked = true;
+                    currentSolution = solutions[1] || solutions[0];
+                }
+            } else {
+                currentSolution = solutions[0];
+            }
+
+            const t1 = solutions[0] ? solutions[0].theta.toFixed(2) : '?';
+            const t2 = solutions[1] ? solutions[1].theta.toFixed(2) : '?';
+            arcHint.textContent = `✨ 双解：劣弧 ${t1}° / 优弧 ${t2}°，请选择`;
+        }
+
+        function applyCurrentSolution() {
+            if (!currentSolution) return;
+            IDS.forEach(id => {
+                const el = $(id);
+                if (currentSolution[id] !== undefined) {
+                    el.value = Math.max(0, currentSolution[id]).toFixed(4);
+                }
+            });
+            draw(currentSolution);
+            calcFixedChord(currentSolution);
+        }
+
+        // ================================================================
+        //  计算入口
+        // ================================================================
+
         function calc() {
-            const errEl = document.getElementById('err');
             errEl.textContent = '';
-            let res;
+            let solutions;
             try {
-                res = solve();
+                solutions = solve();
             } catch (e) {
                 errEl.textContent = '⚠ ' + e.message;
                 resetAll();
                 return;
             }
-            lastResult = res;
 
-            const hasMajor = !!res.major;
-            const radios = document.querySelectorAll('input[name=arc]');
-            radios.forEach(el => el.disabled = !hasMajor);
-            if (!hasMajor) {
-                document.querySelector('input[name=arc][value="minor"]').checked = true;
-            }
-
-            const useMajor = hasMajor && document.querySelector('input[name=arc]:checked').value === 'major';
-            const out = useMajor ? res.major : res;
-
-            // 回填
-            IDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (out[id] !== undefined) {
-                    el.value = Math.max(0, out[id]).toFixed(4);
-                }
-            });
-
-            draw(out);
-
-            // 定弦长计算
-            calcFixedChord(out);
+            lastSolutions = solutions;
+            updateUI(solutions);
+            applyCurrentSolution();
         }
 
-        // 劣/优 切换重新计算
-        document.querySelectorAll('input[name=arc]').forEach(el => {
-            el.addEventListener('change', () => { if (lastResult) calc(); });
+        document.querySelectorAll('input[name="arc"]').forEach(el => {
+            el.addEventListener('change', function() {
+                if (!lastSolutions || lastSolutions.length < 2) return;
+                const idx = this.value === 'minor' ? 0 : 1;
+                if (idx < lastSolutions.length) {
+                    currentSolution = lastSolutions[idx];
+                    applyCurrentSolution();
+                }
+            });
         });
 
-        // 回车触发
         document.querySelectorAll('.row input').forEach(el => {
             el.addEventListener('keydown', (e) => { if (e.key === 'Enter') calc(); });
         });
 
+        $('calcBtn').addEventListener('click', calc);
+
+        // ================================================================
+        //  重置
+        // ================================================================
+
         function resetAll() {
-            IDS.forEach(id => document.getElementById(id).value = '');
-            document.getElementById('L').value = '';
-            document.getElementById('err').textContent = '';
-            document.getElementById('fixedChordResult').style.display = 'none';
-            document.getElementById('fixedChordResult').innerHTML = '';
-            const ctx = document.getElementById('cv').getContext('2d');
+            IDS.forEach(id => $(id).value = '');
+            LEl.value = '';
+            errEl.textContent = '';
+            fixedResult.style.display = 'none';
+            fixedResult.innerHTML = '';
+            arcRow.classList.add('hidden');
+            arcHint.classList.add('hidden');
+            document.querySelector('input[name="arc"][value="minor"]').checked = true;
+            lastSolutions = [];
+            currentSolution = null;
             ctx.clearRect(0, 0, 420, 420);
-            document.querySelectorAll('input[name=arc]').forEach(el => {
-                el.disabled = true;
-                el.checked = el.value === 'minor';
-            });
-            lastResult = null;
-            // 显示提示文字
             ctx.save();
             ctx.fillStyle = 'rgba(255,255,255,0.2)';
             ctx.font = '16px "Segoe UI", system-ui, sans-serif';
@@ -936,8 +1092,14 @@
             ctx.restore();
         }
 
-        // ===== 初始化 =====
+        // ================================================================
+        //  初始化
+        // ================================================================
+
         resetAll();
+
+        window.calc = calc;
+        window.resetAll = resetAll;
     </script>
 </body>
 </html>
