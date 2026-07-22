@@ -35,7 +35,6 @@
             align-items: center;
             padding: 20px;
             padding-top: 20px;
-            transition: background 0.4s, color 0.3s;
         }
 
         .box {
@@ -47,7 +46,6 @@
             box-shadow: var(--shadow);
             border: 1px solid var(--theme-6);
             padding: 24px 28px 28px;
-            transition: border-color 0.3s, background 0.3s;
         }
 
         .header-area {
@@ -60,7 +58,6 @@
             color: var(--theme-3);
             text-shadow: 0 0 20px var(--theme-7);
             letter-spacing: 0.5px;
-            transition: color 0.3s;
         }
         .header-area .sub {
             font-size: 0.85rem;
@@ -91,7 +88,6 @@
             border: 1px solid var(--theme-6);
             box-shadow: 0 4px 30px rgba(2, 132, 199, 0.15);
             display: block;
-            transition: border-color 0.3s;
         }
 
         .right-panel {
@@ -159,7 +155,6 @@
             color: #f0f9ff;
             font-size: 15px;
             letter-spacing: 0.3px;
-            transition: color 0.3s;
         }
         .row input[type="number"] {
             flex: 1;
@@ -276,7 +271,6 @@
             background: rgba(248, 113, 113, 0.08);
             border-radius: 6px;
             padding: 4px 8px;
-            transition: all 0.3s;
         }
 
         @media (max-width: 720px) {
@@ -359,7 +353,7 @@
     <div class="box">
 
         <div class="header-area">
-            <h2>📐 弧形计算器 <span style="font-size: .5em; font-weight: bold;">V1.12.0</span> </h2>
+            <h2>📐 弧形计算器 <span style="font-size: .5em; font-weight: bold;">V1.12.1</span> </h2>
             <div class="sub">已知任意 2 个量 · 自动求解全参数 · 支持优/劣弧双解</div>
         </div>
 
@@ -371,6 +365,7 @@
 
             <div class="right-panel">
 
+                <!-- 劣弧 / 优弧 单选（默认隐藏） -->
                 <div class="radio-row hidden" id="arcRadioRow">
                     <label><input type="radio" name="arc" value="minor" checked /> 劣弧 (θ ≤ 180°)</label>
                     <label><input type="radio" name="arc" value="major" /> 优弧 (θ &gt; 180°)</label>
@@ -423,8 +418,8 @@
         const arcHint = $('arcHint');
         const fixedResult = $('fixedChordResult');
 
-        let lastSolutions = [];
-        let currentSolution = null;
+        let lastSolutions = []; // 当前解数组
+        let currentSolution = null; // 当前选中的解
 
         // ================================================================
         //  工具：读取输入
@@ -463,6 +458,99 @@
             return makeResult(s, r, c, h, thetaRad / DEG);
         }
 
+        // --- 各组合求解器，均返回数组 ---
+
+        // s + r (唯一)
+        function solveSR(s, r) {
+            if (s > PI2 * r + 1e-9) throw new Error('弧长不能超过周长');
+            const theta = s / r;
+            if (theta > PI2) throw new Error('圆心角不能超过 360°');
+            return [fromThetaR(theta, r)];
+        }
+
+        // s + theta (唯一)
+        function solveSTheta(s, thetaRad) {
+            if (thetaRad <= 0) throw new Error('圆心角必须大于 0');
+            const r = s / thetaRad;
+            return [fromThetaR(thetaRad, r)];
+        }
+
+        // s + c (双解可能)
+        function solveSC(s, c) {
+            if (s <= 0 || c <= 0) throw new Error('弧长和弦长必须大于 0');
+            if (c >= s) throw new Error('弦长必须小于弧长（对于非退化弧）');
+            // 方程 sin x / x = c/s，x = θ/2，x∈(0, π)
+            const k = c / s;
+            const f = (x) => Math.sin(x) - k * x;
+            const df = (x) => Math.cos(x) - k;
+            const solutions = [];
+            // 两个初始值：0.8 和 2.5
+            const candidates = [0.8, 2.5];
+            for (const x0 of candidates) {
+                const sol = newton(f, df, x0, 80, 1e-14);
+                if (sol !== null && sol > 0 && sol < Math.PI) {
+                    const theta = 2 * sol;
+                    const r = s / theta;
+                    // 验算弦长
+                    const cCalc = 2 * r * Math.sin(sol);
+                    if (Math.abs(cCalc - c) < 1e-6) {
+                        let dup = false;
+                        for (const existing of solutions) {
+                            if (Math.abs(existing - theta) < 1e-8) { dup = true; break; }
+                        }
+                        if (!dup) solutions.push(theta);
+                    }
+                }
+            }
+            solutions.sort((a, b) => a - b);
+            return solutions.map(theta => fromThetaR(theta, s / theta));
+        }
+
+        // s + h (双解可能)
+        function solveSH(s, h) {
+            if (s <= 0 || h <= 0) throw new Error('弧长和弦高必须大于 0');
+            // 方程 1 - cos x = (2h/s)*x，x=θ/2
+            const k = 2 * h / s;
+            const f = (x) => 1 - Math.cos(x) - k * x;
+            const df = (x) => Math.sin(x) - k;
+            const solutions = [];
+            const candidates = [0.8, 2.5];
+            for (const x0 of candidates) {
+                const sol = newton(f, df, x0, 80, 1e-14);
+                if (sol !== null && sol > 0 && sol < Math.PI) {
+                    const theta = 2 * sol;
+                    const r = s / theta;
+                    const hCalc = r * (1 - Math.cos(sol));
+                    if (Math.abs(hCalc - h) < 1e-6) {
+                        let dup = false;
+                        for (const existing of solutions) {
+                            if (Math.abs(existing - theta) < 1e-8) { dup = true; break; }
+                        }
+                        if (!dup) solutions.push(theta);
+                    }
+                }
+            }
+            solutions.sort((a, b) => a - b);
+            return solutions.map(theta => fromThetaR(theta, s / theta));
+        }
+
+        // r + theta (唯一)
+        function solveRTheta(r, thetaRad) {
+            if (thetaRad > PI2) throw new Error('圆心角不能超过 360°');
+            return [fromThetaR(thetaRad, r)];
+        }
+
+        // r + c (双解)
+        function solveRC(r, c) {
+            if (c > 2 * r + 1e-9) throw new Error('弦长不能大于直径');
+            const thetaMinor = 2 * Math.asin(Math.min(c / (2 * r), 1));
+            const resMinor = fromThetaR(thetaMinor, r);
+            const thetaMajor = PI2 - thetaMinor;
+            const resMajor = fromThetaR(thetaMajor, r);
+            return [resMinor, resMajor];
+        }
+
+        // r + h (双解)
         function solveRH(r, h) {
             if (h >= r) throw new Error('弦高不能大于等于半径');
             const ratio = 1 - h / r;
@@ -473,6 +561,7 @@
             return [resMinor, resMajor];
         }
 
+        // c + h (双解)
         function solveCH(c, h) {
             if (h <= 0) throw new Error('弦高必须大于 0');
             const r = (c * c / 4 + h * h) / (2 * h);
@@ -481,35 +570,10 @@
             const resMinor = fromThetaR(thetaMinor, r);
             const thetaMajor = PI2 - thetaMinor;
             const resMajor = fromThetaR(thetaMajor, r);
-            // 优弧的弦高 = r - r*cos(thetaMajor/2) = r + r*cos(thetaMinor/2)
-            resMajor.h = r - r * Math.cos(thetaMajor / 2);
             return [resMinor, resMajor];
         }
 
-        function solveRC(r, c) {
-            if (c > 2 * r + 1e-9) throw new Error('弦长不能大于直径');
-            const theta = 2 * Math.asin(Math.min(c / (2 * r), 1));
-            return [fromThetaR(theta, r)];
-        }
-
-        function solveRTheta(r, thetaRad) {
-            if (thetaRad > PI2) throw new Error('圆心角不能超过 360°');
-            return [fromThetaR(thetaRad, r)];
-        }
-
-        function solveSR(s, r) {
-            if (s > PI2 * r + 1e-9) throw new Error('弧长不能超过周长');
-            const theta = s / r;
-            if (theta > PI2) throw new Error('圆心角不能超过 360°');
-            return [fromThetaR(theta, r)];
-        }
-
-        function solveSTheta(s, thetaRad) {
-            if (thetaRad <= 0) throw new Error('圆心角必须大于 0');
-            const r = s / thetaRad;
-            return [fromThetaR(thetaRad, r)];
-        }
-
+        // c + theta (唯一)
         function solveCTheta(c, thetaRad) {
             if (thetaRad <= 0 || thetaRad > PI2) throw new Error('圆心角必须在 (0, 360°]');
             const r = c / (2 * Math.sin(thetaRad / 2));
@@ -517,6 +581,7 @@
             return [fromThetaR(thetaRad, r)];
         }
 
+        // h + theta (唯一)
         function solveHTheta(h, thetaRad) {
             if (thetaRad <= 0 || thetaRad > PI2) throw new Error('圆心角必须在 (0, 360°]');
             const denom = 1 - Math.cos(thetaRad / 2);
@@ -527,7 +592,7 @@
         }
 
         // ================================================================
-        //  数值算法（牛顿迭代）
+        //  数值工具（牛顿迭代）
         // ================================================================
 
         function newton(f, df, x0, maxIter = 80, tol = 1e-14) {
@@ -538,81 +603,9 @@
                 const dx = df(x);
                 if (Math.abs(dx) < 1e-15) break;
                 x = x - fx / dx;
-                if (x < 0 || x > PI2) break;
+                if (x < 0 || x > Math.PI) break;
             }
             return null;
-        }
-
-        function solveSC(s, c) {
-            // 方程: sin(θ/2) = c*θ/(2s)
-            if (s <= 0 || c <= 0) throw new Error('弧长和弦长必须大于 0');
-            if (c >= s) {
-                throw new Error('弦长必须小于弧长（对于非退化弧）');
-            }
-
-            const f = (t) => Math.sin(t / 2) - (c / s) * (t / 2);
-            const df = (t) => 0.5 * Math.cos(t / 2) - (c / s) * 0.5;
-
-            const solutions = [];
-            const candidates = [0.8, 4.5];
-            for (const x0 of candidates) {
-                const sol = newton(f, df, x0);
-                if (sol !== null && sol > 0 && sol < PI2) {
-                    let dup = false;
-                    for (const existing of solutions) {
-                        if (Math.abs(existing - sol) < 1e-8) { dup = true; break; }
-                    }
-                    if (!dup) {
-                        const r = s / sol;
-                        if (c <= 2 * r + 1e-9) {
-                            solutions.push(sol);
-                        }
-                    }
-                }
-            }
-
-            solutions.sort((a, b) => a - b);
-            const results = [];
-            for (const theta of solutions) {
-                const r = s / theta;
-                results.push(fromThetaR(theta, r));
-            }
-            return results;
-        }
-
-        function solveSH(s, h) {
-            // 方程: 1 - cos(θ/2) = h*θ/s
-            if (s <= 0 || h <= 0) throw new Error('弧长和弦高必须大于 0');
-
-            const f = (t) => 1 - Math.cos(t / 2) - (h / s) * t;
-            const df = (t) => 0.5 * Math.sin(t / 2) - (h / s);
-
-            const solutions = [];
-            const candidates = [0.8, 4.5];
-            for (const x0 of candidates) {
-                const sol = newton(f, df, x0);
-                if (sol !== null && sol > 0 && sol < PI2) {
-                    let dup = false;
-                    for (const existing of solutions) {
-                        if (Math.abs(existing - sol) < 1e-8) { dup = true; break; }
-                    }
-                    if (!dup) {
-                        const r = s / sol;
-                        const hCalc = r * (1 - Math.cos(sol / 2));
-                        if (Math.abs(hCalc - h) < 1e-6) {
-                            solutions.push(sol);
-                        }
-                    }
-                }
-            }
-
-            solutions.sort((a, b) => a - b);
-            const results = [];
-            for (const theta of solutions) {
-                const r = s / theta;
-                results.push(fromThetaR(theta, r));
-            }
-            return results;
         }
 
         // ================================================================
@@ -624,34 +617,26 @@
             const has = (k) => k in v;
             let solutions = [];
 
+            // 按组合调用
             if (has('s') && has('r')) {
                 solutions = solveSR(v.s, v.r);
-            }
-            else if (has('s') && has('thetaRad')) {
+            } else if (has('s') && has('thetaRad')) {
                 solutions = solveSTheta(v.s, v.thetaRad);
-            }
-            else if (has('s') && has('c')) {
+            } else if (has('s') && has('c')) {
                 solutions = solveSC(v.s, v.c);
-            }
-            else if (has('s') && has('h')) {
+            } else if (has('s') && has('h')) {
                 solutions = solveSH(v.s, v.h);
-            }
-            else if (has('r') && has('thetaRad')) {
+            } else if (has('r') && has('thetaRad')) {
                 solutions = solveRTheta(v.r, v.thetaRad);
-            }
-            else if (has('r') && has('c')) {
+            } else if (has('r') && has('c')) {
                 solutions = solveRC(v.r, v.c);
-            }
-            else if (has('r') && has('h')) {
+            } else if (has('r') && has('h')) {
                 solutions = solveRH(v.r, v.h);
-            }
-            else if (has('c') && has('h')) {
+            } else if (has('c') && has('h')) {
                 solutions = solveCH(v.c, v.h);
-            }
-            else if (has('c') && has('thetaRad')) {
+            } else if (has('c') && has('thetaRad')) {
                 solutions = solveCTheta(v.c, v.thetaRad);
-            }
-            else if (has('h') && has('thetaRad')) {
+            } else if (has('h') && has('thetaRad')) {
                 solutions = solveHTheta(v.h, v.thetaRad);
             } else {
                 throw new Error('不支持的参数组合');
@@ -698,7 +683,6 @@
 
             const r = out.r;
             const thetaRad = out.theta * DEG;
-
             const deltaRad = 2 * Math.asin(Math.min(L / (2 * r), 1));
             const deltaDeg = deltaRad / DEG;
             const n = Math.floor(thetaRad / deltaRad);
@@ -990,33 +974,29 @@
 
             if (solutions.length === 1) {
                 currentSolution = solutions[0];
-                const minorRadio = document.querySelector('input[name="arc"][value="minor"]');
-                if (minorRadio) minorRadio.checked = true;
+                document.querySelector('input[name="arc"][value="minor"]').checked = true;
                 return;
             }
 
-            // 双解
+            // 多解：显示单选
             arcRow.classList.remove('hidden');
             arcHint.classList.remove('hidden');
-
             solutions.sort((a, b) => a.theta - b.theta);
+
+            const minorRadio = document.querySelector('input[name="arc"][value="minor"]');
+            const majorRadio = document.querySelector('input[name="arc"][value="major"]');
 
             const currentArc = document.querySelector('input[name="arc"]:checked');
             if (!currentArc || currentArc.value === 'major') {
-                if (solutions[0]) {
-                    document.querySelector('input[name="arc"][value="minor"]').checked = true;
-                    currentSolution = solutions[0];
-                } else {
-                    document.querySelector('input[name="arc"][value="major"]').checked = true;
-                    currentSolution = solutions[1] || solutions[0];
-                }
+                minorRadio.checked = true;
+                currentSolution = solutions[0];
             } else {
                 currentSolution = solutions[0];
             }
 
             const t1 = solutions[0] ? solutions[0].theta.toFixed(2) : '?';
             const t2 = solutions[1] ? solutions[1].theta.toFixed(2) : '?';
-            arcHint.textContent = `✨ 双解：劣弧 ${t1}° / 优弧 ${t2}°，请选择`;
+            arcHint.textContent = `✨ 双解：劣弧 ${t1}°  /  优弧 ${t2}°，请选择`;
         }
 
         function applyCurrentSolution() {
@@ -1051,6 +1031,7 @@
             applyCurrentSolution();
         }
 
+        // 单选切换
         document.querySelectorAll('input[name="arc"]').forEach(el => {
             el.addEventListener('change', function() {
                 if (!lastSolutions || lastSolutions.length < 2) return;
@@ -1062,10 +1043,12 @@
             });
         });
 
+        // 回车触发
         document.querySelectorAll('.row input').forEach(el => {
             el.addEventListener('keydown', (e) => { if (e.key === 'Enter') calc(); });
         });
 
+        // 计算按钮
         $('calcBtn').addEventListener('click', calc);
 
         // ================================================================
@@ -1097,7 +1080,6 @@
         // ================================================================
 
         resetAll();
-
         window.calc = calc;
         window.resetAll = resetAll;
     </script>
