@@ -755,7 +755,7 @@ function validate() {
     if (type === 'trapezoid') {
         const la = sp.leftAngle ?? 0, ra = sp.rightAngle ?? 0;
         if (la <= 0 || la >= 180 || ra <= 0 || ra >= 180) return '底角必须在 0°~180° 之间';
-        if (la + ra >= 180) return '底角之和必须小于 180°';
+        if (la + ra > 180) return '底角之和不能大于 180°';
     }
     if (hasSmall) {
         const w2 = parseFloat(w2str), h2 = parseFloat(h2str);
