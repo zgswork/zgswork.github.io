@@ -20,7 +20,7 @@ const navItems = [
                 icon: 'fa-solid fa-calculator',
                 page: 'arc-calculator.html'
             },
-            <!-- 
+            /* 
             {
                 id: 'cable_calculator',
                 title: '线缆计算',
@@ -35,7 +35,7 @@ const navItems = [
                 icon: 'fa-folder-open',
                 page: 'steel-calibration.html'
             },
-            -->
+            */
             {
                 id: 'display-application-3d',
                 title: '应用模型',
@@ -43,7 +43,7 @@ const navItems = [
                 icon: 'fa-solid fa-cubes',
                 page: 'https://aiot.qlled.com:10086/qljc_3d/index.html'
             },
-            <!--
+            /*
             {
                 id: 'Lonely-HTML',
                 title: 'LonelyH',
@@ -51,5 +51,5 @@ const navItems = [
                 icon: 'fa-regular fa-plug-circle-bolt',
                 page: 'Lonely-html/Lonely-html-index.html'
             },
-            -->
+            */
         ];
