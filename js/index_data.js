@@ -21,6 +21,20 @@ const navItems = [
                 page: 'arc-calculator.html'
             },
             {
+                id: 'cable_calculator',
+                title: '线缆计算',
+                subtitle: '线缆计算器',
+                icon: 'fa-solid fa-calculator',
+                page: 'cable_calculator.html'
+            },
+            {
+                id: 'steel-calibration',
+                title: '钢材校核',
+                subtitle: '方管、圆管的长细比 & 压力校核工具',
+                icon: 'fa-folder-open',
+                page: 'steel-calibration.html'
+            },
+            {
                 id: 'display-application-3d',
                 title: '应用模型',
                 subtitle: '显示屏应用结构展示',
