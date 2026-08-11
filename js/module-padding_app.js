@@ -1025,7 +1025,7 @@ function getSvgForExport() {
         const stats = computeStats(lastShape, lastResult, lastW1, lastH1, currentMode);
         const lines = [];
         const paramLines = getShapeParamsLines(lastShape);
-        lines.push('\u7b3c-\u58f0\u660e\uff1a');
+        lines.push('\u7b1d-\u58f0\u660e\uff1a');
         lines.push('\u6b64\u56fe\u4ec5\u4f9b\u53c2\u8003');
         lines.push('--------------------');
         for (const line of paramLines) lines.push(line);
