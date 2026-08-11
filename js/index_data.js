@@ -20,6 +20,7 @@ const navItems = [
                 icon: 'fa-solid fa-calculator',
                 page: 'arc-calculator.html'
             },
+            <!-- 
             {
                 id: 'cable_calculator',
                 title: '线缆计算',
@@ -34,6 +35,7 @@ const navItems = [
                 icon: 'fa-folder-open',
                 page: 'steel-calibration.html'
             },
+                        -->
             {
                 id: 'display-application-3d',
                 title: '应用模型',
