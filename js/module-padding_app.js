@@ -331,7 +331,6 @@ function solveRectsSurroundShape(shape, w, h, allowance = 0) {
 // ════════════════════════════════════════════════════════
 //  Mixed fill: fill with small rects first, then replace with large rects
 // ════════════════════════════════════════════════════════
-
 // Check if a k×m block of small rects exists at grid position (baseGx, baseGy)
 function checkGrid(smallMap, baseGx, baseGy, k, m) {
     const cells = [];
@@ -344,11 +343,9 @@ function checkGrid(smallMap, baseGx, baseGy, k, m) {
     }
     return cells;
 }
-
 // 尝试用小矩形网格合并成大矩形，必须与大矩形网格对齐
 function tryReplaceWithLarge(small, w1, h1, w2, h2, k, m, col0, row0) {
     if (small.length < k * m) return { large: [], small: small };
-
     // 建立网格索引 → 小矩形映射（相对 col0,row0）
     const smallMap = new Map();
     for (const r of small) {
@@ -357,7 +354,6 @@ function tryReplaceWithLarge(small, w1, h1, w2, h2, k, m, col0, row0) {
         const key = gx + ',' + gy;
         smallMap.set(key, r);
     }
-
     // 只考虑可以作为大矩形起点的网格位置（对齐到大矩形网格）
     const positions = [];
     for (const [key] of smallMap) {
@@ -368,7 +364,6 @@ function tryReplaceWithLarge(small, w1, h1, w2, h2, k, m, col0, row0) {
     }
     // 按行优先排序（保证大矩形尽量连续）
     positions.sort((a, b) => a.gy - b.gy || a.gx - b.gx);
-
     // 收集所有可能的完整大矩形块
     const candidates = [];
     for (const { gx, gy } of positions) {
@@ -394,9 +389,7 @@ function tryReplaceWithLarge(small, w1, h1, w2, h2, k, m, col0, row0) {
             });
         }
     }
-
     if (candidates.length === 0) return { large: [], small: small };
-
     // 贪心选取（行优先），移除已被合并的小矩形
     const removed = new Set();
     const large = [];
@@ -409,7 +402,6 @@ function tryReplaceWithLarge(small, w1, h1, w2, h2, k, m, col0, row0) {
         for (const cell of c.cells) removed.add(cell);
         large.push({ x: c.x, y: c.y, w: w1, h: h1 });
     }
-
     // 剩余小矩形
     const remaining = [];
     for (const [key, r] of smallMap) {
@@ -417,13 +409,11 @@ function tryReplaceWithLarge(small, w1, h1, w2, h2, k, m, col0, row0) {
     }
     return { large, small: remaining };
 }
-
 // ===== 形状包围矩形（混合） =====
 function solveMixedShapeContains(shape, w1, h1, w2, h2) {
     const k = Math.round(w1 / w2), m = Math.round(h1 / h2);
     let bestResult = { large: [], small: [] };
     let bestArea = -Infinity;   // 取面积最大
-
     for (const [ox, oy] of getSearchOffsets(w1, h1, shape)) {
         const { col0, row0, xMax, yMax } = scanBounds(shape, w1, h1, ox, oy);
         // 填充所有可能的小矩形
@@ -453,13 +443,11 @@ function solveMixedShapeContains(shape, w1, h1, w2, h2) {
     }
     return bestResult;
 }
-
 // ===== 矩形包围形状（混合） =====
 function solveMixedRectsSurroundShape(shape, w1, h1, w2, h2, allowance = 0) {
     const k = Math.round(w1 / w2), m = Math.round(h1 / h2);
     let bestResult = { large: [], small: [] };
     let bestArea = Infinity;    // 取面积最小
-
     for (const [ox, oy] of getSearchOffsets(w1, h1, shape)) {
         const { col0, row0, xMax, yMax } = scanBounds(shape, w1, h1, ox, oy);
         const small = [];
@@ -617,7 +605,6 @@ function getShapeParamsLines(shape) {
     }
     return lines;
 }
-
 let currentMode = 'contains';
 let lastResult = null;
 let lastShape = null;
@@ -671,6 +658,36 @@ function renderShapeParams() {
         });
     }
 }
+function updateModeButtonTexts() {
+    const type = shapeTypeEl.value;
+    let shapeName;
+    // 特殊处理正多边形：显示边数+边形
+    if (type === 'regular-polygon') {
+        const sidesInput = document.getElementById('sp-sides');
+        const sides = sidesInput ? parseInt(sidesInput.value) || 6 : 6;
+        // 3–10 用中文数字，其余仍用阿拉伯数字
+        const chineseNumbers = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九', '十'];
+        shapeName = (sides >= 3 && sides <= 10)
+            ? '正' + chineseNumbers[sides] + '边形'
+            : '正' + sides + '边形';
+    } else {
+        const shapeNames = {
+            circle: '圆',
+            trapezoid: '梯形',
+            triangle: '三角形',
+            ellipse: '椭圆',
+            sector: '扇形',
+            segment: '弓形',
+            annulus: '圆环',
+            'sector-annulus': '扇环'
+        };
+        shapeName = shapeNames[type] || type;
+    }
+    const containsBtn = document.querySelector('.mode-btn[data-mode="contains"]');
+    const surroundBtn = document.querySelector('.mode-btn[data-mode="surround"]');
+    if (containsBtn) { containsBtn.textContent = `${shapeName}包围矩形`; }
+    if (surroundBtn) { surroundBtn.textContent = `矩形包围${shapeName}`; }
+}
 function getShapeParams() {
     const type = shapeTypeEl.value;
     const fields = SHAPE_PARAMS_CONFIG[type] || [];
@@ -696,7 +713,9 @@ document.querySelectorAll('.mode-btn').forEach(btn => {
     });
 });
 shapeTypeEl.addEventListener('change', renderShapeParams);
+shapeTypeEl.addEventListener('change', updateModeButtonTexts);
 renderShapeParams();
+updateModeButtonTexts(); // 初始化时设置正确的按钮文本
 // 十字准线跟随
 const canvasWrap = document.getElementById('canvas-wrap');
 const chV = document.getElementById('ch-v');
@@ -708,8 +727,6 @@ canvasWrap.addEventListener('mousemove', e => {
     chV.setAttribute('x1', x); chV.setAttribute('x2', x);
     chH.setAttribute('y1', y); chH.setAttribute('y2', y);
 });
-
-
 // ── 参数变更监听：任何修改都禁用导出按钮 ──
 function bindParamsChange() {
     shapeTypeEl.addEventListener('change', markParamsChanged);
@@ -731,6 +748,17 @@ function bindParamsChange() {
         allowanceEl.addEventListener('input', markParamsChanged);
         allowanceEl.addEventListener('change', markParamsChanged);
     }
+    // ✅ 新增：监听正多边形边数变化，实时更新按钮文本
+    shapeParamsEl.addEventListener('input', (e) => {
+        if (e.target.id === 'sp-sides' && shapeTypeEl.value === 'regular-polygon') {
+            updateModeButtonTexts();
+        }
+    });
+    shapeParamsEl.addEventListener('change', (e) => {
+        if (e.target.id === 'sp-sides' && shapeTypeEl.value === 'regular-polygon') {
+            updateModeButtonTexts();
+        }
+    });
 }
 bindParamsChange();
 // ── 验证
@@ -939,7 +967,6 @@ function computeStats(shape, result, w1, h1, mode) {
         areaSmall += r.w * r.h;
     }
     const totalArea = (areaLarge + areaSmall) / 1e6;
-
     let cols = null, rows = null;
     if (allRects.length > 0) {
         const allW = allRects.map(r => r.w);
@@ -1013,19 +1040,17 @@ function getSvgForExport() {
     svgClone.setAttribute('width', canvasW);
     svgClone.setAttribute('height', canvasH);
     svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-
     const allPaths = svgClone.querySelectorAll('path');
     allPaths.forEach(path => {
         path.style.animation = 'none';
         path.removeAttribute('stroke-dasharray');
         path.removeAttribute('stroke-dashoffset');
     });
-
     if (lastResult && lastShape) {
         const stats = computeStats(lastShape, lastResult, lastW1, lastH1, currentMode);
         const lines = [];
         const paramLines = getShapeParamsLines(lastShape);
-        lines.push('\u7b19-\u58f0\u660e\uff1a');
+        lines.push('\u7b3c-\u58f0\u660e\uff1a');
         lines.push('\u6b64\u56fe\u4ec5\u4f9b\u53c2\u8003');
         lines.push('--------------------');
         for (const line of paramLines) lines.push(line);
@@ -1036,7 +1061,6 @@ function getSvgForExport() {
         lines.push('\u5927\u77e9\u5f62\u6570: ' + stats.largeCount);
         if (stats.smallCount > 0) lines.push('\u5c0f\u77e9\u5f62\u6570: ' + stats.smallCount);
         lines.push('\u603b\u9762\u79ef: ' + stats.totalArea.toFixed(4) + ' m\u00b2');
-
         const allowance = parseFloat(document.getElementById('allowance')?.value) || 0;
         if (currentMode === 'surround' && allowance > 0) {
             const allRectsNow = [...lastResult.large, ...lastResult.small];
@@ -1045,14 +1069,12 @@ function getSvgForExport() {
                 lines.push('\u5b9e\u9645\u8fb9\u6cbf\u7559\u7a7a: ' + allowance + ' mm (\u8fc7\u6ee4 ' + (noAllowRects.length - allRectsNow.length) + ' \u4e2a\u77e9\u5f62)');
             }
         }
-
         const textGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         const fontSize = 14;
         const lineHeight = fontSize * 1.5;
         const margin = 20;
         let xPos = canvasW - margin;
         let yPos = canvasH - margin;
-
         for (let i = lines.length - 1; i >= 0; i--) {
             const textEl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
             textEl.setAttribute('x', xPos);
@@ -1067,13 +1089,11 @@ function getSvgForExport() {
         }
         svgClone.appendChild(textGroup);
     }
-
     const bgRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
     bgRect.setAttribute('width', canvasW);
     bgRect.setAttribute('height', canvasH);
     bgRect.setAttribute('fill', '#0f1a2b');
     svgClone.insertBefore(bgRect, svgClone.firstChild);
-
     return new XMLSerializer().serializeToString(svgClone);
 }
 function getShapeParamsString(shape) {
@@ -1108,7 +1128,6 @@ function generateFileName(shape, w1, h1, smallW, smallH, totalW, totalH) {
         String(now.getDate()).padStart(2, '0');
     return `${shapePart}-${bigRect}${smallPart}-${bbox}-${dateStr}`;
 }
-
 // ════════════════════════════════════════════════════════
 //  JPG 导出
 // ════════════════════════════════════════════════════════
@@ -1122,7 +1141,6 @@ expJpg.addEventListener('click', () => {
     const smallW = (smallCount > 0) ? lastResult.small[0].w : 0;
     const smallH = (smallCount > 0) ? lastResult.small[0].h : 0;
     const fileName = generateFileName(lastShape, lastW1, lastH1, smallW, smallH, totalW, totalH);
-
     const svgStr = getSvgForExport();
     const blob = new Blob([svgStr], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
@@ -1158,7 +1176,6 @@ expPdf.addEventListener('click', () => {
     const smallW = (smallCount > 0) ? lastResult.small[0].w : 0;
     const smallH = (smallCount > 0) ? lastResult.small[0].h : 0;
     const fileName = generateFileName(lastShape, lastW1, lastH1, smallW, smallH, totalW, totalH);
-
     const svgStr = getSvgForExport();
     const blob = new Blob([svgStr], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
@@ -1197,14 +1214,11 @@ expDxf.addEventListener('click', () => {
         alert('\u8bf7\u5148\u751f\u6210\u586b\u5145\u65b9\u6848');
         return;
     }
-
     const shape = lastShape;
     const allRects = [...lastResult.large, ...lastResult.small];
     const allowance = parseFloat(document.getElementById('allowance')?.value) || 0;
-
     const stats = computeStats(shape, lastResult, lastW1, lastH1, currentMode);
     const { largeCount, smallCount, totalW, totalH, totalArea, cols, rows } = stats;
-
     let filtered = false;
     let noAllowanceCount = 0;
     if (currentMode === 'surround' && allowance > 0) {
@@ -1212,9 +1226,7 @@ expDxf.addEventListener('click', () => {
         noAllowanceCount = noAllowRects.length;
         if (noAllowanceCount > allRects.length) filtered = true;
     }
-
     const lines = [];
-
     lines.push(
         '0', 'SECTION', '2', 'HEADER',
         '9', '$ACADVER', '1', 'AC1009',
@@ -1233,7 +1245,6 @@ expDxf.addEventListener('click', () => {
         '0', 'ENDTAB', '0', 'ENDSEC',
         '0', 'SECTION', '2', 'ENTITIES'
     );
-
     function rectLines(r, layer) {
         const x1 = r.x, y1 = -r.y;
         const x2 = r.x + r.w, y2 = -r.y;
@@ -1247,23 +1258,16 @@ expDxf.addEventListener('click', () => {
         ];
         const result = [];
         for (const [ax, ay, bx, by] of pts) {
-            result.push(
-                '0\nLINE\n8\n' + layer + '\n10\n' + ax.toFixed(3) + '\n20\n' + ay.toFixed(3) + '\n11\n' + bx.toFixed(3) + '\n21\n' + by.toFixed(3)
-            );
+            result.push('0\nLINE\n8\n' + layer + '\n10\n' + ax.toFixed(3) + '\n20\n' + ay.toFixed(3) + '\n11\n' + bx.toFixed(3) + '\n21\n' + by.toFixed(3));
         }
         return result;
     }
-
     for (const r of lastResult.large) lines.push(...rectLines(r, 'LARGE_RECT'));
     for (const r of lastResult.small) lines.push(...rectLines(r, 'SMALL_RECT'));
-
     const shapeLayer = 'SHAPE';
     function addLine(x1, y1, x2, y2) {
-        lines.push(
-            '0\nLINE\n8\n' + shapeLayer + '\n10\n' + x1.toFixed(3) + '\n20\n' + y1.toFixed(3) + '\n11\n' + x2.toFixed(3) + '\n21\n' + y2.toFixed(3)
-        );
+        lines.push('0\nLINE\n8\n' + shapeLayer + '\n10\n' + x1.toFixed(3) + '\n20\n' + y1.toFixed(3) + '\n11\n' + x2.toFixed(3) + '\n21\n' + y2.toFixed(3));
     }
-
     function arcPoints(cx, cy, r, startAngle, endAngle, segments) {
         segments = segments || 80;
         const pts = [];
@@ -1274,7 +1278,6 @@ expDxf.addEventListener('click', () => {
         }
         return pts;
     }
-
     switch (shape.type) {
         case 'circle': {
             const R = shape.radius || 1;
@@ -1284,9 +1287,7 @@ expDxf.addEventListener('click', () => {
                 const a = (2 * Math.PI * i) / N;
                 pts.push([R * Math.cos(a), -R * Math.sin(a)]);
             }
-            for (let i = 0; i < pts.length - 1; i++) {
-                addLine(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1]);
-            }
+            for (let i = 0; i < pts.length - 1; i++) { addLine(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1]) }
             addLine(pts[pts.length - 1][0], pts[pts.length - 1][1], pts[0][0], pts[0][1]);
             break;
         }
@@ -1299,9 +1300,7 @@ expDxf.addEventListener('click', () => {
                 const angle = (2 * Math.PI * i) / N;
                 pts.push([a * Math.cos(angle), -b * Math.sin(angle)]);
             }
-            for (let i = 0; i < pts.length - 1; i++) {
-                addLine(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1]);
-            }
+            for (let i = 0; i < pts.length - 1; i++) { addLine(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1]) }
             addLine(pts[pts.length - 1][0], pts[pts.length - 1][1], pts[0][0], pts[0][1]);
             break;
         }
@@ -1336,9 +1335,7 @@ expDxf.addEventListener('click', () => {
             addLine(0, 0, x1, y1);
             addLine(x2, y2, 0, 0);
             const pts = arcPoints(0, 0, R, -half, half, 80);
-            for (let i = 0; i < pts.length - 1; i++) {
-                addLine(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1]);
-            }
+            for (let i = 0; i < pts.length - 1; i++) { addLine(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1]) }
             break;
         }
         case 'segment': {
@@ -1349,9 +1346,7 @@ expDxf.addEventListener('click', () => {
             const x2 = R * Math.sin(half), y2 = -R * Math.cos(half);
             addLine(x1, y1, x2, y2);
             const pts = arcPoints(0, 0, R, -half, half, 80);
-            for (let i = 0; i < pts.length - 1; i++) {
-                addLine(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1]);
-            }
+            for (let i = 0; i < pts.length - 1; i++) { addLine(pts[i][0], pts[i][1], pts[i + 1][0], pts[i + 1][1]) }
             break;
         }
         case 'sector-annulus': {
@@ -1362,15 +1357,11 @@ expDxf.addEventListener('click', () => {
             const outerPts = arcPoints(0, 0, ro, -half, half, 80);
             const innerPts = arcPoints(0, 0, ri, half, -half, 80);
             addLine(outerPts[0][0], outerPts[0][1], innerPts[0][0], innerPts[0][1]);
-            for (let i = 0; i < outerPts.length - 1; i++) {
-                addLine(outerPts[i][0], outerPts[i][1], outerPts[i + 1][0], outerPts[i + 1][1]);
-            }
+            for (let i = 0; i < outerPts.length - 1; i++) { addLine(outerPts[i][0], outerPts[i][1], outerPts[i + 1][0], outerPts[i + 1][1]) }
             const lastOuter = outerPts.length - 1;
             const lastInner = innerPts.length - 1;
             addLine(outerPts[lastOuter][0], outerPts[lastOuter][1], innerPts[lastInner][0], innerPts[lastInner][1]);
-            for (let i = 0; i < innerPts.length - 1; i++) {
-                addLine(innerPts[i][0], innerPts[i][1], innerPts[i + 1][0], innerPts[i + 1][1]);
-            }
+            for (let i = 0; i < innerPts.length - 1; i++) { addLine(innerPts[i][0], innerPts[i][1], innerPts[i + 1][0], innerPts[i + 1][1]) }
             break;
         }
         case 'triangle': {
@@ -1420,7 +1411,6 @@ expDxf.addEventListener('click', () => {
             break;
         }
     }
-
     // ---- 统计信息 ----
     const textLayer = 'TEXT_LAYER';
     const textColor = 7;
@@ -1432,9 +1422,7 @@ expDxf.addEventListener('click', () => {
     function encodeDxfText(value) {
         return Array.from(value).map(function (char) {
             var code = char.codePointAt(0);
-            if (code < 128) {
-                return char;
-            }
+            if (code < 128) { return char }
             return '\\U+' + code.toString(16).toUpperCase().padStart(4, '0');
         }).join('');
     }
@@ -1446,7 +1434,6 @@ expDxf.addEventListener('click', () => {
         );
         yPos -= textHeight * 1.5;
     }
-
     const paramLines = getShapeParamsLines(shape);
     for (const line of paramLines) addTextLine(line);
     addTextLine('--------------------');
@@ -1459,13 +1446,10 @@ expDxf.addEventListener('click', () => {
     if (currentMode === 'surround' && allowance > 0 && filtered) {
         addTextLine('\u5b9e\u9645\u8fb9\u6cbf\u7559\u7a7a: ' + allowance + ' mm (\u8fc7\u6ee4 ' + (noAllowanceCount - allRects.length) + ' \u4e2a\u77e9\u5f62)');
     }
-
     lines.push('0', 'ENDSEC', '0', 'EOF');
-
     const smallW = (smallCount > 0) ? lastResult.small[0].w : 0;
     const smallH = (smallCount > 0) ? lastResult.small[0].h : 0;
     const fileName = generateFileName(shape, lastW1, lastH1, smallW, smallH, totalW, totalH);
-
     const dxfStr = lines.join('\n');
     const blob = new Blob([dxfStr], { type: 'application/octet-stream' });
     const url = URL.createObjectURL(blob);
@@ -1479,37 +1463,41 @@ expDxf.addEventListener('click', () => {
 let resizeTimer;
 window.addEventListener('resize', () => {
     clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-        if (lastResult && lastShape) {
-            renderResult(lastShape, lastResult, lastW1, lastH1, currentMode);
-        }
-    }, 150);
+    resizeTimer = setTimeout(() => { if (lastResult && lastShape) { renderResult(lastShape, lastResult, lastW1, lastH1, currentMode) } }, 150);
 });
 /* ==========================================================
    侧边栏折叠 + 画布隐藏(400px)
    ========================================================== */
-
 function initSidebarToggle() {
-    const header = document.getElementById('sidebar-header');
+    const sidebar = document.getElementById('sidebar');
     const scroll = document.getElementById('sidebar-scroll');
     const toggle = document.getElementById('sidebar-toggle');
-
-    header.addEventListener('click', () => {
+    const collapse = document.getElementById('sidebar-collapse');
+    // 上下折叠
+    toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
         scroll.classList.toggle('collapsed');
-        header.classList.toggle('collapsed');
+        sidebar.classList.toggle('collapsed-y');
+    });
+    // 左右折叠
+    collapse.addEventListener('click', (e) => {
+        e.stopPropagation();
+        sidebar.classList.toggle('collapsed-x');
+        // 重新计算画布尺寸
+        setTimeout(() => {
+            const wrap = document.getElementById('canvas-wrap');
+            if (wrap) wrap.dispatchEvent(new Event('resize'));
+        }, 260);
     });
 }
-
 function checkCanvasVisibility() {
     const wrap = document.getElementById('canvas-wrap');
     if (!wrap) return;
     wrap.classList.toggle('canvas-hidden', wrap.clientWidth < 400);
 }
-
 // ── 初始化 ───────────────────────────
 (function init() {
     initSidebarToggle();
-
     const update = () => {
         const w = canvasWrap.clientWidth, h = canvasWrap.clientHeight;
         mainSvg.setAttribute('viewBox', '0 0 ' + w + ' ' + h);
@@ -1519,12 +1507,9 @@ function checkCanvasVisibility() {
         chH.setAttribute('x1', 0); chH.setAttribute('x2', w);
         checkCanvasVisibility();
     };
-
     update();
     window.addEventListener('resize', () => {
         update();
-        if (lastResult && lastShape) {
-            renderResult(lastShape, lastResult, lastW1, lastH1, currentMode);
-        }
+        if (lastResult && lastShape) { renderResult(lastShape, lastResult, lastW1, lastH1, currentMode) }
     });
 })();
