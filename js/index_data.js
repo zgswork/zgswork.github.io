@@ -11,7 +11,7 @@ const navItems = [
                 title: '填充矩形',
                 subtitle: '规则图形内模组的排列',
                 icon: 'fa-solid fa-cubes-stacked',
-                page: 'FillRectangle.html'
+                page: 'module-padding.html'
             },
             {
                 id: 'arc-calculator',
