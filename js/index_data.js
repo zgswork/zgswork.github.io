@@ -37,6 +37,13 @@ const navItems = [
             },
             */
             {
+        id: 'chiller_plant',
+        title: '制冷选型',
+        subtitle: '风机、空调选型计算',
+        icon: 'fa-solid fa-calculator',
+        page: 'chiller_plant.html'
+    },
+            {
                 id: 'display-application-3d',
                 title: '应用模型',
                 subtitle: '显示屏应用结构展示',
