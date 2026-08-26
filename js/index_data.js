@@ -7,6 +7,13 @@ const navItems = [
                 page: 'welcome.html'
             },
             {
+        'id': 'led-design-plusA',
+        'title': '结构设计-plus',
+        'subtitle': 'LED显示屏模组安装结构设计工具',
+        'icon': 'fa-solid fa-palette',
+        'page': 'pages/led-design-plusA.html'
+    },
+            {
                 id: 'module-padding',
                 title: '填充矩形',
                 subtitle: '规则图形内模组的排列',
