@@ -6,12 +6,12 @@ const navItems = [
                 icon: 'fa-home',
                 page: 'welcome.html'
             },
-            {
-        'id': 'led-design-plusA',
-        'title': '结构设计-plus',
-        'subtitle': 'LED显示屏模组安装结构设计工具',
-        'icon': 'fa-solid fa-palette',
-        'page': 'pages/led-design-plusA.html'
+           {
+        id: 'led-design-plusA',
+        title: '结构设计-plus',
+        subtitle: 'LED显示屏模组安装结构设计工具',
+        icon: 'fa-solid fa-palette',
+        page: 'pages/led-design-plusA.html'
     },
             {
                 id: 'module-padding',
