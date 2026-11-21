@@ -1,1087 +1,1767 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>弧形计算器 · 专业版</title>
-    <style>
-        :root {
-            --theme-1: #0f172a;
-            --theme-2: #1e293b;
-            --theme-3: #38bdf8;
-            --theme-4: #7dd3fc;
-            --theme-5: rgba(2, 132, 199, 0.3);
-            --theme-6: rgba(94, 234, 212, 0.2);
-            --theme-7: rgba(56, 189, 248, 0.5);
-            --theme-8: rgba(56, 189, 248, 0.3);
-            --radius: 16px;
-            --shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
-            --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: linear-gradient(145deg, var(--theme-1), var(--theme-2));
-            color: var(--theme-4);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            padding-top: 20px;
-        }
-
-        .box {
-            width: 100%;
-            max-width: 880px;
-            background: rgba(15, 23, 42, 0.7);
-            backdrop-filter: blur(12px);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--theme-6);
-            padding: 24px 28px 28px;
-        }
-
-        .header-area {
-            text-align: center;
-            margin-bottom: 18px;
-        }
-        .header-area h2 {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--theme-3);
-            text-shadow: 0 0 20px var(--theme-7);
-            letter-spacing: 0.5px;
-        }
-        .header-area .sub {
-            font-size: 0.85rem;
-            color: #94a3b8;
-            margin-top: 2px;
-        }
-
-        .main-layout {
-            display: flex;
-            gap: 28px;
-            align-items: stretch;
-        }
-
-        .left-panel {
-            flex: 0 0 50%;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-width: 0;
-        }
-        .left-panel canvas {
-            width: 100%;
-            max-width: 420px;
-            height: auto;
-            aspect-ratio: 1/1;
-            border-radius: 12px;
-            background: rgba(2, 6, 23, 0.5);
-            border: 1px solid var(--theme-6);
-            box-shadow: 0 4px 30px rgba(2, 132, 199, 0.15);
-            display: block;
-        }
-
-        .right-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            min-width: 0;
-        }
-
-        .radio-row {
-            display: flex;
-            justify-content: center;
-            gap: 28px;
-            font-size: 15px;
-            padding: 4px 0 6px;
-            flex-wrap: wrap;
-            align-items: center;
-            min-height: 38px;
-            transition: all 0.3s;
-        }
-        .radio-row.hidden {
-            display: none;
-        }
-        .radio-row label {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            cursor: pointer;
-            color: var(--theme-4);
-            font-weight: 500;
-            transition: color 0.2s;
-        }
-        .radio-row label:hover {
-            color: #fff;
-        }
-        .radio-row input[type="radio"] {
-            accent-color: var(--theme-3);
-            width: 16px;
-            height: 16px;
-            cursor: pointer;
-        }
-        .radio-row .hint-text {
-            font-size: 13px;
-            color: #fbbf24;
-            font-weight: 400;
-            background: rgba(251, 191, 36, 0.12);
-            padding: 2px 14px;
-            border-radius: 20px;
-            border: 1px solid rgba(251, 191, 36, 0.2);
-        }
-        .radio-row .hint-text.hidden {
-            display: none;
-        }
-
-        .row {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .row label {
-            width: 90px;
-            flex-shrink: 0;
-            font-weight: 600;
-            color: #f0f9ff;
-            font-size: 15px;
-            letter-spacing: 0.3px;
-        }
-        .row input[type="number"] {
-            flex: 1;
-            padding: 9px 12px;
-            background: rgba(2, 6, 23, 0.6);
-            border: 1px solid var(--theme-6);
-            border-radius: 10px;
-            color: #f0f9ff;
-            font-size: 15px;
-            transition: all var(--transition);
-            min-width: 0;
-            width: 0;
-            outline: none;
-        }
-        .row input[type="number"]:focus {
-            border-color: var(--theme-3);
-            box-shadow: 0 0 0 3px var(--theme-8);
-            background: rgba(2, 6, 23, 0.8);
-        }
-        .row input[type="number"]::placeholder {
-            color: #475569;
-            font-size: 14px;
-        }
-        .row input[type="number"]::-webkit-inner-spin-button,
-        .row input[type="number"]::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        .row input[type="number"] {
-            -moz-appearance: textfield;
-            appearance: textfield;
-        }
-
-        .hint-box {
-            background: rgba(56, 189, 248, 0.06);
-            border-left: 3px solid var(--theme-3);
-            border-radius: 6px;
-            padding: 8px 14px;
-            margin: 4px 0 2px;
-        }
-        .hint-box p {
-            font-size: 13px;
-            color: #94a3b8;
-            line-height: 1.5;
-            margin: 0;
-        }
-        .hint-box p strong {
-            color: var(--theme-4);
-        }
-
-        .fixed-chord-result {
-            background: rgba(34, 197, 94, 0.08);
-            border-left: 3px solid #22c55e;
-            border-radius: 6px;
-            padding: 8px 14px;
-            margin: 2px 0;
-            display: none;
-        }
-        .fixed-chord-result p {
-            font-size: 13px;
-            color: #86efac;
-            line-height: 1.6;
-            margin: 0;
-        }
-        .fixed-chord-result p strong {
-            color: #4ade80;
-        }
-
-        .btn-row {
-            display: flex;
-            gap: 12px;
-            margin-top: 8px;
-        }
-        .btn-row button {
-            flex: 1;
-            padding: 11px 14px;
-            background: linear-gradient(135deg, var(--theme-3), #06b6d4);
-            border: none;
-            border-radius: 10px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all var(--transition);
-            box-shadow: 0 4px 20px rgba(8, 145, 178, 0.35);
-            letter-spacing: 0.5px;
-        }
-        .btn-row button:hover {
-            transform: translateY(-2px) scale(1.01);
-            box-shadow: 0 8px 30px rgba(8, 145, 178, 0.5);
-        }
-        .btn-row button:active {
-            transform: scale(0.97);
-        }
-        .btn-row button.btn-secondary {
-            background: rgba(255, 255, 255, 0.08);
-            backdrop-filter: blur(4px);
-            box-shadow: none;
-            border: 1px solid var(--theme-6);
-        }
-        .btn-row button.btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-        }
-
-        .error {
-            color: #f87171;
-            font-size: 15px;
-            margin-top: 6px;
-            text-align: center;
-            min-height: 1.6em;
-            font-weight: 500;
-            background: rgba(248, 113, 113, 0.08);
-            border-radius: 6px;
-            padding: 4px 8px;
-        }
-
-        @media (max-width: 720px) {
-            .main-layout {
-                flex-wrap: wrap;
-                gap: 18px;
-            }
-            .left-panel {
-                flex: 1 1 100%;
-                max-width: 100%;
-            }
-            .left-panel canvas {
-                max-width: 100%;
-            }
-            .right-panel {
-                flex: 1 1 100%;
-            }
-            .box {
-                padding: 16px;
-            }
-            .row label {
-                width: 66px;
-                font-size: 14px;
-            }
-            .row input[type="number"] {
-                font-size: 15px;
-                padding: 7px 10px;
-            }
-            .header-area h2 {
-                font-size: 1.5rem;
-            }
-            .radio-row {
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>弧形计算器 · 专业版</title>
+        <style>
+            /* ---------- 顶部选项卡 ---------- */
+            .tabs {
+                width: 100%;
+                max-width: 980px;
+                display: flex;
+                justify-content: center;
                 gap: 12px;
-                font-size: 14px;
+                margin-bottom: 16px;
             }
-        }
-
-        @media (max-width: 440px) {
+            .tabs .tab {
+                padding: 10px 24px;
+                border: 1px solid var(--theme-6);
+                border-radius: 10px;
+                background: rgba(15, 23, 42, 0.7);
+                color: #94a3b8;
+                font-size: 15px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all var(--transition);
+            }
+            .tabs .tab:hover {
+                color: #fff;
+                border-color: var(--theme-8);
+            }
+            .tabs .tab.active {
+                color: #fff;
+                background: linear-gradient(135deg, var(--theme-3), #06b6d4);
+                border-color: transparent;
+                box-shadow: 0 4px 20px rgba(8, 145, 178, 0.35);
+            }
+            .panel {
+                display: none;
+                width: 100%;
+            }
+            .panel.active {
+                display: block;
+            }
+            :root {
+                --theme-1: #0f172a;
+                --theme-2: #1e293b;
+                --theme-3: #38bdf8;
+                --theme-4: #7dd3fc;
+                --theme-5: rgba(2, 132, 199, 0.3);
+                --theme-6: rgba(94, 234, 212, 0.2);
+                --theme-7: rgba(56, 189, 248, 0.5);
+                --theme-8: rgba(56, 189, 248, 0.3);
+                --radius: 16px;
+                --shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+                --transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
             body {
-                padding: 10px;
-                padding-top: 10px;
+                font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+                background: linear-gradient(145deg, var(--theme-1), var(--theme-2));
+                color: var(--theme-4);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                padding: 20px;
+                padding-top: 20px;
             }
-            .box {
-                padding: 12px;
+            #panel-arc .box {
+                width: 100%;
+                max-width: 980px;
+                margin: 0 auto;
+                background: rgba(15, 23, 42, 0.7);
+                backdrop-filter: blur(12px);
+                border-radius: var(--radius);
+                box-shadow: var(--shadow);
+                border: 1px solid var(--theme-6);
+                padding: 24px 28px 28px;
             }
-            .row label {
-                width: 56px;
+            #panel-arc .header-area {
+                text-align: center;
+                margin-bottom: 18px;
+            }
+            #panel-arc .header-area h2 {
+                font-size: 2rem;
+                font-weight: 700;
+                color: var(--theme-3);
+                text-shadow: 0 0 20px var(--theme-7);
+                letter-spacing: 0.5px;
+            }
+            #panel-arc .header-area .sub {
+                font-size: 0.85rem;
+                color: #94a3b8;
+                margin-top: 2px;
+            }
+            #panel-arc .main-layout {
+                display: flex;
+                gap: 28px;
+                align-items: stretch;
+            }
+            #panel-arc .left-panel {
+                flex: 0 0 50%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-width: 0;
+            }
+            #panel-arc .left-panel canvas {
+                width: 100%;
+                max-width: 420px;
+                height: auto;
+                aspect-ratio: 1/1;
+                border-radius: 12px;
+                background: rgba(2, 6, 23, 0.5);
+                border: 1px solid var(--theme-6);
+                box-shadow: 0 4px 30px rgba(2, 132, 199, 0.15);
+                display: block;
+            }
+            #panel-arc .right-panel {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                min-width: 0;
+            }
+            #panel-arc .radio-row {
+                display: flex;
+                justify-content: center;
+                gap: 28px;
+                font-size: 15px;
+                padding: 4px 0 6px;
+                flex-wrap: wrap;
+                align-items: center;
+                min-height: 38px;
+                transition: all 0.3s;
+            }
+            #panel-arc .radio-row.hidden {
+                display: none;
+            }
+            #panel-arc .radio-row label {
+                display: inline-flex;
+                align-items: center;
+                gap: 6px;
+                cursor: pointer;
+                color: var(--theme-4);
+                font-weight: 500;
+                transition: color 0.2s;
+            }
+            #panel-arc .radio-row label:hover {
+                color: #fff;
+            }
+            #panel-arc .radio-row input[type="radio"] {
+                accent-color: var(--theme-3);
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+            }
+            #panel-arc .radio-row .hint-text {
                 font-size: 13px;
+                color: #fbbf24;
+                font-weight: 400;
+                background: rgba(251, 191, 36, 0.12);
+                padding: 2px 14px;
+                border-radius: 20px;
+                border: 1px solid rgba(251, 191, 36, 0.2);
             }
-            .row input[type="number"] {
+            #panel-arc .radio-row .hint-text.hidden {
+                display: none;
+            }
+            #panel-arc .row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            #panel-arc .row label {
+                width: 90px;
+                flex-shrink: 0;
+                font-weight: 600;
+                color: #f0f9ff;
+                font-size: 15px;
+                letter-spacing: 0.3px;
+            }
+            #panel-arc .row input[type="number"] {
+                flex: 1;
+                padding: 9px 12px;
+                background: rgba(2, 6, 23, 0.6);
+                border: 1px solid var(--theme-6);
+                border-radius: 10px;
+                color: #f0f9ff;
+                font-size: 15px;
+                transition: all var(--transition);
+                min-width: 0;
+                width: 0;
+                outline: none;
+                /* 保留原生上下三角步进按钮，并按深色方案渲染图标，避免在深底上不可见 */
+                color-scheme: dark;
+            }
+            #panel-arc .row input[type="number"]:focus {
+                border-color: var(--theme-3);
+                box-shadow: 0 0 0 3px var(--theme-8);
+                background: rgba(2, 6, 23, 0.8);
+            }
+            #panel-arc .row input[type="number"]::placeholder {
+                color: #475569;
                 font-size: 14px;
-                padding: 6px 8px;
             }
-            .btn-row button {
-                font-size: 14px;
-                padding: 8px 10px;
+            #panel-arc .hint-box {
+                background: rgba(56, 189, 248, 0.06);
+                border-left: 3px solid var(--theme-3);
+                border-radius: 6px;
+                padding: 8px 14px;
+                margin: 4px 0 2px;
             }
-            .header-area h2 {
-                font-size: 1.25rem;
+            #panel-arc .hint-box p {
+                font-size: 13px;
+                color: #94a3b8;
+                line-height: 1.5;
+                margin: 0;
             }
-            .hint-box p {
+            #panel-arc .hint-box p strong {
+                color: var(--theme-4);
+            }
+            #panel-arc .fixed-chord-result {
+                background: rgba(34, 197, 94, 0.08);
+                border-left: 3px solid #22c55e;
+                border-radius: 6px;
+                padding: 8px 14px;
+                margin: 2px 0;
+                display: none;
+            }
+            #panel-arc .fixed-chord-result p {
+                font-size: 13px;
+                color: #86efac;
+                line-height: 1.6;
+                margin: 0;
+            }
+            #panel-arc .fixed-chord-result p strong {
+                color: #4ade80;
+            }
+            #panel-arc .fixed-chord-result p red {
+                color: #f87171;
+            }
+            #panel-arc .btn-row {
+                display: flex;
+                gap: 12px;
+                margin-top: 8px;
+            }
+            #panel-arc .btn-row button {
+                flex: 1;
+                padding: 11px 14px;
+                background: linear-gradient(135deg, var(--theme-3), #06b6d4);
+                border: none;
+                border-radius: 10px;
+                color: #fff;
+                font-size: 16px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all var(--transition);
+                box-shadow: 0 4px 20px rgba(8, 145, 178, 0.35);
+                letter-spacing: 0.5px;
+            }
+            #panel-arc .btn-row button:hover {
+                transform: translateY(-2px) scale(1.01);
+                box-shadow: 0 8px 30px rgba(8, 145, 178, 0.5);
+            }
+            #panel-arc .btn-row button:active {
+                transform: scale(0.97);
+            }
+            #panel-arc .btn-row button.btn-secondary {
+                background: rgba(255, 255, 255, 0.08);
+                backdrop-filter: blur(4px);
+                box-shadow: none;
+                border: 1px solid var(--theme-6);
+            }
+            #panel-arc .btn-row button.btn-secondary:hover {
+                background: rgba(255, 255, 255, 0.15);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            }
+            #panel-arc
+            /* 已知量不足 2 个时禁用计算按钮（L 不计入） */
+            .btn-row button:disabled,
+            #panel-arc .btn-row button:disabled:hover {
+                background: rgba(148, 163, 184, 0.18);
+                color: #64748b;
+                cursor: not-allowed;
+                transform: none;
+                box-shadow: none;
+                filter: none;
+            }
+            #panel-arc .error {
+                color: #f87171;
+                font-size: 15px;
+                margin-top: 6px;
+                text-align: center;
+                min-height: 1.6em;
+                font-weight: 500;
+                background: rgba(248, 113, 113, 0.08);
+                border-radius: 6px;
+                padding: 4px 8px;
+                transition: all 0.3s;
+            }
+            #panel-arc .error:empty {
+                display: none;
+            }
+            @media (max-width: 720px) {
+                #panel-arc .main-layout {
+                    flex-wrap: wrap;
+                    gap: 18px;
+                }
+                #panel-arc .left-panel {
+                    flex: 1 1 100%;
+                    max-width: 100%;
+                }
+                #panel-arc .left-panel canvas {
+                    max-width: 100%;
+                }
+                #panel-arc .right-panel {
+                    flex: 1 1 100%;
+                }
+                #panel-arc .box {
+                    padding: 16px;
+                }
+                #panel-arc .row label {
+                    width: 66px;
+                    font-size: 14px;
+                }
+                #panel-arc .row input[type="number"] {
+                    font-size: 15px;
+                    padding: 7px 10px;
+                }
+                #panel-arc .header-area h2 {
+                    font-size: 1.5rem;
+                }
+                #panel-arc .radio-row {
+                    gap: 12px;
+                    font-size: 14px;
+                }
+            }
+            @media (max-width: 440px) {
+                body {
+                    padding: 10px;
+                    padding-top: 10px;
+                }
+                #panel-arc .box {
+                    padding: 12px;
+                }
+                #panel-arc .row label {
+                    width: 56px;
+                    font-size: 13px;
+                }
+                #panel-arc .row input[type="number"] {
+                    font-size: 14px;
+                    padding: 6px 8px;
+                }
+                #panel-arc .btn-row button {
+                    font-size: 14px;
+                    padding: 8px 10px;
+                }
+                #panel-arc .header-area h2 {
+                    font-size: 1.25rem;
+                }
+                #panel-arc .hint-box p {
+                    font-size: 12px;
+                }
+            }
+            ::-webkit-scrollbar {
+                width: 4px;
+            }
+            ::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            ::-webkit-scrollbar-thumb {
+                background: var(--theme-3);
+                border-radius: 4px;
+            }
+            #panel-poly .box {
+                width: 100%;
+                max-width: 980px;
+                margin: 0 auto;
+                background: rgba(15, 23, 42, 0.7);
+                backdrop-filter: blur(12px);
+                border-radius: var(--radius);
+                box-shadow: var(--shadow);
+                border: 1px solid var(--theme-6);
+                padding: 24px 28px 28px;
+            }
+            #panel-poly .header-area {
+                text-align: center;
+                margin-bottom: 18px;
+            }
+            #panel-poly .header-area h2 {
+                font-size: 2rem;
+                font-weight: 700;
+                color: var(--theme-3);
+                text-shadow: 0 0 20px var(--theme-7);
+                letter-spacing: 0.5px;
+            }
+            #panel-poly .header-area .sub {
+                font-size: 0.85rem;
+                color: #94a3b8;
+                margin-top: 2px;
+            }
+            #panel-poly .main-layout {
+                display: flex;
+                gap: 28px;
+                align-items: stretch;
+            }
+            #panel-poly .left-panel {
+                flex: 0 0 50%;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                min-width: 0;
+            }
+            #panel-poly .left-panel #fig {
+                width: 100%;
+                max-width: 420px;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            /* 未计算时与弧形计算器一样保留图示占位框 */
+            #panel-poly .fig-placeholder {
+                width: 100%;
+                aspect-ratio: 1/1;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                border-radius: 12px;
+                background: rgba(2, 6, 23, 0.5);
+                border: 1px solid var(--theme-6);
+                box-shadow: 0 4px 30px rgba(2, 132, 199, 0.15);
+                color: rgba(255, 255, 255, 0.2);
+                font-size: 16px;
+                font-family: 'Segoe UI', system-ui, sans-serif;
+                text-align: center;
+            }
+            #panel-poly
+            /* 图形为功能性输出，保留原白底黑字 SVG，仅套用与画布一致的容器外框 */
+            .left-panel svg {
+                width: 100%;
+                height: auto;
+                aspect-ratio: 1/1;
+                border-radius: 12px;
+                background: rgba(2, 6, 23, 0.5);
+                border: 1px solid var(--theme-6);
+                box-shadow: 0 4px 30px rgba(2, 132, 199, 0.15);
+                display: block;
+            }
+            #panel-poly .right-panel {
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                gap: 6px;
+                min-width: 0;
+            }
+            #panel-poly .row {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+            }
+            #panel-poly .row label {
+                width: 165px;
+                flex-shrink: 0;
+                font-weight: 600;
+                color: #f0f9ff;
+                font-size: 15px;
+                letter-spacing: 0.3px;
+                white-space: nowrap;
+            }
+            #panel-poly .row input[type="number"] {
+                flex: 1;
+                padding: 9px 12px;
+                background: rgba(2, 6, 23, 0.6);
+                border: 1px solid var(--theme-6);
+                border-radius: 10px;
+                color: #f0f9ff;
+                font-size: 15px;
+                transition: all var(--transition);
+                min-width: 0;
+                width: 0;
+                outline: none;
+                /* 保留原生上下三角步进按钮，并按深色方案渲染图标，避免在深底上不可见 */
+                color-scheme: dark;
+            }
+            #panel-poly .row input[type="number"]:focus {
+                border-color: var(--theme-3);
+                box-shadow: 0 0 0 3px var(--theme-8);
+                background: rgba(2, 6, 23, 0.8);
+            }
+            #panel-poly .row input.invalid {
+                border-color: #f87171;
+                box-shadow: 0 0 0 3px rgba(248, 113, 113, 0.2);
+            }
+            #panel-poly .hint-box {
+                background: rgba(56, 189, 248, 0.06);
+                border-left: 3px solid var(--theme-3);
+                border-radius: 6px;
+                padding: 8px 14px;
+                margin: 4px 0 2px;
+            }
+            #panel-poly .hint-box p {
+                font-size: 13px;
+                color: #94a3b8;
+                line-height: 1.5;
+                margin: 0;
+            }
+            #panel-poly code {
+                background: rgba(56, 189, 248, 0.1);
+                padding: 1px 5px;
+                border-radius: 5px;
                 font-size: 12px;
+                color: var(--theme-4);
             }
-        }
-
-        ::-webkit-scrollbar {
-            width: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: var(--theme-3);
-            border-radius: 4px;
-        }
-    </style>
-</head>
-<body>
-
-    <div class="box">
-
-        <div class="header-area">
-            <h2>📐 弧形计算器 <span style="font-size: .5em; font-weight: bold;">V1.12.1</span> </h2>
-            <div class="sub">已知任意 2 个量 · 自动求解全参数 · 支持优/劣弧双解</div>
+            #panel-poly .btnrow {
+                display: flex;
+                gap: 12px;
+                margin-top: 8px;
+                align-items: stretch;
+            }
+            #panel-poly .btnrow button {
+                flex: 1;
+                padding: 11px 14px;
+                background: linear-gradient(135deg, var(--theme-3), #06b6d4);
+                border: none;
+                border-radius: 10px;
+                color: #fff;
+                font-size: 16px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all var(--transition);
+                box-shadow: 0 4px 20px rgba(8, 145, 178, 0.35);
+                letter-spacing: 0.5px;
+            }
+            #panel-poly .btnrow button:hover {
+                transform: translateY(-2px) scale(1.01);
+                box-shadow: 0 8px 30px rgba(8, 145, 178, 0.5);
+            }
+            #panel-poly .btnrow button:active {
+                transform: scale(0.97);
+            }
+            #panel-poly
+            /* ---------- 计算/保存按钮行 ---------- */
+            .save-wrap {
+                position: relative;
+                flex: 0 0 auto;
+                display: flex;
+            }
+            #panel-poly .save-wrap #save {
+                width: auto;
+                margin-top: 0;
+                padding: 11px 20px;
+                background: rgba(255, 255, 255, 0.08);
+                backdrop-filter: blur(4px);
+                box-shadow: none;
+                border: 1px solid var(--theme-6);
+            }
+            #panel-poly .save-wrap #save:hover {
+                background: rgba(255, 255, 255, 0.15);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+            }
+            #panel-poly .save-wrap #save:disabled {
+                background: rgba(255, 255, 255, 0.04);
+                color: #64748b;
+                cursor: not-allowed;
+                filter: none;
+                transform: none;
+                box-shadow: none;
+                border-color: rgba(148, 163, 184, 0.2);
+            }
+            #panel-poly .save-wrap #save:disabled:hover {
+                filter: none;
+                transform: none;
+                box-shadow: none;
+            }
+            #panel-poly .save-menu {
+                position: absolute;
+                left: 100%;
+                top: 0;
+                margin-left: 8px;
+                z-index: 20;
+                background: #111c33;
+                border: 1px solid var(--theme-6);
+                border-radius: 12px;
+                box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+                padding: 6px;
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+                min-width: 160px;
+            }
+            #panel-poly .save-menu[hidden] {
+                display: none;
+            }
+            #panel-poly .save-menu button {
+                width: 100%;
+                margin: 0;
+                padding: 10px 14px;
+                font-size: 14px;
+                font-weight: 600;
+                background: rgba(255, 255, 255, 0.04);
+                color: var(--theme-4);
+                border: 1px solid transparent;
+                border-radius: 8px;
+                text-align: left;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                white-space: nowrap;
+                box-shadow: none;
+            }
+            #panel-poly .save-menu button:hover {
+                background: rgba(56, 189, 248, 0.14);
+                color: #fff;
+                border-color: var(--theme-6);
+                transform: none;
+                box-shadow: none;
+                filter: none;
+            }
+            #panel-poly .save-menu button:active {
+                transform: none;
+            }
+            #panel-poly #out {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+            }
+            #panel-poly #out .card {
+                background: rgba(2, 6, 23, 0.45);
+                border: 1px solid var(--theme-6);
+                border-radius: 12px;
+                padding: 14px 16px;
+            }
+            #panel-poly .res .cap {
+                font-size: 12px;
+                font-weight: 700;
+                letter-spacing: 1.2px;
+                color: #94a3b8;
+            }
+            #panel-poly #out .res {
+                border-left: 3px solid #22c55e;
+            }
+            #panel-poly .big {
+                font-size: 34px;
+                font-weight: 700;
+                color: var(--theme-3);
+                text-shadow: 0 0 18px var(--theme-7);
+                margin: 6px 0 10px;
+                word-break: break-all;
+                font-variant-numeric: tabular-nums;
+            }
+            #panel-poly .big small {
+                font-size: 16px;
+                color: var(--theme-4);
+                font-weight: 600;
+            }
+            #panel-poly .grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 10px;
+            }
+            #panel-poly .item {
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid var(--theme-6);
+                border-radius: 10px;
+                padding: 10px 12px;
+            }
+            #panel-poly .item .k {
+                font-size: 12px;
+                color: #94a3b8;
+                margin-bottom: 3px;
+            }
+            #panel-poly .item .v {
+                font-size: 14px;
+                font-weight: 600;
+                color: #e2e8f0;
+                font-variant-numeric: tabular-nums;
+                word-break: break-all;
+            }
+            #panel-poly #out .err {
+                color: #fecaca;
+                background: rgba(248, 113, 113, 0.08);
+                border: 1px solid rgba(248, 113, 113, 0.35);
+                border-radius: 12px;
+                padding: 14px 16px;
+                font-size: 15px;
+                line-height: 1.6;
+            }
+            #panel-poly #out .err code {
+                background: rgba(248, 113, 113, 0.12);
+                color: #fca5a5;
+            }
+            #panel-poly .note {
+                font-size: 12.5px;
+                color: #94a3b8;
+                line-height: 1.9;
+                margin: 16px 0 0;
+            }
+            @media (max-width: 900px) {
+                #panel-poly .save-menu {
+                    left: auto;
+                    right: 0;
+                    top: 100%;
+                    margin-left: 0;
+                    margin-top: 8px;
+                }
+            }
+            @media (max-width: 860px) {
+                #panel-poly .main-layout {
+                    flex-wrap: wrap;
+                    gap: 18px;
+                }
+                #panel-poly .left-panel {
+                    flex: 1 1 100%;
+                    max-width: 100%;
+                }
+                #panel-poly .left-panel #fig {
+                    max-width: 100%;
+                }
+                #panel-poly .right-panel {
+                    flex: 1 1 100%;
+                }
+                #panel-poly .box {
+                    padding: 16px;
+                }
+                #panel-poly .header-area h2 {
+                    font-size: 1.5rem;
+                }
+            }
+            @media (max-width: 440px) {
+                #panel-poly .box {
+                    padding: 12px;
+                }
+                #panel-poly .row label {
+                    width: 140px;
+                    font-size: 13px;
+                }
+                #panel-poly .row input[type="number"] {
+                    font-size: 14px;
+                    padding: 7px 9px;
+                }
+                #panel-poly .btnrow button {
+                    font-size: 14px;
+                    padding: 8px 10px;
+                }
+                #panel-poly .save-wrap #save {
+                    padding: 8px 14px;
+                }
+                #panel-poly .header-area h2 {
+                    font-size: 1.25rem;
+                }
+                #panel-poly .hint-box p {
+                    font-size: 12px;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="tabs" role="tablist">
+            <button class="tab active" type="button" data-panel="arc">弧形计算</button>
+            <button class="tab" type="button" data-panel="poly">多边计算</button>
         </div>
-
-        <div class="main-layout">
-
-            <div class="left-panel">
-                <canvas id="cv" width="420" height="420"></canvas>
+        <section class="panel active" id="panel-arc">
+            <div class="box">
+                <div class="header-area">
+                    <div class="sub">已知任意 2 个量 · 自动求解全参数 · 支持优/劣弧双解</div>
+                </div>
+                <div class="main-layout">
+                    <div class="left-panel">
+                        <canvas id="cv" width="420" height="420"></canvas>
+                    </div>
+                    <div class="right-panel">
+                        <!-- 劣弧 / 优弧 单选（默认隐藏） -->
+                        <div class="radio-row hidden" id="arcRadioRow">
+                            <label><input type="radio" name="arc" value="minor" checked /> 劣弧 (θ ≤ 180°)</label>
+                            <label><input type="radio" name="arc" value="major" /> 优弧 (θ &gt; 180°)</label>
+                            <span class="hint-text" id="arcHint">✨ 该参数组合存在双解，请选择</span>
+                        </div>
+                        <div class="row">
+                            <label>弧长s(mm)</label>
+                            <input id="s" type="number" step="any" min="0" required inputmode="decimal" value="1000">
+                        </div>
+                        <div class="row">
+                            <label>半径r(mm)</label>
+                            <input id="r" type="number" step="any" min="0" value="1000">
+                        </div>
+                        <div class="row">
+                            <label>弦长c(mm)</label>
+                            <input id="c" type="number" step="any" min="0">
+                        </div>
+                        <div class="row">
+                            <label>拱高h(mm)</label>
+                            <input id="h" type="number" step="any" min="0">
+                        </div>
+                        <div class="row">
+                            <label>圆心角θ(°)</label>
+                            <input id="theta" type="number" step="any" min="0">
+                        </div>
+                        <div class="hint-box">
+                            <p>💡 任意填写 <strong>2 个</strong> 非空值 · 双解时自动提示切换 · 所有值 ≥ 0</p>
+                        </div>
+                        <div class="row">
+                            <label>边长L(mm)</label>
+                            <input id="L" type="number" step="any" min="0" placeholder="mm（可选）" value="320">
+                        </div>
+                        <div class="fixed-chord-result" id="fixedChordResult"></div>
+                        <div class="btn-row">
+                            <button id="calcBtn">⚡ 计算</button>
+                            <button class="btn-secondary" onclick="resetAll()">✕ 清空</button>
+                        </div>
+                        <div id="err" class="error"></div>
+                    </div>
+                </div>
             </div>
-
-            <div class="right-panel">
-
-                <!-- 劣弧 / 优弧 单选（默认隐藏） -->
-                <div class="radio-row hidden" id="arcRadioRow">
-                    <label><input type="radio" name="arc" value="minor" checked /> 劣弧 (θ ≤ 180°)</label>
-                    <label><input type="radio" name="arc" value="major" /> 优弧 (θ &gt; 180°)</label>
-                    <span class="hint-text" id="arcHint">✨ 该参数组合存在双解，请选择</span>
+        </section>
+        <section class="panel" id="panel-poly">
+            <div class="box">
+                <div class="header-area">
+                    <div class="sub">已知多边形边长、弦长，求半径</div>
                 </div>
-
-                <div class="row"><label>弧长 s</label><input id="s" type="number" step="any" min="0" placeholder="mm" /></div>
-                <div class="row"><label>半径 r</label><input id="r" type="number" step="any" min="0" placeholder="mm" /></div>
-                <div class="row"><label>弦长 c</label><input id="c" type="number" step="any" min="0" placeholder="mm" /></div>
-                <div class="row"><label>弦高 h</label><input id="h" type="number" step="any" min="0" placeholder="mm" /></div>
-                <div class="row"><label>圆心角 θ</label><input id="theta" type="number" step="any" min="0" placeholder="度" /></div>
-
-                <div class="hint-box">
-                    <p>💡 任意填写 <strong>2 个</strong> 非空值 · 双解时自动提示切换 · 所有值 ≥ 0</p>
+                <div class="main-layout">
+                    <div class="left-panel">
+                        <div id="fig"></div>
+                    </div>
+                    <div class="right-panel">
+                        <!-- 边长输入使用独立 id，避免与弧形计算器的 id="s" 冲突 -->
+                        <div class="row">
+                            <label for="poly-s">边长 s（&gt; 0）</label>
+                            <input id="poly-s" type="number" step="any" min="0" required inputmode="decimal"
+                                value="600">
+                        </div>
+                        <div class="row">
+                            <label for="n">边数 n（≥2,整数）</label>
+                            <input id="n" type="number" step="1" min="2" required value="6">
+                        </div>
+                        <div class="row">
+                            <label for="l">弦长 l（&gt; 0）</label>
+                            <input id="l" type="number" step="any" min="0" required inputmode="decimal" value="3000">
+                        </div>
+                        <div class="hint-box">
+                            <p>图形示意(蓝色折线由 <code>n</code> 条长度为 <code>s</code> 的弦组成，橙色线段为总弦长 <code>l</code>，虚线圆为半径
+                                <code>R</code> 的外接圆)
+                            </p>
+                        </div>
+                        <div class="btnrow">
+                            <button id="calc" type="button">计 算</button>
+                            <div class="save-wrap">
+                                <button id="save" type="button" disabled>保 存</button>
+                                <div id="saveMenu" class="save-menu" hidden>
+                                    <button type="button" data-type="png">PNG</button>
+                                    <button type="button" data-type="dxf">DXF</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="out"></div>
+                    </div>
                 </div>
-
-                <div class="row"><label>定弦长 L</label><input id="L" type="number" step="any" min="0" placeholder="mm（可选）" /></div>
-
-                <div class="fixed-chord-result" id="fixedChordResult"></div>
-
-                <div class="btn-row">
-                    <button id="calcBtn">⚡ 计算</button>
-                    <button class="btn-secondary" onclick="resetAll()">✕ 清空</button>
-                </div>
-
-                <div id="err" class="error"></div>
             </div>
-        </div>
-    </div>
-
-    <script>
-        // ================================================================
-        //  常量 & DOM 引用
-        // ================================================================
-        const DEG = Math.PI / 180;
-        const IDS = ['s', 'r', 'c', 'h', 'theta'];
-        const PI2 = 2 * Math.PI;
-
-        const $ = id => document.getElementById(id);
-        const sEl = $('s'),
-            rEl = $('r'),
-            cEl = $('c'),
-            hEl = $('h'),
-            thetaEl = $('theta');
-        const LEl = $('L');
-        const errEl = $('err');
-        const cv = $('cv');
-        const ctx = cv.getContext('2d');
-        const arcRow = $('arcRadioRow');
-        const arcHint = $('arcHint');
-        const fixedResult = $('fixedChordResult');
-
-        let lastSolutions = []; // 当前解数组
-        let currentSolution = null; // 当前选中的解
-
-        // ================================================================
-        //  工具：读取输入
-        // ================================================================
-        function readInputs() {
-            const val = {};
-            let count = 0;
-            for (const id of IDS) {
-                const el = $(id);
-                const v = parseFloat(el.value);
-                if (!isNaN(v) && v >= 0) {
-                    val[id] = v;
-                    count++;
+        </section>
+        <script>
+            // ================================================================
+            //  弧形计算器原脚本（IIFE 隔离，避免与多边形模块重名冲突）
+            // ================================================================
+            (function () {
+                // ================================================================
+                //  常量 & DOM 引用
+                // ================================================================
+                const DEG = Math.PI / 180, IDS = ['s', 'r', 'c', 'h', 'theta'], PI2 = 2 * Math.PI, $ = id => document.getElementById(id), sEl = $('s'), rEl = $('r'), cEl = $('c'), hEl = $('h'), thetaEl = $('theta'), LEl = $('L'), errEl = $('err'), cv = $('cv'), ctx = cv.getContext('2d'), arcRow = $('arcRadioRow'), arcHint = $('arcHint'), fixedResult = $('fixedChordResult');
+                let lastSolutions = [];
+                let currentSolution = null;
+                // ================================================================
+                //  工具：显示数值去尾零（仅影响显示，不改变计算精度）
+                // ================================================================
+                function trimNum(v, d = 4) { return String(parseFloat(Number(v).toFixed(d))); }
+                // ================================================================
+                //  工具：已知量不足 2 个时禁用计算按钮（定弦长 L 不计入）
+                // ================================================================
+                function updateCalcButton() {
+                    const count = IDS.filter(id => !isNaN(parseFloat($(id).value))).length;
+                    $('calcBtn').disabled = count < 2;
                 }
-            }
-            if (count < 2) throw new Error('请至少填写 2 个已知量');
-            if (val.theta !== undefined) {
-                val.thetaRad = val.theta * DEG;
-                if (val.thetaRad > PI2) throw new Error('圆心角不能超过 360°');
-            }
-            return val;
-        }
-
-        // ================================================================
-        //  几何算法
-        // ================================================================
-
-        function makeResult(s, r, c, h, thetaDeg) {
-            return { s, r, c, h, theta: thetaDeg };
-        }
-
-        function fromThetaR(thetaRad, r) {
-            const s = r * thetaRad;
-            const c = 2 * r * Math.sin(thetaRad / 2);
-            const h = r * (1 - Math.cos(thetaRad / 2));
-            return makeResult(s, r, c, h, thetaRad / DEG);
-        }
-
-        // --- 各组合求解器，均返回数组 ---
-
-        // s + r (唯一)
-        function solveSR(s, r) {
-            if (s > PI2 * r + 1e-9) throw new Error('弧长不能超过周长');
-            const theta = s / r;
-            if (theta > PI2) throw new Error('圆心角不能超过 360°');
-            return [fromThetaR(theta, r)];
-        }
-
-        // s + theta (唯一)
-        function solveSTheta(s, thetaRad) {
-            if (thetaRad <= 0) throw new Error('圆心角必须大于 0');
-            const r = s / thetaRad;
-            return [fromThetaR(thetaRad, r)];
-        }
-
-        // s + c (双解可能)
-        function solveSC(s, c) {
-            if (s <= 0 || c <= 0) throw new Error('弧长和弦长必须大于 0');
-            if (c >= s) throw new Error('弦长必须小于弧长（对于非退化弧）');
-            // 方程 sin x / x = c/s，x = θ/2，x∈(0, π)
-            const k = c / s;
-            const f = (x) => Math.sin(x) - k * x;
-            const df = (x) => Math.cos(x) - k;
-            const solutions = [];
-            // 两个初始值：0.8 和 2.5
-            const candidates = [0.8, 2.5];
-            for (const x0 of candidates) {
-                const sol = newton(f, df, x0, 80, 1e-14);
-                if (sol !== null && sol > 0 && sol < Math.PI) {
-                    const theta = 2 * sol;
-                    const r = s / theta;
-                    // 验算弦长
-                    const cCalc = 2 * r * Math.sin(sol);
-                    if (Math.abs(cCalc - c) < 1e-6) {
-                        let dup = false;
-                        for (const existing of solutions) {
-                            if (Math.abs(existing - theta) < 1e-8) { dup = true; break; }
+                // ================================================================
+                //  工具：读取输入
+                // ================================================================
+                function readInputs() {
+                    const val = {};
+                    let count = 0;
+                    for (const id of IDS) {
+                        const el = $(id), v = parseFloat(el.value);
+                        if (!isNaN(v)) {
+                            if (v <= 0) throw new Error('填写已知量必须大于 0');
+                            val[id] = v;
+                            count++;
                         }
-                        if (!dup) solutions.push(theta);
                     }
+                    /* 边长 L 若填写，同样必须大于 0 */
+                    const Lv = parseFloat(LEl.value);
+                    if (!isNaN(Lv) && Lv <= 0) throw new Error('边长 L 必须大于 0');
+                    if (count < 2) throw new Error('请至少填写 2 个已知量');
+                    if (val.theta !== undefined) {
+                        val.thetaRad = val.theta * DEG;
+                        if (val.thetaRad > PI2) throw new Error('圆心角不能超过 360°');
+                    }
+                    return val;
                 }
-            }
-            solutions.sort((a, b) => a - b);
-            return solutions.map(theta => fromThetaR(theta, s / theta));
-        }
-
-        // s + h (双解可能)
-        function solveSH(s, h) {
-            if (s <= 0 || h <= 0) throw new Error('弧长和弦高必须大于 0');
-            // 方程 1 - cos x = (2h/s)*x，x=θ/2
-            const k = 2 * h / s;
-            const f = (x) => 1 - Math.cos(x) - k * x;
-            const df = (x) => Math.sin(x) - k;
-            const solutions = [];
-            const candidates = [0.8, 2.5];
-            for (const x0 of candidates) {
-                const sol = newton(f, df, x0, 80, 1e-14);
-                if (sol !== null && sol > 0 && sol < Math.PI) {
-                    const theta = 2 * sol;
-                    const r = s / theta;
-                    const hCalc = r * (1 - Math.cos(sol));
-                    if (Math.abs(hCalc - h) < 1e-6) {
-                        let dup = false;
-                        for (const existing of solutions) {
-                            if (Math.abs(existing - theta) < 1e-8) { dup = true; break; }
+                // ================================================================
+                //  几何算法
+                // ================================================================
+                function makeResult(s, r, c, h, thetaDeg) { return { s, r, c, h, theta: thetaDeg }; }
+                function fromThetaR(thetaRad, r) {
+                    const s = r * thetaRad, c = 2 * r * Math.sin(thetaRad / 2), h = r * (1 - Math.cos(thetaRad / 2));
+                    return makeResult(s, r, c, h, thetaRad / DEG);
+                }
+                // --- 各组合求解器，均返回数组 ---
+                function solveSR(s, r) {
+                    if (s > PI2 * r + 1e-9) throw new Error('弧长不能超过周长');
+                    const theta = s / r;
+                    if (theta <= 0 || theta > PI2) throw new Error('圆心角必须在 (0, 360°]');
+                    return [fromThetaR(theta, r)];
+                }
+                function solveSTheta(s, thetaRad) {
+                    if (thetaRad <= 0 || thetaRad > PI2) throw new Error('圆心角必须在 (0, 360°]');
+                    const r = s / thetaRad;
+                    return [fromThetaR(thetaRad, r)];
+                }
+                function solveSC(s, c) {
+                    if (c >= s) throw new Error('弦长必须小于弧长');
+                    const k = c / s, f = (x) => Math.sin(x) - k * x, df = (x) => Math.cos(x) - k, solutions = [], candidates = [0.8, 2.5];
+                    for (const x0 of candidates) {
+                        const sol = newton(f, df, x0, 80, 1e-14);
+                        if (sol !== null && sol > 0 && sol < Math.PI) {
+                            const theta = 2 * sol, r = s / theta, cCalc = 2 * r * Math.sin(sol);
+                            if (Math.abs(cCalc - c) < 1e-6) {
+                                let dup = false;
+                                for (const existing of solutions) { if (Math.abs(existing - theta) < 1e-8) { dup = true; break; } }
+                                if (!dup) solutions.push(theta);
+                            }
                         }
-                        if (!dup) solutions.push(theta);
                     }
+                    solutions.sort((a, b) => a - b);
+                    return solutions.map(theta => fromThetaR(theta, s / theta));
                 }
-            }
-            solutions.sort((a, b) => a - b);
-            return solutions.map(theta => fromThetaR(theta, s / theta));
-        }
-
-        // r + theta (唯一)
-        function solveRTheta(r, thetaRad) {
-            if (thetaRad > PI2) throw new Error('圆心角不能超过 360°');
-            return [fromThetaR(thetaRad, r)];
-        }
-
-        // r + c (双解)
-        function solveRC(r, c) {
-            if (c > 2 * r + 1e-9) throw new Error('弦长不能大于直径');
-            const thetaMinor = 2 * Math.asin(Math.min(c / (2 * r), 1));
-            const resMinor = fromThetaR(thetaMinor, r);
-            const thetaMajor = PI2 - thetaMinor;
-            const resMajor = fromThetaR(thetaMajor, r);
-            return [resMinor, resMajor];
-        }
-
-        // r + h (双解)
-        function solveRH(r, h) {
-            if (h >= r) throw new Error('弦高不能大于等于半径');
-            const ratio = 1 - h / r;
-            const thetaMinor = 2 * Math.acos(Math.max(-1, Math.min(1, ratio)));
-            const resMinor = fromThetaR(thetaMinor, r);
-            const thetaMajor = PI2 - thetaMinor;
-            const resMajor = fromThetaR(thetaMajor, r);
-            return [resMinor, resMajor];
-        }
-
-        // c + h (双解)
-        function solveCH(c, h) {
-            if (h <= 0) throw new Error('弦高必须大于 0');
-            const r = (c * c / 4 + h * h) / (2 * h);
-            if (c > 2 * r + 1e-9) throw new Error('弦长不能大于直径');
-            const thetaMinor = 2 * Math.asin(Math.min(c / (2 * r), 1));
-            const resMinor = fromThetaR(thetaMinor, r);
-            const thetaMajor = PI2 - thetaMinor;
-            const resMajor = fromThetaR(thetaMajor, r);
-            return [resMinor, resMajor];
-        }
-
-        // c + theta (唯一)
-        function solveCTheta(c, thetaRad) {
-            if (thetaRad <= 0 || thetaRad > PI2) throw new Error('圆心角必须在 (0, 360°]');
-            const r = c / (2 * Math.sin(thetaRad / 2));
-            if (c > 2 * r + 1e-9) throw new Error('弦长不能大于直径');
-            return [fromThetaR(thetaRad, r)];
-        }
-
-        // h + theta (唯一)
-        function solveHTheta(h, thetaRad) {
-            if (thetaRad <= 0 || thetaRad > PI2) throw new Error('圆心角必须在 (0, 360°]');
-            const denom = 1 - Math.cos(thetaRad / 2);
-            if (Math.abs(denom) < 1e-15) throw new Error('圆心角不能为 0');
-            const r = h / denom;
-            if (h > r + 1e-9) throw new Error('弦高不能大于半径');
-            return [fromThetaR(thetaRad, r)];
-        }
-
-        // ================================================================
-        //  数值工具（牛顿迭代）
-        // ================================================================
-
-        function newton(f, df, x0, maxIter = 80, tol = 1e-14) {
-            let x = x0;
-            for (let i = 0; i < maxIter; i++) {
-                const fx = f(x);
-                if (Math.abs(fx) < tol) return x;
-                const dx = df(x);
-                if (Math.abs(dx) < 1e-15) break;
-                x = x - fx / dx;
-                if (x < 0 || x > Math.PI) break;
-            }
-            return null;
-        }
-
-        // ================================================================
-        //  主求解器
-        // ================================================================
-
-        function solve() {
-            const v = readInputs();
-            const has = (k) => k in v;
-            let solutions = [];
-
-            // 按组合调用
-            if (has('s') && has('r')) {
-                solutions = solveSR(v.s, v.r);
-            } else if (has('s') && has('thetaRad')) {
-                solutions = solveSTheta(v.s, v.thetaRad);
-            } else if (has('s') && has('c')) {
-                solutions = solveSC(v.s, v.c);
-            } else if (has('s') && has('h')) {
-                solutions = solveSH(v.s, v.h);
-            } else if (has('r') && has('thetaRad')) {
-                solutions = solveRTheta(v.r, v.thetaRad);
-            } else if (has('r') && has('c')) {
-                solutions = solveRC(v.r, v.c);
-            } else if (has('r') && has('h')) {
-                solutions = solveRH(v.r, v.h);
-            } else if (has('c') && has('h')) {
-                solutions = solveCH(v.c, v.h);
-            } else if (has('c') && has('thetaRad')) {
-                solutions = solveCTheta(v.c, v.thetaRad);
-            } else if (has('h') && has('thetaRad')) {
-                solutions = solveHTheta(v.h, v.thetaRad);
-            } else {
-                throw new Error('不支持的参数组合');
-            }
-
-            // 过滤无效解
-            solutions = solutions.filter(sol => {
-                if (!sol || !isFinite(sol.s) || !isFinite(sol.r)) return false;
-                if (sol.s < 0 || sol.r < 0 || sol.c < 0 || sol.h < 0) return false;
-                if (sol.s > PI2 * sol.r + 1e-6) return false;
-                if (sol.c > 2 * sol.r + 1e-6) return false;
-                if (sol.h > sol.r + 1e-6 && sol.theta < 180) return false;
-                if (sol.theta > 360 + 1e-6) return false;
-                return true;
-            });
-
-            // 去重
-            const unique = [];
-            for (const sol of solutions) {
-                let dup = false;
-                for (const existing of unique) {
-                    if (Math.abs(existing.theta - sol.theta) < 1e-6 &&
-                        Math.abs(existing.r - sol.r) < 1e-6) {
-                        dup = true;
-                        break;
+                function solveSH(s, h) {
+                    const k = 2 * h / s, f = (x) => 1 - Math.cos(x) - k * x, df = (x) => Math.sin(x) - k, solutions = [], candidates = [0.8, 2.5];
+                    for (const x0 of candidates) {
+                        const sol = newton(f, df, x0, 80, 1e-14);
+                        if (sol !== null && sol > 0 && sol < Math.PI) {
+                            const theta = 2 * sol, r = s / theta, hCalc = r * (1 - Math.cos(sol));
+                            if (Math.abs(hCalc - h) < 1e-6) {
+                                let dup = false;
+                                for (const existing of solutions) { if (Math.abs(existing - theta) < 1e-8) { dup = true; break; } }
+                                if (!dup) solutions.push(theta);
+                            }
+                        }
                     }
+                    solutions.sort((a, b) => a - b);
+                    return solutions.map(theta => fromThetaR(theta, s / theta));
                 }
-                if (!dup) unique.push(sol);
-            }
-
-            if (unique.length === 0) throw new Error('无有效解，请检查参数');
-            return unique;
-        }
-
-        // ================================================================
-        //  定弦长计算
-        // ================================================================
-
-        function calcFixedChord(out) {
-            const L = parseFloat(LEl.value);
-            fixedResult.style.display = 'none';
-            fixedResult.innerHTML = '';
-            if (isNaN(L) || L <= 0) return;
-
-            const r = out.r;
-            const thetaRad = out.theta * DEG;
-            const deltaRad = 2 * Math.asin(Math.min(L / (2 * r), 1));
-            const deltaDeg = deltaRad / DEG;
-            const n = Math.floor(thetaRad / deltaRad);
-
-            if (n < 1) {
-                fixedResult.innerHTML = `<p>⚠ 定弦长 L = ${L.toFixed(4)} 大于该弧的弦长，无法容纳</p>`;
-                fixedResult.style.display = 'block';
-                return;
-            }
-
-            const segArc = r * deltaRad;
-            const remainRad = thetaRad - n * deltaRad;
-            const remainArc = r * remainRad;
-
-            let html = `<p><strong>定弦长段数：</strong>${n} 段</p>`;
-            html += `<p><strong>每段定弦长：</strong>L = ${L.toFixed(4)} mm</p>`;
-            html += `<p><strong>相邻定弦长夹角：</strong>δ = ${deltaDeg.toFixed(4)}°</p>`;
-            html += `<p><strong>每段对应弧长：</strong>${segArc.toFixed(4)} mm</p>`;
-            if (remainRad > 1e-9) {
-                html += `<p><strong>剩余弧长：</strong>${remainArc.toFixed(4)} mm（夹角 ${(remainRad / DEG).toFixed(4)}°）</p>`;
-            } else {
-                html += `<p><strong>恰好整除，无剩余弧长</strong></p>`;
-            }
-            fixedResult.innerHTML = html;
-            fixedResult.style.display = 'block';
-        }
-
-        // ================================================================
-        //  绘图
-        // ================================================================
-
-        function draw(res) {
-            const W = cv.width,
-                H = cv.height;
-            const cx = W / 2,
-                cy = H / 2;
-            const margin = 50;
-            const maxDim = Math.min(W, H) - margin;
-            const scale = maxDim / (2 * (res.r || 1) + 0.01);
-            const rPix = (res.r || 1) * scale;
-
-            ctx.clearRect(0, 0, W, H);
-
-            const toX = (mm) => cx + mm * scale;
-            const toY = (mm) => cy - mm * scale;
-
-            // 网格
-            ctx.save();
-            ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-            ctx.lineWidth = 0.5;
-            for (let i = -10; i <= 10; i++) {
-                if (i === 0) continue;
-                const p = i * (res.r / 4);
-                ctx.beginPath();
-                ctx.moveTo(toX(p), 0);
-                ctx.lineTo(toX(p), H);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(0, toY(p));
-                ctx.lineTo(W, toY(p));
-                ctx.stroke();
-            }
-            ctx.restore();
-
-            // 整圆
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(cx, cy, rPix, 0, PI2);
-            ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-            ctx.lineWidth = 1.5;
-            ctx.setLineDash([4, 6]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.restore();
-
-            // 扇形
-            const thetaRad = (res.theta || 0) * DEG;
-            const startAngle = -thetaRad / 2;
-            const endAngle = thetaRad / 2;
-            const fillColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-3').trim() || '#38bdf8';
-
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.arc(cx, cy, rPix, startAngle, endAngle, false);
-            ctx.closePath();
-            ctx.fillStyle = fillColor + '25';
-            ctx.fill();
-            ctx.strokeStyle = fillColor + '80';
-            ctx.lineWidth = 1.5;
-            ctx.stroke();
-            ctx.restore();
-
-            // 弧线
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(cx, cy, rPix, startAngle, endAngle, false);
-            ctx.strokeStyle = fillColor;
-            ctx.lineWidth = 3.5;
-            ctx.shadowColor = fillColor + '60';
-            ctx.shadowBlur = 12;
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-            ctx.restore();
-
-            // 半径线
-            const x1 = res.r * Math.cos(startAngle),
-                y1 = res.r * Math.sin(startAngle);
-            const x2 = res.r * Math.cos(endAngle),
-                y2 = res.r * Math.sin(endAngle);
-
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(toX(x1), toY(y1));
-            ctx.moveTo(cx, cy);
-            ctx.lineTo(toX(x2), toY(y2));
-            ctx.strokeStyle = '#fbbf24';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([3, 4]);
-            ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.restore();
-
-            // 弦
-            ctx.save();
-            ctx.beginPath();
-            ctx.moveTo(toX(x1), toY(y1));
-            ctx.lineTo(toX(x2), toY(y2));
-            ctx.strokeStyle = '#f472b6';
-            ctx.lineWidth = 2.5;
-            ctx.shadowColor = '#f472b640';
-            ctx.shadowBlur = 8;
-            ctx.stroke();
-            ctx.shadowBlur = 0;
-            ctx.restore();
-
-            // 弦高标注
-            const midX = (x1 + x2) / 2,
-                midY = (y1 + y2) / 2;
-            const hEndX = 0,
-                hEndY = res.r * Math.cos(thetaRad / 2);
-            ctx.save();
-            ctx.setLineDash([3, 4]);
-            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
-            ctx.lineWidth = 1;
-            ctx.beginPath();
-            ctx.moveTo(toX(midX), toY(midY));
-            ctx.lineTo(toX(hEndX), toY(hEndY));
-            ctx.stroke();
-            ctx.setLineDash([]);
-            ctx.restore();
-
-            // 定弦长分段
-            const L = parseFloat(LEl.value);
-            if (!isNaN(L) && L > 0) {
-                const deltaRad = 2 * Math.asin(Math.min(L / (2 * res.r), 1));
-                const n = Math.floor(thetaRad / deltaRad);
-                if (n >= 1) {
-                    const angles = [startAngle];
-                    for (let i = 1; i <= n; i++) {
-                        const angle = startAngle + i * deltaRad;
-                        if (angle > endAngle + 1e-9) break;
-                        angles.push(angle);
+                function solveRTheta(r, thetaRad) {
+                    if (thetaRad <= 0 || thetaRad > PI2) throw new Error('圆心角必须在 (0, 360°]');
+                    return [fromThetaR(thetaRad, r)];
+                }
+                function solveRC(r, c) {
+                    if (c > 2 * r + 1e-9) throw new Error('弦长不能大于直径');
+                    const thetaMinor = 2 * Math.asin(Math.min(c / (2 * r), 1)), resMinor = fromThetaR(thetaMinor, r), thetaMajor = PI2 - thetaMinor, resMajor = fromThetaR(thetaMajor, r);
+                    return [resMinor, resMajor];
+                }
+                function solveRH(r, h) {
+                    if (h >= 2 * r) throw new Error('拱高必须在 [0, 2r) 内');
+                    const ratio = 1 - h / r; // 范围 [-1, 1)
+                    const theta = 2 * Math.acos(Math.max(-1, Math.min(1, ratio)));
+                    return [fromThetaR(theta, r)];
+                }
+                function solveCH(c, h) {
+                    const r = (c * c / 4 + h * h) / (2 * h);
+                    if (c > 2 * r + 1e-9) throw new Error('弦长不能大于直径');
+                    const thetaMinor = 2 * Math.asin(Math.min(c / (2 * r), 1)), resMinor = fromThetaR(thetaMinor, r), thetaMajor = PI2 - thetaMinor, resMajor = fromThetaR(thetaMajor, r);
+                    return [resMinor, resMajor];
+                }
+                function solveCTheta(c, thetaRad) {
+                    if (thetaRad <= 0 || thetaRad > PI2) throw new Error('圆心角必须在 (0, 360°]');
+                    const r = c / (2 * Math.sin(thetaRad / 2));
+                    if (c > 2 * r + 1e-9) throw new Error('弦长不能大于直径');
+                    return [fromThetaR(thetaRad, r)];
+                }
+                function solveHTheta(h, thetaRad) {
+                    if (thetaRad <= 0 || thetaRad > PI2) throw new Error('圆心角必须在 (0, 360°]');
+                    const denom = 1 - Math.cos(thetaRad / 2);
+                    if (Math.abs(denom) < 1e-15) throw new Error('圆心角不能为 0');
+                    const r = h / denom;
+                    if (h < 0 || h >= 2 * r) throw new Error('拱高必须在 [0, 2r) 内');
+                    return [fromThetaR(thetaRad, r)];
+                }
+                // ================================================================
+                //  数值工具（牛顿迭代）
+                // ================================================================
+                function newton(f, df, x0, maxIter = 80, tol = 1e-14) {
+                    let x = x0;
+                    for (let i = 0; i < maxIter; i++) {
+                        const fx = f(x);
+                        if (Math.abs(fx) < tol) return x;
+                        const dx = df(x);
+                        if (Math.abs(dx) < 1e-15) break;
+                        x = x - fx / dx;
+                        if (x < 0 || x > Math.PI) break;
                     }
+                    return null;
+                }
+                // ================================================================
+                //  主求解器
+                // ================================================================
+                function solve() {
+                    const v = readInputs(), has = (k) => k in v;
+                    let solutions = [];
+                    if (has('s') && has('r')) {
+                        solutions = solveSR(v.s, v.r);
+                    } else if (has('s') && has('thetaRad')) {
+                        solutions = solveSTheta(v.s, v.thetaRad);
+                    } else if (has('s') && has('c')) {
+                        solutions = solveSC(v.s, v.c);
+                    } else if (has('s') && has('h')) {
+                        solutions = solveSH(v.s, v.h);
+                    } else if (has('r') && has('thetaRad')) {
+                        solutions = solveRTheta(v.r, v.thetaRad);
+                    } else if (has('r') && has('c')) {
+                        solutions = solveRC(v.r, v.c);
+                    } else if (has('r') && has('h')) {
+                        solutions = solveRH(v.r, v.h);
+                    } else if (has('c') && has('h')) {
+                        solutions = solveCH(v.c, v.h);
+                    } else if (has('c') && has('thetaRad')) {
+                        solutions = solveCTheta(v.c, v.thetaRad);
+                    } else if (has('h') && has('thetaRad')) {
+                        solutions = solveHTheta(v.h, v.thetaRad);
+                    } else {
+                        throw new Error('不支持的参数组合');
+                    }
+                    // 过滤无效解
+                    solutions = solutions.filter(sol => {
+                        if (!sol || !isFinite(sol.s) || !isFinite(sol.r)) return false;
+                        if (sol.s < 0 || sol.r < 0 || sol.c < 0 || sol.h < 0) return false;
+                        if (sol.s > PI2 * sol.r + 1e-6) return false;
+                        if (sol.c > 2 * sol.r + 1e-6) return false;
+                        if (sol.h > sol.r + 1e-6 && sol.theta < 180) return false;
+                        if (sol.theta > 360 + 1e-6) return false;
+                        return true;
+                    });
+                    const unique = [];
+                    for (const sol of solutions) {
+                        let dup = false;
+                        for (const existing of unique) {
+                            if (Math.abs(existing.theta - sol.theta) < 1e-6 && Math.abs(existing.r - sol.r) < 1e-6) { dup = true; break; }
+                        }
+                        if (!dup) unique.push(sol);
+                    }
+                    if (unique.length === 0) throw new Error('无有效解，请检查参数');
+                    return unique;
+                }
+                // ================================================================
+                //  边长计算
+                // ================================================================
+                function calcFixedChord(out) {
+                    const L = parseFloat(LEl.value);
+                    fixedResult.style.display = 'none';
+                    fixedResult.innerHTML = '';
+                    if (isNaN(L) || L <= 0) return;
+                    const r = out.r, thetaRad = out.theta * DEG, deltaRad = 2 * Math.asin(Math.min(L / (2 * r), 1)), deltaDeg = deltaRad / DEG, n = Math.floor(thetaRad / deltaRad);
+                    if (n < 1) {
+                        fixedResult.innerHTML = `<p>⚠ 边长 L = ${trimNum(L)} 大于该弧的弦长，无法容纳</p>`;
+                        fixedResult.style.display = 'block';
+                        return;
+                    }
+                    const segArc = r * deltaRad, remainRad = thetaRad - n * deltaRad, remainArc = r * remainRad;
+                    let html = `<p>边长段数：${n} 段；每段边长：L = ${trimNum(L)} mm</p>`;
+                    html += `<p>相邻边长夹角：<red>δ = ${trimNum(deltaDeg)}°</red>；所有边圆心角：<red>α = ${trimNum(deltaDeg * n)}°</red></p>`;
+                    html += `<p>每边对应弧长：${trimNum(segArc)} mm</p>`;
+                    if (remainRad > 1e-9) { html += `<p>剩余弧长：${trimNum(remainArc)} mm（圆心角 ${trimNum(remainRad / DEG)}°）</p>`; }
+                    if (deltaDeg > 3) { html += `<p>SMD产品夹角宜<red>δ≤8.1818度</red>；COB产品内弧宜<red>δ≤3度</red></p>`; }
+                    html += `<p>QL-320/160斜角模组切边<red>45°</red>，QL-80斜角模组切边<red>20°</red></p>`;
+                    html += `
+                        <table border="1" style="border-collapse: collapse; text-align: center; width: 100%;margin-top: 10px; font-size: 14px;">
+                        <thead>
+                        <tr><th>软模组</th><th>环境</th><th>内弧Rmin</th><th>外弧Rmin</th><th>备注</th></tr>
+                        </thead>
+                        <tbody>
+                        <tr><td>R1.2</td><td>室内</td><td colspan="2">611.155（12）</td><td rowspan="3">禁止竖装<br>括号：拼圆数量</td></tr>
+                        <tr><td>R1.5~3.0</td><td>室内</td><td>152.7887（3）</td><td>203.7183（4）</td></tr>
+                        <tr><td>R4</td><td>户外</td><td colspan="2">509.2958（10）</td></tr>
+                        </tbody>
+                        </table>`;
+                    fixedResult.innerHTML = html;
+                    fixedResult.style.display = 'block';
+                }
+                // ================================================================
+                //  绘图
+                // ================================================================
+                function draw(res) {
+                    const W = cv.width, H = cv.height,
+                        cx = W / 2, cy = H / 2,
+                        margin = 50,
+                        maxDim = Math.min(W, H) - margin,
+                        scale = maxDim / (2 * (res.r || 1) + 0.01),
+                        rPix = (res.r || 1) * scale;
+                    ctx.clearRect(0, 0, W, H);
+                    const toX = (mm) => cx + mm * scale, toY = (mm) => cy - mm * scale;
+                    // 网格
                     ctx.save();
-                    ctx.strokeStyle = '#4ade80';
-                    ctx.lineWidth = 2;
-                    ctx.setLineDash([6, 4]);
-                    ctx.shadowColor = '#4ade8060';
-                    ctx.shadowBlur = 6;
-                    for (let i = 0; i < angles.length - 1; i++) {
-                        const px1 = res.r * Math.cos(angles[i]);
-                        const py1 = res.r * Math.sin(angles[i]);
-                        const px2 = res.r * Math.cos(angles[i + 1]);
-                        const py2 = res.r * Math.sin(angles[i + 1]);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+                    ctx.lineWidth = 0.5;
+                    for (let i = -10; i <= 10; i++) {
+                        if (i === 0) continue;
+                        const p = i * (res.r / 4);
                         ctx.beginPath();
-                        ctx.moveTo(toX(px1), toY(py1));
-                        ctx.lineTo(toX(px2), toY(py2));
+                        ctx.moveTo(toX(p), 0);
+                        ctx.lineTo(toX(p), H);
+                        ctx.stroke();
+                        ctx.beginPath();
+                        ctx.moveTo(0, toY(p));
+                        ctx.lineTo(W, toY(p));
                         ctx.stroke();
                     }
-                    if (angles[angles.length - 1] < endAngle - 1e-9) {
-                        const px1 = res.r * Math.cos(angles[angles.length - 1]);
-                        const py1 = res.r * Math.sin(angles[angles.length - 1]);
-                        const px2 = res.r * Math.cos(endAngle);
-                        const py2 = res.r * Math.sin(endAngle);
-                        ctx.beginPath();
-                        ctx.moveTo(toX(px1), toY(py1));
-                        ctx.lineTo(toX(px2), toY(py2));
-                        ctx.stroke();
-                    }
+                    ctx.restore();
+                    // 整圆
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, rPix, 0, PI2);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                    ctx.lineWidth = 1.5;
+                    ctx.setLineDash([4, 6]);
+                    ctx.stroke();
                     ctx.setLineDash([]);
+                    ctx.restore();
+                    // 扇形
+                    const thetaRad = (res.theta || 0) * DEG, startAngle = -thetaRad / 2, endAngle = thetaRad / 2, fillColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-3').trim() || '#38bdf8';
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy);
+                    ctx.arc(cx, cy, rPix, startAngle, endAngle, false);
+                    ctx.closePath();
+                    ctx.fillStyle = fillColor + '25';
+                    ctx.fill();
+                    ctx.strokeStyle = fillColor + '80';
+                    ctx.lineWidth = 1.5;
+                    ctx.stroke();
+                    ctx.restore();
+                    // 弧线
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, rPix, startAngle, endAngle, false);
+                    ctx.strokeStyle = fillColor;
+                    ctx.lineWidth = 3.5;
+                    ctx.shadowColor = fillColor + '60';
+                    ctx.shadowBlur = 12;
+                    ctx.stroke();
                     ctx.shadowBlur = 0;
                     ctx.restore();
-
-                    for (const angle of angles) {
-                        const px = res.r * Math.cos(angle);
-                        const py = res.r * Math.sin(angle);
+                    // 半径线
+                    const x1 = res.r * Math.cos(startAngle),
+                        y1 = res.r * Math.sin(startAngle),
+                        x2 = res.r * Math.cos(endAngle),
+                        y2 = res.r * Math.sin(endAngle);
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(cx, cy);
+                    ctx.lineTo(toX(x1), toY(y1));
+                    ctx.moveTo(cx, cy);
+                    ctx.lineTo(toX(x2), toY(y2));
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.lineWidth = 2;
+                    ctx.setLineDash([3, 4]);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.restore();
+                    // 弦
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.moveTo(toX(x1), toY(y1));
+                    ctx.lineTo(toX(x2), toY(y2));
+                    ctx.strokeStyle = '#f472b6';
+                    ctx.lineWidth = 2.5;
+                    ctx.shadowColor = '#f472b640';
+                    ctx.shadowBlur = 8;
+                    ctx.stroke();
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
+                    // 拱高标注
+                    const midX = (x1 + x2) / 2, midY = (y1 + y2) / 2, hEndX = 0, hEndY = res.r * Math.cos(thetaRad / 2);
+                    ctx.save();
+                    ctx.setLineDash([3, 4]);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(toX(midX), toY(midY));
+                    ctx.lineTo(toX(hEndX), toY(hEndY));
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+                    ctx.restore();
+                    // 边长分段
+                    const L = parseFloat(LEl.value);
+                    if (!isNaN(L) && L > 0) {
+                        const deltaRad = 2 * Math.asin(Math.min(L / (2 * res.r), 1));
+                        const n = Math.floor(thetaRad / deltaRad);
+                        if (n >= 1) {
+                            const angles = [startAngle];
+                            for (let i = 1; i <= n; i++) {
+                                const angle = startAngle + i * deltaRad;
+                                if (angle > endAngle + 1e-9) break;
+                                angles.push(angle);
+                            }
+                            ctx.save();
+                            ctx.strokeStyle = '#4ade80';
+                            ctx.lineWidth = 2;
+                            ctx.setLineDash([6, 4]);
+                            ctx.shadowColor = '#4ade8060';
+                            ctx.shadowBlur = 6;
+                            for (let i = 0; i < angles.length - 1; i++) {
+                                const px1 = res.r * Math.cos(angles[i]),
+                                    py1 = res.r * Math.sin(angles[i]),
+                                    px2 = res.r * Math.cos(angles[i + 1]),
+                                    py2 = res.r * Math.sin(angles[i + 1]);
+                                ctx.beginPath();
+                                ctx.moveTo(toX(px1), toY(py1));
+                                ctx.lineTo(toX(px2), toY(py2));
+                                ctx.stroke();
+                            }
+                            if (angles[angles.length - 1] < endAngle - 1e-9) {
+                                const px1 = res.r * Math.cos(angles[angles.length - 1]),
+                                    py1 = res.r * Math.sin(angles[angles.length - 1]),
+                                    px2 = res.r * Math.cos(endAngle),
+                                    py2 = res.r * Math.sin(endAngle);
+                                ctx.beginPath();
+                                ctx.moveTo(toX(px1), toY(py1));
+                                ctx.lineTo(toX(px2), toY(py2));
+                                ctx.stroke();
+                            }
+                            ctx.setLineDash([]);
+                            ctx.shadowBlur = 0;
+                            ctx.restore();
+                            for (const angle of angles) {
+                                const px = res.r * Math.cos(angle), py = res.r * Math.sin(angle);
+                                ctx.save();
+                                ctx.beginPath();
+                                ctx.arc(toX(px), toY(py), 4, 0, PI2);
+                                ctx.fillStyle = '#4ade80';
+                                ctx.shadowColor = '#4ade8080';
+                                ctx.shadowBlur = 8;
+                                ctx.fill();
+                                ctx.shadowBlur = 0;
+                                ctx.restore();
+                            }
+                        }
+                    }
+                    // 端点
+                    const dotColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-4').trim() || '#7dd3fc';
+                    for (const [px, py] of [[x1, y1], [x2, y2]]) {
                         ctx.save();
                         ctx.beginPath();
-                        ctx.arc(toX(px), toY(py), 4, 0, PI2);
-                        ctx.fillStyle = '#4ade80';
-                        ctx.shadowColor = '#4ade8080';
-                        ctx.shadowBlur = 8;
+                        ctx.arc(toX(px), toY(py), 5, 0, PI2);
+                        ctx.fillStyle = dotColor;
+                        ctx.shadowColor = dotColor + '80';
+                        ctx.shadowBlur = 10;
                         ctx.fill();
                         ctx.shadowBlur = 0;
                         ctx.restore();
                     }
+                    // 圆心
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 4, 0, PI2);
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.shadowColor = '#fbbf2480';
+                    ctx.shadowBlur = 10;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
+                    // 文字信息
+                    const txtColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-4').trim() || '#7dd3fc';
+                    ctx.save();
+                    ctx.fillStyle = txtColor;
+                    ctx.font = '13px "Segoe UI", system-ui, sans-serif';
+                    ctx.shadowColor = 'rgba(0,0,0,0.6)';
+                    ctx.shadowBlur = 6;
+                    const lines = [`r = ${trimNum(res.r || 0, 2)}`, `θ = ${trimNum(res.theta || 0, 2)}°`, `s = ${trimNum(res.s || 0, 2)}`, `c = ${trimNum(res.c || 0, 2)}`, `h = ${trimNum(res.h || 0, 2)}`];
+                    lines.forEach((text, i) => { ctx.fillText(text, 14, 24 + i * 20); });
+                    ctx.shadowBlur = 0;
+                    ctx.restore();
+                    // 图例
+                    ctx.save();
+                    const legendY = H - 28;
+                    ctx.font = '12px "Segoe UI", system-ui, sans-serif';
+                    ctx.fillStyle = fillColor;
+                    ctx.fillText('● 弧', 12, legendY);
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fillText('━ 半径', 72, legendY);
+                    ctx.fillStyle = '#f472b6';
+                    ctx.fillText('━ 弦', 142, legendY);
+                    const LVal = parseFloat(LEl.value);
+                    if (!isNaN(LVal) && LVal > 0) { ctx.fillStyle = '#4ade80'; ctx.fillText('● 边长分段', 212, legendY); }
+                    ctx.restore();
                 }
-            }
-
-            // 端点
-            const dotColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-4').trim() || '#7dd3fc';
-            for (const [px, py] of [
-                    [x1, y1],
-                    [x2, y2]
-                ]) {
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(toX(px), toY(py), 5, 0, PI2);
-                ctx.fillStyle = dotColor;
-                ctx.shadowColor = dotColor + '80';
-                ctx.shadowBlur = 10;
-                ctx.fill();
-                ctx.shadowBlur = 0;
-                ctx.restore();
-            }
-            // 圆心
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(cx, cy, 4, 0, PI2);
-            ctx.fillStyle = '#fbbf24';
-            ctx.shadowColor = '#fbbf2480';
-            ctx.shadowBlur = 10;
-            ctx.fill();
-            ctx.shadowBlur = 0;
-            ctx.restore();
-
-            // 文字信息
-            const txtColor = getComputedStyle(document.documentElement).getPropertyValue('--theme-4').trim() || '#7dd3fc';
-            ctx.save();
-            ctx.fillStyle = txtColor;
-            ctx.font = '13px "Segoe UI", system-ui, sans-serif';
-            ctx.shadowColor = 'rgba(0,0,0,0.6)';
-            ctx.shadowBlur = 6;
-            const lines = [
-                `r = ${(res.r || 0).toFixed(2)}`,
-                `θ = ${(res.theta || 0).toFixed(2)}°`,
-                `s = ${(res.s || 0).toFixed(2)}`,
-                `c = ${(res.c || 0).toFixed(2)}`,
-                `h = ${(res.h || 0).toFixed(2)}`
-            ];
-            lines.forEach((text, i) => {
-                ctx.fillText(text, 14, 24 + i * 20);
-            });
-            ctx.shadowBlur = 0;
-            ctx.restore();
-
-            // 图例
-            ctx.save();
-            const legendY = H - 28;
-            ctx.font = '12px "Segoe UI", system-ui, sans-serif';
-            ctx.fillStyle = fillColor;
-            ctx.fillText('● 弧', 12, legendY);
-            ctx.fillStyle = '#fbbf24';
-            ctx.fillText('━ 半径', 72, legendY);
-            ctx.fillStyle = '#f472b6';
-            ctx.fillText('━ 弦', 142, legendY);
-            const LVal = parseFloat(LEl.value);
-            if (!isNaN(LVal) && LVal > 0) {
-                ctx.fillStyle = '#4ade80';
-                ctx.fillText('● 定弦长分段', 212, legendY);
-            }
-            ctx.restore();
-        }
-
-        // ================================================================
-        //  UI 控制
-        // ================================================================
-
-        function updateUI(solutions) {
-            arcRow.classList.add('hidden');
-            arcHint.classList.add('hidden');
-
-            if (!solutions || solutions.length === 0) {
-                currentSolution = null;
-                return;
-            }
-
-            if (solutions.length === 1) {
-                currentSolution = solutions[0];
-                document.querySelector('input[name="arc"][value="minor"]').checked = true;
-                return;
-            }
-
-            // 多解：显示单选
-            arcRow.classList.remove('hidden');
-            arcHint.classList.remove('hidden');
-            solutions.sort((a, b) => a.theta - b.theta);
-
-            const minorRadio = document.querySelector('input[name="arc"][value="minor"]');
-            const majorRadio = document.querySelector('input[name="arc"][value="major"]');
-
-            const currentArc = document.querySelector('input[name="arc"]:checked');
-            if (!currentArc || currentArc.value === 'major') {
-                minorRadio.checked = true;
-                currentSolution = solutions[0];
-            } else {
-                currentSolution = solutions[0];
-            }
-
-            const t1 = solutions[0] ? solutions[0].theta.toFixed(2) : '?';
-            const t2 = solutions[1] ? solutions[1].theta.toFixed(2) : '?';
-            arcHint.textContent = `✨ 双解：劣弧 ${t1}°  /  优弧 ${t2}°，请选择`;
-        }
-
-        function applyCurrentSolution() {
-            if (!currentSolution) return;
-            IDS.forEach(id => {
-                const el = $(id);
-                if (currentSolution[id] !== undefined) {
-                    el.value = Math.max(0, currentSolution[id]).toFixed(4);
+                // ================================================================
+                //  UI 控制
+                // ================================================================
+                function updateUI(solutions) {
+                    arcRow.classList.add('hidden');
+                    arcHint.classList.add('hidden');
+                    if (!solutions || solutions.length === 0) { currentSolution = null; return; }
+                    if (solutions.length === 1) {
+                        currentSolution = solutions[0];
+                        document.querySelector('input[name="arc"][value="minor"]').checked = true;
+                        return;
+                    }
+                    // 多解
+                    arcRow.classList.remove('hidden');
+                    arcHint.classList.remove('hidden');
+                    solutions.sort((a, b) => a.theta - b.theta);
+                    const minorRadio = document.querySelector('input[name="arc"][value="minor"]');
+                    const majorRadio = document.querySelector('input[name="arc"][value="major"]');
+                    const currentArc = document.querySelector('input[name="arc"]:checked');
+                    if (!currentArc || currentArc.value === 'major') {
+                        minorRadio.checked = true;
+                        currentSolution = solutions[0];
+                    } else { currentSolution = solutions[0]; }
+                    const t1 = solutions[0] ? trimNum(solutions[0].theta, 2) : '?';
+                    const t2 = solutions[1] ? trimNum(solutions[1].theta, 2) : '?';
+                    arcHint.textContent = `✨ 双解：劣弧 ${t1}°  /  优弧 ${t2}°，请选择`;
                 }
-            });
-            draw(currentSolution);
-            calcFixedChord(currentSolution);
-        }
-
-        // ================================================================
-        //  计算入口
-        // ================================================================
-
-        function calc() {
-            errEl.textContent = '';
-            let solutions;
-            try {
-                solutions = solve();
-            } catch (e) {
-                errEl.textContent = '⚠ ' + e.message;
-                resetAll();
-                return;
-            }
-
-            lastSolutions = solutions;
-            updateUI(solutions);
-            applyCurrentSolution();
-        }
-
-        // 单选切换
-        document.querySelectorAll('input[name="arc"]').forEach(el => {
-            el.addEventListener('change', function() {
-                if (!lastSolutions || lastSolutions.length < 2) return;
-                const idx = this.value === 'minor' ? 0 : 1;
-                if (idx < lastSolutions.length) {
-                    currentSolution = lastSolutions[idx];
+                function applyCurrentSolution() {
+                    if (!currentSolution) return;
+                    IDS.forEach(id => {
+                        const el = $(id);
+                        if (currentSolution[id] !== undefined) { el.value = trimNum(Math.max(0, currentSolution[id])); }
+                    });
+                    updateCalcButton();
+                    draw(currentSolution);
+                    calcFixedChord(currentSolution);
+                }
+                // ================================================================
+                //  计算入口（错误显示增强）
+                // ================================================================
+                function calc() {
+                    if ($('calcBtn').disabled) return;   // 已知量不足 2 个时不计算（含回车触发）
+                    errEl.textContent = '';    // 清空旧错误
+                    let solutions;
+                    try {
+                        solutions = solve();
+                    } catch (e) {
+                        // 显示错误信息，并清空界面状态
+                        errEl.textContent = '⚠ ' + e.message;
+                        // 同时把错误输出到控制台以便调试
+                        console.error('弧形计算器错误:', e);
+                        // 清空画布和输入（但保留错误信息）
+                        resetAll(true); // 传入 true 表示静默清空（不清除错误信息）
+                        return;
+                    }
+                    lastSolutions = solutions;
+                    updateUI(solutions);
                     applyCurrentSolution();
                 }
-            });
-        });
-
-        // 回车触发
-        document.querySelectorAll('.row input').forEach(el => {
-            el.addEventListener('keydown', (e) => { if (e.key === 'Enter') calc(); });
-        });
-
-        // 计算按钮
-        $('calcBtn').addEventListener('click', calc);
-
-        // ================================================================
-        //  重置
-        // ================================================================
-
-        function resetAll() {
-            IDS.forEach(id => $(id).value = '');
-            LEl.value = '';
-            errEl.textContent = '';
-            fixedResult.style.display = 'none';
-            fixedResult.innerHTML = '';
-            arcRow.classList.add('hidden');
-            arcHint.classList.add('hidden');
-            document.querySelector('input[name="arc"][value="minor"]').checked = true;
-            lastSolutions = [];
-            currentSolution = null;
-            ctx.clearRect(0, 0, 420, 420);
-            ctx.save();
-            ctx.fillStyle = 'rgba(255,255,255,0.2)';
-            ctx.font = '16px "Segoe UI", system-ui, sans-serif';
-            ctx.textAlign = 'center';
-            ctx.fillText('请填写参数后点击计算', 210, 210);
-            ctx.restore();
-        }
-
-        // ================================================================
-        //  初始化
-        // ================================================================
-
-        resetAll();
-        window.calc = calc;
-        window.resetAll = resetAll;
-    </script>
-</body>
+                // 单选切换
+                document.querySelectorAll('input[name="arc"]').forEach(el => {
+                    el.addEventListener('change', function () {
+                        if (!lastSolutions || lastSolutions.length < 2) return;
+                        const idx = this.value === 'minor' ? 0 : 1;
+                        if (idx < lastSolutions.length) { currentSolution = lastSolutions[idx]; applyCurrentSolution(); }
+                    });
+                });
+                // 回车触发 + 输入时动态启用/禁用计算按钮（L 不计入已知量）
+                document.querySelectorAll('.row input').forEach(el => {
+                    el.addEventListener('keydown', (e) => { if (e.key === 'Enter') calc(); });
+                    el.addEventListener('input', updateCalcButton);
+                    el.addEventListener('change', updateCalcButton);
+                });
+                // 计算按钮
+                $('calcBtn').addEventListener('click', calc);
+                // ================================================================
+                //  清除内部计算状态（保留输入值，供选项卡切换时调用）
+                // ================================================================
+                function clearRuntimeState(keepError = false) {
+                    if (!keepError) { errEl.textContent = ''; }
+                    fixedResult.style.display = 'none';
+                    fixedResult.innerHTML = '';
+                    arcRow.classList.add('hidden');
+                    arcHint.classList.add('hidden');
+                    document.querySelector('input[name="arc"][value="minor"]').checked = true;
+                    lastSolutions = [];
+                    currentSolution = null;
+                    updateCalcButton();
+                    ctx.clearRect(0, 0, 420, 420);
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    ctx.font = '16px "Segoe UI", system-ui, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('请填写参数后点击计算', 210, 210);
+                    ctx.restore();
+                }
+                // ================================================================
+                //  重置（支持静默模式）
+                // ================================================================
+                function resetAll(silent = false) {
+                    IDS.forEach(id => $(id).value = '');
+                    LEl.value = '';
+                    clearRuntimeState(silent);
+                }
+                // ================================================================
+                //  初始化：保留 HTML 默认值，但不自动计算（仅绘制占位提示）
+                // ================================================================
+                const initialValues = IDS.concat(['L']).map(id => $(id).value);
+                resetAll();
+                IDS.concat(['L']).forEach((id, i) => { $(id).value = initialValues[i]; });
+                updateCalcButton();
+                window.calc = calc;
+                window.resetAll = resetAll;
+                window.clearArcRuntimeState = () => clearRuntimeState();
+            })();
+            // ================================================================
+            //  多边形求半径原脚本（原有 IIFE 保持不变）
+            // ================================================================
+            (function () {
+                const $ = id => document.getElementById(id);
+                /* 合并后边长输入 id 为 poly-s，避免与弧形计算器 id="s" 冲突 */
+                /* 新增：左侧图形容器（仅界面容器，计算内容不变） */
+                const figEl = $('fig');
+                /* ---------- 数字格式化 ---------- */
+                function fmt(x, d = 10) {
+                    if (!isFinite(x)) return '—';
+                    if (x === 0) return '0';
+                    const ax = Math.abs(x);
+                    if (ax < 1e-4 || ax >= 1e9) return x.toExponential(6);
+                    return String(parseFloat(x.toPrecision(d)));
+                }
+                /* 用于图内标注的紧凑格式 */
+                function fmtNum(x) {
+                    if (!isFinite(x)) return '—';
+                    if (Math.abs(x) < 1e-12) return '0';
+                    if (Math.abs(x - Math.round(x)) < 1e-9) return String(Math.round(x));
+                    return String(parseFloat(x.toPrecision(8)));
+                }
+                /* 时间戳：YYYY-MM-DD-HHmmss */
+                function timestamp() {
+                    const d = new Date();
+                    const p = v => String(v).padStart(2, '0');
+                    return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}-${p(d.getHours())}${p(d.getMinutes())}${p(d.getSeconds())}`;
+                }
+                function downloadBlob(blob, name) {
+                    const a = document.createElement('a');
+                    const url = URL.createObjectURL(blob);
+                    a.href = url;
+                    a.download = name;
+                    document.body.appendChild(a);
+                    a.click();
+                    setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1200);
+                }
+                /* 图示占位：与弧形计算器一致，未计算/出错时保留图示框 */
+                function showPlaceholder() {
+                    figEl.innerHTML = '<div class="fig-placeholder">请填写参数后点击计算</div>';
+                }
+                function showError(msg) { showPlaceholder(); $('out').innerHTML = '<div class="card err">' + msg + '</div>'; }
+                /* ---------- 保存按钮状态 / 菜单 ---------- */
+                function setSaveEnabled(on) { $('save').disabled = !on; if (!on) hideSaveMenu(); }
+                function hideSaveMenu() { $('saveMenu').hidden = true; }
+                /* ---------- 实时限定：正数输入（s、l） ---------- */
+                function guardPositive(el, name) {
+                    const refresh = () => {
+                        const v = el.value.trim();
+                        let bad = false;
+                        if (v !== '') { const num = Number(v); bad = !isFinite(num) || num <= 0; }
+                        el.classList.toggle('invalid', bad);
+                        el.setCustomValidity(bad ? name + '必须大于 0' : '');
+                        el.title = bad ? name + '必须大于 0' : '';
+                    };
+                    el.addEventListener('input', refresh);
+                    el.addEventListener('blur', refresh);
+                    el.addEventListener('change', refresh);
+                    el.addEventListener('keydown', e => { if (e.key === '-' || e.key === '+') e.preventDefault(); });
+                    el.addEventListener('paste', () => setTimeout(refresh, 0));
+                    refresh();
+                }
+                /* 读取并校验正数输入 */
+                function readPositive(id, name) {
+                    const el = $(id);
+                    const v = el.value.trim();
+                    if (v === '') { el.classList.add('invalid'); return { ok: false, msg: name + '不能为空。' }; }
+                    const num = Number(v);
+                    if (!isFinite(num)) { el.classList.add('invalid'); return { ok: false, msg: name + '必须是有效数字。' }; }
+                    if (num <= 0) { el.classList.add('invalid'); return { ok: false, msg: name + '必须大于 0。' }; }
+                    el.classList.remove('invalid');
+                    return { ok: true, value: num };
+                }
+                /* ---------- 顶点坐标（真实单位，圆心在原点） ---------- */
+                function geometryPoints(n, R, a) {
+                    const startAngle = -Math.PI / 2 - (n * a) / 2;
+                    const pts = [];
+                    for (let k = 0; k <= n; k++) {
+                        const ang = startAngle + k * a;
+                        pts.push({ x: R * Math.cos(ang), y: R * Math.sin(ang) });
+                    }
+                    return pts;
+                }
+                /* ============ 生成示意图 SVG ============ */
+                function buildSVG(s, n, l, R, a) {
+                    const W = 600, H = 600;
+                    const cx = W / 2, cy = H / 2;
+                    const Rpix = 200;
+                    const startAngle = -Math.PI / 2 - (n * a) / 2;
+                    const pts = [];
+                    for (let k = 0; k <= n; k++) {
+                        const ang = startAngle + k * a;
+                        const x = cx + Rpix * Math.cos(ang);
+                        const y = cy - Rpix * Math.sin(ang);
+                        pts.push({ x, y });
+                    }
+                    let lines = '';
+                    /* 小弦（边长 s） */
+                    const smallColor = n > 80 ? '#93c5fd' : '#2563eb';
+                    const smallWidth = n > 80 ? 1 : 2;
+                    for (let k = 0; k < n; k++) {
+                        const p1 = pts[k], p2 = pts[k + 1];
+                        lines += `<line x1="${p1.x.toFixed(2)}" y1="${p1.y.toFixed(2)}" x2="${p2.x.toFixed(2)}" y2="${p2.y.toFixed(2)}" stroke="${smallColor}" stroke-width="${smallWidth}" stroke-linecap="round"/>`;
+                    }
+                    /* 总弦（l） */
+                    const p0 = pts[0], pn = pts[n];
+                    lines += `<line x1="${p0.x.toFixed(2)}" y1="${p0.y.toFixed(2)}" x2="${pn.x.toFixed(2)}" y2="${pn.y.toFixed(2)}" stroke="#ea580c" stroke-width="3" stroke-linecap="round"/>`;
+                    /* 半径线 */
+                    lines += `<line x1="${cx}" y1="${cy}" x2="${p0.x.toFixed(2)}" y2="${p0.y.toFixed(2)}" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4 3"/>`;
+                    /* 圆心 */
+                    lines += `<circle cx="${cx}" cy="${cy}" r="3" fill="#64748b"/>`;
+                    /* 顶点 */
+                    for (let k = 0; k <= n; k++) {
+                        const p = pts[k];
+                        const r = (k === 0 || k === n) ? 4 : 2.5;
+                        const fill = (k === 0 || k === n) ? '#ea580c' : '#2563eb';
+                        lines += `<circle cx="${p.x.toFixed(2)}" cy="${p.y.toFixed(2)}" r="${r}" fill="${fill}"/>`;
+                    }
+                    function labelPos(M, dist) {
+                        const dx = M.x - cx, dy = M.y - cy;
+                        const len = Math.hypot(dx, dy) || 1;
+                        return { x: M.x + dx / len * dist, y: M.y + dy / len * dist };
+                    }
+                    /* 标注 s */
+                    let sLabel = '';
+                    if (n <= 80) {
+                        const M = { x: (pts[0].x + pts[1].x) / 2, y: (pts[0].y + pts[1].y) / 2 };
+                        const pos = labelPos(M, 20);
+                        sLabel = `<text x="${pos.x.toFixed(1)}" y="${pos.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="700" fill="#2563eb">s</text>`;
+                    }
+                    /* 标注 l */
+                    const Ml = { x: (p0.x + pn.x) / 2, y: (p0.y + pn.y) / 2 };
+                    const posL = labelPos(Ml, 22);
+                    const lLabel = `<text x="${posL.x.toFixed(1)}" y="${posL.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="15" font-weight="700" fill="#ea580c">l</text>`;
+                    /* 标注 R */
+                    const Mr = { x: (cx + p0.x) / 2, y: (cy + p0.y) / 2 };
+                    const rdx = p0.x - cx, rdy = p0.y - cy;
+                    const rlen = Math.hypot(rdx, rdy) || 1;
+                    const rnx = -rdy / rlen, rny = rdx / rlen;
+                    const rLabel = `<text x="${(Mr.x + rnx * 14).toFixed(1)}" y="${(Mr.y + rny * 14).toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="14" font-weight="700" fill="#64748b">R</text>`;
+                    /* 顶部信息条：显示 s、n、l、R 的数值 */
+                    const infoItems = [['s', fmtNum(s)], ['n', String(n)], ['l', fmtNum(l)], ['R', fmtNum(R)]];
+                    let infoSvg = `<rect x="16" y="12" width="${W - 32}" height="42" rx="11" fill="#f1f5fb" stroke="#dbe3ec" stroke-width="1"/>`;
+                    infoItems.forEach((it, i) => {
+                        const tx = 16 + (W - 32) * (i + 0.5) / 4;
+                        infoSvg += `<text x="${tx}" y="39" text-anchor="middle" font-size="15" fill="#334155"><tspan font-weight="600" fill="#64748b">${it[0]} = </tspan><tspan font-weight="700" fill="#0f172a">${it[1]}</tspan></text>`;
+                    });
+                    /* 底部图例 */
+                    const legend = `<g font-size="12" fill="#475569">
+                        <line x1="20" y1="${H - 58}" x2="44" y2="${H - 58}" stroke="#2563eb" stroke-width="3" stroke-linecap="round"/>
+                        <text x="50" y="${H - 54}">边长 s</text>
+                        <line x1="140" y1="${H - 58}" x2="164" y2="${H - 58}" stroke="#ea580c" stroke-width="3" stroke-linecap="round"/>
+                        <text x="170" y="${H - 54}">弦长 l</text>
+                        <line x1="260" y1="${H - 58}" x2="284" y2="${H - 58}" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="4 3"/>
+                        <text x="290" y="${H - 54}">外接圆</text>
+                    </g>`;
+                    return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" font-family="system-ui, -apple-system, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif" style="display:block;max-height:520px">
+                        <rect x="0" y="0" width="${W}" height="${H}" fill="#fbfdff"/>
+                        <circle cx="${cx}" cy="${cy}" r="${Rpix}" fill="none" stroke="#cbd5e1" stroke-width="1.8" stroke-dasharray="6 4"/>
+                        ${lines}
+                        ${sLabel}
+                        ${lLabel}
+                        ${rLabel}
+                        ${legend}
+                        ${infoSvg}
+                    </svg>`;
+                }
+                /* ============ 生成 DXF（AutoCAD R12 ASCII） ============ */
+                function buildDXF(s, n, l, R, a) {
+                    const pts = geometryPoints(n, R, a);
+                    const f = v => (Math.abs(v) < 1e-12 ? 0 : v).toFixed(6);
+                    const L = [];
+                    const push = (...xs) => xs.forEach(x => L.push(x));
+                    /* HEADER */
+                    push('0', 'SECTION', '2', 'HEADER');
+                    push('9', '$ACADVER', '1', 'AC1009');
+                    push('9', '$INSUNITS', '70', '0');
+                    push('0', 'ENDSEC');
+                    /* TABLES（图层定义） */
+                    push('0', 'SECTION', '2', 'TABLES');
+                    push('0', 'TABLE', '2', 'LAYER', '70', '5');
+                    const layer = (name, color) => { push('0', 'LAYER', '2', name, '70', '0', '62', String(color), '6', 'CONTINUOUS'); };
+                    layer('0', 7);
+                    layer('CIRCUMCIRCLE', 8);
+                    layer('SMALL_CHORD', 5);
+                    layer('TOTAL_CHORD', 30);
+                    layer('CENTER', 7);
+                    push('0', 'ENDTAB', '0', 'ENDSEC');
+                    /* ENTITIES */
+                    push('0', 'SECTION', '2', 'ENTITIES');
+                    /* 外接圆 */
+                    push('0', 'CIRCLE', '8', 'CIRCUMCIRCLE',
+                        '10', f(0), '20', f(0), '30', '0.0', '40', f(R));
+                    /* 小弦：n 条，每条长度为 s */
+                    for (let k = 0; k < n; k++) {
+                        const p1 = pts[k], p2 = pts[k + 1];
+                        push('0', 'LINE', '8', 'SMALL_CHORD', '10', f(p1.x), '20', f(p1.y), '30', '0.0', '11', f(p2.x), '21', f(p2.y), '31', '0.0');
+                    }
+                    /* 总弦：l */
+                    const p0 = pts[0], pn = pts[n];
+                    push('0', 'LINE', '8', 'TOTAL_CHORD', '10', f(p0.x), '20', f(p0.y), '30', '0.0', '11', f(pn.x), '21', f(pn.y), '31', '0.0');
+                    /* 圆心 + 半径线 */
+                    push('0', 'POINT', '8', 'CENTER', '10', f(0), '20', f(0), '30', '0.0');
+                    push('0', 'LINE', '8', 'CENTER', '10', f(0), '20', f(0), '30', '0.0', '11', f(p0.x), '21', f(p0.y), '31', '0.0');
+                    push('0', 'ENDSEC', '0', 'EOF');
+                    return L.join('\r\n') + '\r\n';
+                }
+                /* ============ 导出 PNG ============ */
+                function exportPNG(res) {
+                    const svgStr = res.svg;
+                    const blob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const img = new Image();
+                    img.onload = () => {
+                        try {
+                            const size = 1200;
+                            const canvas = document.createElement('canvas');
+                            canvas.width = size;
+                            canvas.height = size;
+                            const ctx = canvas.getContext('2d');
+                            ctx.fillStyle = '#fbfdff';
+                            ctx.fillRect(0, 0, size, size);
+                            ctx.drawImage(img, 0, 0, size, size);
+                            URL.revokeObjectURL(url);
+                            canvas.toBlob(b => { if (!b) { alert('导出 PNG 失败，请重试。'); return; } downloadBlob(b, timestamp() + '.png'); }, 'image/png');
+                        } catch (err) {
+                            URL.revokeObjectURL(url);
+                            alert('导出 PNG 失败：' + err.message);
+                        }
+                    };
+                    img.onerror = () => { URL.revokeObjectURL(url); alert('导出 PNG 失败：无法渲染图形。'); };
+                    img.src = url;
+                }
+                /* ============ 导出 DXF ============ */
+                function exportDXF(res) {
+                    const dxf = buildDXF(res.s, res.n, res.l, res.R, res.a);
+                    const blob = new Blob([dxf], { type: 'application/dxf;charset=utf-8' });
+                    downloadBlob(blob, timestamp() + '.dxf');
+                }
+                /* ============ 主计算函数 ============ */
+                let lastResult = null;
+                /* 切换选项卡时清除内部计算状态，保留输入值 */
+                function clearRuntimeState() {
+                    lastResult = null;
+                    setSaveEnabled(false);
+                    showPlaceholder();
+                    $('out').innerHTML = '';
+                }
+                window.clearPolyRuntimeState = clearRuntimeState;
+                function compute() {
+                    /* 1) 边长 s：> 0 */
+                    const rs = readPositive('poly-s', '边长 s');
+                    if (!rs.ok) { setSaveEnabled(false); return showError(rs.msg); }
+                    /* 2) 弦长 l：> 0 */
+                    const rl = readPositive('l', '弦长 l');
+                    if (!rl.ok) { setSaveEnabled(false); return showError(rl.msg); }
+                    /* 3) 边数 n：≥ 2 的整数 */
+                    const nRaw = $('n').value.trim();
+                    const n = Number(nRaw);
+                    if (nRaw === '' || !Number.isInteger(n) || n < 2) {
+                        $('n').classList.add('invalid');
+                        setSaveEnabled(false);
+                        return showError('边数 <code>n</code> 必须是不小于 2 的整数。');
+                    }
+                    $('n').classList.remove('invalid');
+                    const s = rs.value;
+                    const l = rl.value;
+                    const target = l / s;
+                    if (target >= n) {
+                        setSaveEnabled(false);
+                        return showError('<b>无解。</b><br>只有满足 <code>0 &lt; l &lt; n·s</code>才有解。<br>当前 <code>【l = ' + fmt(l) + '】 >= 【n * s = ' + fmt(n * s) + '】</code>');
+                    }
+                    /* 二分法求 θ = a/2，区间 (0, π/n) */
+                    const f = th => Math.sin(n * th) / Math.sin(th) - target;
+                    let lo = 0, hi = Math.PI / n;
+                    for (let i = 0; i < 300; i++) {
+                        const mid = 0.5 * (lo + hi);
+                        if (mid <= lo || mid >= hi) break;
+                        if (f(mid) > 0) lo = mid; else hi = mid;
+                    }
+                    const th = 0.5 * (lo + hi);
+                    const a = 2 * th;
+                    const sinT = Math.sin(th);
+                    const R = s / (2 * sinT);
+                    const halfDeg = th * 180 / Math.PI;
+                    const aDeg = 2 * halfDeg;
+                    const svg = buildSVG(s, n, l, R, a);
+                    /* 保存最近一次有效结果，供导出使用 */
+                    lastResult = { s, n, l, R, a, th, svg };
+                    setSaveEnabled(true);
+                    /* 图形示意移入左侧面板，结果文案与导出内容均不变 */
+                    figEl.innerHTML = svg;
+                    $('out').innerHTML = `
+      <div class="card res">
+        <div class="cap">计算结果</div>
+        <div class="big"><small>R =</small> ${fmt(R)}</div>
+        <div class="cap">圆心角（角度）：${fmt(aDeg * n)}°</div>
+      </div>
+      `;
+                }
+                /* ---------- 绑定事件 ---------- */
+                guardPositive($('poly-s'), '边长 s');
+                guardPositive($('l'), '弦长 l');
+                $('calc').addEventListener('click', compute);
+                ['poly-s', 'n', 'l'].forEach(id => { $(id).addEventListener('keydown', e => { if (e.key === 'Enter') compute(); }); });
+                /* 保存按钮：切换菜单 */
+                $('save').addEventListener('click', e => {
+                    e.stopPropagation();
+                    if ($('save').disabled) return;
+                    $('saveMenu').hidden = !$('saveMenu').hidden;
+                });
+                /* 点击菜单项导出 */
+                $('saveMenu').addEventListener('click', e => {
+                    const btn = e.target.closest('button[data-type]');
+                    if (!btn) return;
+                    hideSaveMenu();
+                    if (!lastResult) return;
+                    if (btn.dataset.type === 'png') exportPNG(lastResult);
+                    else if (btn.dataset.type === 'dxf') exportDXF(lastResult);
+                });
+                /* 点击其它地方关闭菜单 */
+                document.addEventListener('click', e => { if (!$('saveMenu').hidden && !e.target.closest('.save-wrap')) hideSaveMenu(); });
+                /* 打开时不自动计算，保留图示占位框（点击计算后才出图） */
+                clearRuntimeState();
+            })();
+            // ================================================================
+            //  选项卡切换（两个功能界面互不干扰）
+            // ================================================================
+            (function () {
+                const tabs = document.querySelectorAll('.tabs .tab');
+                const panels = document.querySelectorAll('.panel');
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        /* 切换前清除两侧内部计算状态，保留各自输入值，避免残留状态被误引用 */
+                        if (typeof window.clearArcRuntimeState === 'function') window.clearArcRuntimeState();
+                        if (typeof window.clearPolyRuntimeState === 'function') window.clearPolyRuntimeState();
+                        tabs.forEach(t => t.classList.toggle('active', t === tab));
+                        panels.forEach(p => p.classList.toggle('active', p.id === 'panel-' + tab.dataset.panel));
+                    });
+                });
+            })();
+        </script>
+    </body>
 </html>
